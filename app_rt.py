@@ -4,10 +4,10 @@ import os
 import threading
 import traceback
 import uuid
-
 import pandas as pd
 import pyomo.environ as pyo
 
+# This is a mock implementation of a real-time optimization endpoint for electric bus fleet scheduling.
 
 app = Flask(__name__)
 
