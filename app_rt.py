@@ -310,10 +310,6 @@ def build_rt_context(data, payload_price_guidance, current_timestep, disturbance
         raise ValueError("prices input must include a valid spot_market series")
     spot_full = expand_series_to_horizon(spot_source, full_horizon_steps, "spot_market")
 
-    if not realtime_df.empty and "current_timestep" in realtime_df.columns:
-        rt_current = pd.to_numeric(realtime_df["current_timestep"], errors="coerce").dropna()
-        if not rt_current.empty:
-            current_timestep = max(1, min(int(rt_current.iloc[0]), full_horizon_steps))
 
     realtime_by_bus = {}
     for row in realtime_df.to_dict(orient="records"):
@@ -1071,4 +1067,4 @@ def health():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5003)))
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5002)))
