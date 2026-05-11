@@ -311,6 +311,7 @@ def build_rt_context(data, payload_price_guidance, current_timestep, disturbance
     spot_full = expand_series_to_horizon(spot_source, full_horizon_steps, "spot_market")
 
 
+
     realtime_by_bus = {}
     for row in realtime_df.to_dict(orient="records"):
         bus_id = safe_int(row.get("bus_id") or row.get("Bus ID"))
