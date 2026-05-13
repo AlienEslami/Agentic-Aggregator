@@ -768,7 +768,7 @@ def solve_rt_rescheduling(ctx):
     except Exception:
         pass
 
-    solved = solver.solve(model, tee=False)
+    solved = solver.solve(model, tee=True)
     term = str(solved.solver.termination_condition).lower()
     status = str(solved.solver.status).lower()
     has_incumbent = any(model.e[k, 1].value is not None for k in K)
