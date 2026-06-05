@@ -1,10 +1,10 @@
-# Agentic Electric Bus Charging and V2G Optimization
+# A Multi-Agentic Aggregator Design for Electric Bus Fleet Charging and Grid Flexibility Management
 
-This repository contains the code, data templates, benchmark outputs, and n8n workflow exports used for the paper's agentic day-ahead and real-time electric bus charging experiments.
+This repository contains the code, data templates, benchmark outputs, and n8n workflow exports used for the paper *A Multi-Agentic Aggregator Design for Electric Bus Fleet Charging and Grid Flexibility Management*.
 
 ## Abstract
 
-This repository accompanies a study on agentic optimization for electric-bus fleet charging and vehicle-to-grid scheduling. The framework couples a mixed-integer optimization model for public transport operator operations with large-language-model pricing and re-optimization workflows. A day-ahead layer computes a baseline charging and V2G plan from bus, charger, trip, price, and tariff data. A real-time layer then updates the remaining horizon when observed fleet states, delays, service disruptions, or intraday prices diverge from the baseline. The optimization minimizes operator energy cost while tracking aggregator margins, grid purchases, V2G sales, state-of-charge trajectories, service feasibility, and re-optimization outcomes. The repository provides the Python optimization code, Excel input and benchmark files, scenario summary utilities, baseline comparison scripts, and n8n workflow exports used to orchestrate the agentic day-ahead and real-time experiments. Together, these artifacts are intended to make the computational workflow transparent, reproducible, and adaptable to other electric-bus fleet datasets.
+Electric buses are becoming flexible energy assets, but their grid value depends on decisions that must adapt to service delays, battery states, electricity prices, and route-energy uncertainty. This paper proposes a multi-agentic aggregator framework that couples an optimization-based electric bus scheduling model with supervisory agents for pricing, disturbance mitigation, and schedule evaluation. The optimization core preserves bus-system operational feasibility across routes, chargers, batteries, and vehicle-to-grid exchanges, while the agentic layer determines when re-optimization is needed and how flexibility value is shared between the aggregator and the public transport operator.
 
 ## Repository Contents
 
@@ -15,12 +15,16 @@ This repository accompanies a study on agentic optimization for electric-bus fle
 ├── generate_benchmark_files.py         # Builds day-ahead baseline and rolling RT workbooks
 ├── run_no_v2g_optimization.py          # Charging-only optimized baseline
 ├── run_dumb_charging.py                # Rule-like dumb-charging baseline
+├── scripts/
+│   └── reproduce_paper_results.py      # One-command deterministic reproduction runner
 ├── scenario_summary.py                 # Summary and reasoning-sheet metrics
 ├── benchmark_no_v2g_comparison.ipynb   # Notebook for baseline comparison
 ├── requirements.txt                    # Python dependencies
 ├── docs/
 │   ├── PAPER_ABSTRACT.md
+│   ├── PAPER_RESULTS.md
 │   └── REPRODUCIBILITY.md
+├── paper_outputs/                     # Paper tables, RT outputs, prompt artifacts
 ├── workflows/
 │   ├── day_ahead_workflow_prompt_analysis_baseline.json
 │   ├── real_time_final.json
@@ -48,6 +52,8 @@ This repository accompanies a study on agentic optimization for electric-bus fle
 
 `workflows/` contains n8n exports for the agentic orchestration layer. These files preserve the workflow structure and prompts, but users must remap credentials, Google document IDs, and HTTP endpoint URLs before running them.
 
+`paper_outputs/` contains the output workbooks and prompt artifacts used in the paper, renamed by paper section, strategy, mode, and scenario. The folder includes day-ahead Table 6 files, real-time disturbance files for Tables 7 and 9, combined-scenario files, prompt-sensitivity Table 14 files, and prompt templates.
+
 ## Setup
 
 ```bash
@@ -57,6 +63,18 @@ pip install -r requirements.txt
 ```
 
 The model is a MILP. The code attempts to use the first available solver from Gurobi, HiGHS, CBC, or GLPK. Gurobi was used during development; `highspy` is included for HiGHS-based replication where supported.
+
+## One-Command Reproduction
+
+Run the deterministic Python-side reproduction package without overwriting the checked-in artifacts:
+
+```bash
+python scripts/reproduce_paper_results.py
+```
+
+This writes fresh outputs to `results/reproduction/`, including a `manifest.json`, a reproduction summary workbook, baseline JSON files, and regenerated day-ahead benchmark workbooks. The `results/` folder is ignored by git.
+
+The LLM-driven S3/S4 day-ahead cases, real-time disturbances, and prompt-sensitivity experiments are reproduced by importing the n8n workflows in `workflows/` and reconnecting credentials, document IDs, and API URLs. See `docs/REPRODUCIBILITY.md` and `docs/PAPER_RESULTS.md`.
 
 ## Reproducing the Day-Ahead Baseline
 
@@ -141,4 +159,3 @@ where `S_buy` is the tariff paid by the public transport operator, `S_sell` is t
 ## Citation and License
 
 Add the final paper citation and license before public release. If you want others to reuse the code, choose an explicit license such as MIT, Apache-2.0, or BSD-3-Clause.
-

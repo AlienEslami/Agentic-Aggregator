@@ -2,6 +2,8 @@
 
 This guide describes the recommended path for reproducing the paper artifacts from a clean clone.
 
+Paper: *A Multi-Agentic Aggregator Design for Electric Bus Fleet Charging and Grid Flexibility Management*
+
 ## 1. Environment
 
 Create and activate a Python environment, then install the project dependencies:
@@ -28,7 +30,19 @@ Use `Files/Inputs.xlsx` as the canonical workbook. It contains:
 
 Optional external price inputs are stored in `Files/SpotPrices.xlsx`, `Files/Tariffs.xlsx`, and `Files/IntradayPrices/`.
 
+The paper output artifacts are stored in `paper_outputs/`, with cleaned filenames that follow the paper structure. See `paper_outputs/README.md` and `paper_outputs/manifest.json`.
+
 ## 3. Day-Ahead Baseline
+
+For the deterministic Python-side artifacts, run:
+
+```bash
+python scripts/reproduce_paper_results.py
+```
+
+This writes fresh artifacts to `results/reproduction/` and leaves the checked-in `Files/` artifacts unchanged. The manifest at `results/reproduction/manifest.json` records the detected solver, input paths, output paths, and key baseline metrics.
+
+To regenerate the checked-in benchmark folder directly, use the lower-level command below.
 
 Generate the day-ahead optimization benchmark and rolling real-time input workbooks:
 
@@ -81,6 +95,8 @@ The API listens on `http://127.0.0.1:5002` unless `PORT` is set. The `/optimize`
 
 The real-time API implementation is in `app_rt.py`. It is designed for remaining-horizon re-optimization with observed bus states, disturbances, and intraday prices.
 
+The paper's S3/S4 aggregator cases and all RT disturbance cases are prompt-driven. They require the n8n workflows because the accepted tariffs come from the Pricing Agent and Evaluator Agent loops. The deterministic Python scripts provide the optimization core and baseline artifacts; the workflows provide the agentic orchestration layer.
+
 ## 6. Workflow Imports
 
 Import these files into n8n:
@@ -90,3 +106,4 @@ Import these files into n8n:
 
 After import, update Google credentials, Google document IDs, and HTTP endpoint URLs for your deployment.
 
+Use `docs/PAPER_RESULTS.md` as the target table when comparing reproduced values against the paper.

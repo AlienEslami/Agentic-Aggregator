@@ -863,10 +863,10 @@ def solvePTO(sc):
     # ── Constraints 8.1-8.2: w_buy and w_sell definitions ────────────────
     for t in model.T:
         model.constraints.add(
-            sum(ch_eff * alpha[n-1] * model.x[k,n,t]
+            sum(alpha[n-1] * model.x[k,n,t]
                 for n in model.N for k in model.K) == model.w_buy[t])
         model.constraints.add(
-            sum(dch_eff * beta[n-1] * model.y[k,n,t]
+            sum(beta[n-1] * model.y[k,n,t]
                 for n in model.N for k in model.K) == model.w_sell[t])
 
     # No discharging at t=1

@@ -117,8 +117,8 @@ def solve_dumb_charging(sc: dict):
             model.constraints.add(model.e[k, t] == model.e[k, t - 1] - trip_energy_t + charge_energy_t - discharge_energy_t)
 
     for t in model.T:
-        model.constraints.add(sum(ch_eff * alpha[n - 1] * model.x[k, n, t] for n in model.N for k in model.K) == model.w_buy[t])
-        model.constraints.add(sum(dch_eff * beta[n - 1] * model.y[k, n, t] for n in model.N for k in model.K) == model.w_sell[t])
+        model.constraints.add(sum(alpha[n - 1] * model.x[k, n, t] for n in model.N for k in model.K) == model.w_buy[t])
+        model.constraints.add(sum(beta[n - 1] * model.y[k, n, t] for n in model.N for k in model.K) == model.w_sell[t])
 
     model.constraints.add(sum(dch_eff * beta[n - 1] * model.y[k, n, 1] for n in model.N for k in model.K) == 0)
 

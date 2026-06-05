@@ -1,0 +1,360 @@
+{
+  "description": "Paper output artifacts copied from the original analysis folder and renamed to match the paper structure.",
+  "mode_mapping": {
+    "Selfish": "profit_based",
+    "Altruistic/altruistic": "operational_based"
+  },
+  "file_count": 70,
+  "files": [
+    {
+      "destination": "day_ahead/table_06/S1_dumb_charging_no_v2g.xlsx",
+      "role": "Table 6 S1",
+      "original_relative_path": "DA/Results_DA_dumb_charging_no_v2g.xlsx"
+    },
+    {
+      "destination": "day_ahead/table_06/S2_smart_charging_no_v2g.xlsx",
+      "role": "Table 6 S2",
+      "original_relative_path": "DA/Results_DA_smart_charging_no_v2g.xlsx"
+    },
+    {
+      "destination": "day_ahead/table_06/S3_profit_based_aggregator.xlsx",
+      "role": "Table 6 S3",
+      "original_relative_path": "DA/Results_DA-selfish.xlsx"
+    },
+    {
+      "destination": "day_ahead/table_06/S4_operational_based_aggregator.xlsx",
+      "role": "Table 6 S4",
+      "original_relative_path": "DA/Results_DA_altruistic.xlsx"
+    },
+    {
+      "destination": "prompt_sensitivity/table_14/profit_based/ZS_zero_shot.xlsx",
+      "role": "Table 14 prompt sensitivity",
+      "original_relative_path": "Agent experiments/Zeroshot Selfish.xlsx"
+    },
+    {
+      "destination": "prompt_sensitivity/table_14/profit_based/FS_few_shot.xlsx",
+      "role": "Table 14 prompt sensitivity",
+      "original_relative_path": "Agent experiments/Few_shot_selfish.xlsx"
+    },
+    {
+      "destination": "prompt_sensitivity/table_14/profit_based/CoT_chain_of_thought.xlsx",
+      "role": "Table 14 prompt sensitivity",
+      "original_relative_path": "Agent experiments/Cot Selfish.xlsx"
+    },
+    {
+      "destination": "prompt_sensitivity/table_14/profit_based/FS_CoT_few_shot_chain_of_thought.xlsx",
+      "role": "Table 14 prompt sensitivity",
+      "original_relative_path": "Agent experiments/Fewshot-cot-selfish.xlsx"
+    },
+    {
+      "destination": "prompt_sensitivity/table_14/operational_based/ZS_zero_shot.xlsx",
+      "role": "Table 14 prompt sensitivity",
+      "original_relative_path": "Agent experiments/zeroshot altruistic.xlsx"
+    },
+    {
+      "destination": "prompt_sensitivity/table_14/operational_based/FS_few_shot.xlsx",
+      "role": "Table 14 prompt sensitivity",
+      "original_relative_path": "Agent experiments/Few_shot_altruistic.xlsx"
+    },
+    {
+      "destination": "prompt_sensitivity/table_14/operational_based/CoT_chain_of_thought.xlsx",
+      "role": "Table 14 prompt sensitivity",
+      "original_relative_path": "Agent experiments/Cot altruistic.xlsx"
+    },
+    {
+      "destination": "prompt_sensitivity/table_14/operational_based/FS_CoT_few_shot_chain_of_thought.xlsx",
+      "role": "Table 14 prompt sensitivity",
+      "original_relative_path": "Agent experiments/Fewshot-cot_altruistic.xlsx"
+    },
+    {
+      "destination": "prompt_sensitivity/prompts/zero_shot_pricing_system_message.docx",
+      "role": "Appendix A prompt artifact",
+      "original_relative_path": "Agent experiments/Prompts/Zero shot/Pricing system message.docx"
+    },
+    {
+      "destination": "prompt_sensitivity/prompts/zero_shot_evaluator_system_message.docx",
+      "role": "Appendix A prompt artifact",
+      "original_relative_path": "Agent experiments/Prompts/Zero shot/Evaluator system message.docx"
+    },
+    {
+      "destination": "prompt_sensitivity/prompts/zero_shot_evaluator_user_message.docx",
+      "role": "Appendix A prompt artifact",
+      "original_relative_path": "Agent experiments/Prompts/Zero shot/Evaluator user message.docx"
+    },
+    {
+      "destination": "prompt_sensitivity/prompts/chain_of_thought_pricing_agent.docx",
+      "role": "Appendix A prompt artifact",
+      "original_relative_path": "Agent experiments/Prompts/cot/Pricing agent.docx"
+    },
+    {
+      "destination": "prompt_sensitivity/prompts/few_shot_prompt_template.docx",
+      "role": "Appendix A prompt artifact",
+      "original_relative_path": "Agent experiments/Prompts/Fewshot/New Microsoft Word Document.docx"
+    },
+    {
+      "destination": "prompt_sensitivity/prompts/few_shot_chain_of_thought_prompt_template.docx",
+      "role": "Appendix A prompt artifact",
+      "original_relative_path": "Agent experiments/Prompts/Fewshot-cot/New Microsoft Word Document.docx"
+    },
+    {
+      "destination": "real_time/profit_based/delay/D_plus_30_beginning_result.xlsx",
+      "role": "Table 7/9 profit_based D_plus_30_beginning result",
+      "original_relative_path": "RT/Selfish/Delay +30 beg/delay_plus_30_B5 start from 9 to 18selfish.xlsx"
+    },
+    {
+      "destination": "real_time/profit_based/delay/D_minus_30_beginning_result.xlsx",
+      "role": "Table 7/9 profit_based D_minus_30_beginning result",
+      "original_relative_path": "RT/Selfish/Delay -30 beg/Delay_minus_30 B5 start from 9 to 18 selfish.xlsx"
+    },
+    {
+      "destination": "real_time/profit_based/delay/D_plus_30_end_result.xlsx",
+      "role": "Table 7/9 profit_based D_plus_30_end result",
+      "original_relative_path": "RT/Selfish/Delay +30 end/delay_plus_30_Late_B5_selfish.xlsx"
+    },
+    {
+      "destination": "real_time/profit_based/delay/D_minus_30_end_result.xlsx",
+      "role": "Table 7/9 profit_based D_minus_30_end result",
+      "original_relative_path": "RT/Selfish/Delay -30 end/delay_minus_30_late_B5_selfish.xlsx"
+    },
+    {
+      "destination": "real_time/profit_based/energy/E_plus_50_result.xlsx",
+      "role": "Table 7/9 profit_based E_plus_50 result",
+      "original_relative_path": "RT/Selfish/Energy +50/Energy_plus_50_B4_v2_selfish.xlsx"
+    },
+    {
+      "destination": "real_time/profit_based/energy/E_minus_50_result.xlsx",
+      "role": "Table 7/9 profit_based E_minus_50 result",
+      "original_relative_path": "RT/Selfish/Energy -50/Energy_minus_50_B4_v2_selfish(1).xlsx"
+    },
+    {
+      "destination": "real_time/profit_based/price/P_plus_25_result.xlsx",
+      "role": "Table 7/9 profit_based P_plus_25 result",
+      "original_relative_path": "RT/Selfish/Price +25/price_plus_25 selfish.xlsx"
+    },
+    {
+      "destination": "real_time/profit_based/price/P_plus_25_forecasted_prices.xlsx",
+      "role": "Table 7/9 profit_based P_plus_25 forecasted input",
+      "original_relative_path": "RT/Selfish/Price +25/Forecasted(3).xlsx"
+    },
+    {
+      "destination": "real_time/profit_based/price/P_plus_50_result.xlsx",
+      "role": "Table 7/9 profit_based P_plus_50 result",
+      "original_relative_path": "RT/Selfish/Price +50/price_plus_50 selfish.xlsx"
+    },
+    {
+      "destination": "real_time/profit_based/price/P_plus_50_forecasted_prices.xlsx",
+      "role": "Table 7/9 profit_based P_plus_50 forecasted input",
+      "original_relative_path": "RT/Selfish/Price +50/Forecasted(2).xlsx"
+    },
+    {
+      "destination": "real_time/profit_based/price/P_minus_25_result.xlsx",
+      "role": "Table 7/9 profit_based P_minus_25 result",
+      "original_relative_path": "RT/Selfish/Price -25/price_minus_25 selfish.xlsx"
+    },
+    {
+      "destination": "real_time/profit_based/price/P_minus_25_forecasted_prices.xlsx",
+      "role": "Table 7/9 profit_based P_minus_25 forecasted input",
+      "original_relative_path": "RT/Selfish/Price -25/Forecasted(3).xlsx"
+    },
+    {
+      "destination": "real_time/profit_based/price/P_minus_50_result.xlsx",
+      "role": "Table 7/9 profit_based P_minus_50 result",
+      "original_relative_path": "RT/Selfish/Price -50/price_minus_50 selfish.xlsx"
+    },
+    {
+      "destination": "real_time/profit_based/price/P_minus_50_forecasted_prices.xlsx",
+      "role": "Table 7/9 profit_based P_minus_50 forecasted input",
+      "original_relative_path": "RT/Selfish/Price -50/Forecasted(2).xlsx"
+    },
+    {
+      "destination": "real_time/operational_based/delay/D_plus_30_beginning_result.xlsx",
+      "role": "Table 7/9 operational_based D_plus_30_beginning result",
+      "original_relative_path": "RT/Altruistic/Delay +30 beg/delay_plus_30 B5 alt from 9 to 18.xlsx"
+    },
+    {
+      "destination": "real_time/operational_based/delay/D_minus_30_beginning_result.xlsx",
+      "role": "Table 7/9 operational_based D_minus_30_beginning result",
+      "original_relative_path": "RT/Altruistic/Delay -30 beg/delay_minus_30 B5 from 9 to 18.xlsx"
+    },
+    {
+      "destination": "real_time/operational_based/delay/D_plus_30_end_result.xlsx",
+      "role": "Table 7/9 operational_based D_plus_30_end result",
+      "original_relative_path": "RT/Altruistic/Delay +30 end/delay_plus_30_late_B5_altruistic.xlsx"
+    },
+    {
+      "destination": "real_time/operational_based/delay/D_minus_30_end_result.xlsx",
+      "role": "Table 7/9 operational_based D_minus_30_end result",
+      "original_relative_path": "RT/Altruistic/Delay -30 end/delay_minus_30_late_B5_altruistic.xlsx"
+    },
+    {
+      "destination": "real_time/operational_based/energy/E_plus_50_result.xlsx",
+      "role": "Table 7/9 operational_based E_plus_50 result",
+      "original_relative_path": "RT/Altruistic/Energy +50/Energy_plus_50_B4_v2_altruistic.xlsx"
+    },
+    {
+      "destination": "real_time/operational_based/energy/E_minus_50_result.xlsx",
+      "role": "Table 7/9 operational_based E_minus_50 result",
+      "original_relative_path": "RT/Altruistic/Energy -50/Energy_minus_50_B4_v2_altruistic.xlsx"
+    },
+    {
+      "destination": "real_time/operational_based/price/P_plus_25_result.xlsx",
+      "role": "Table 7/9 operational_based P_plus_25 result",
+      "original_relative_path": "RT/Altruistic/Price +25/Price_plus_25 alt.xlsx"
+    },
+    {
+      "destination": "real_time/operational_based/price/P_plus_25_forecasted_prices.xlsx",
+      "role": "Table 7/9 operational_based P_plus_25 forecasted input",
+      "original_relative_path": "RT/Altruistic/Price +25/Forecasted(1).xlsx"
+    },
+    {
+      "destination": "real_time/operational_based/price/P_plus_50_result.xlsx",
+      "role": "Table 7/9 operational_based P_plus_50 result",
+      "original_relative_path": "RT/Altruistic/Price +50/price_plus_50 (2) altr.xlsx"
+    },
+    {
+      "destination": "real_time/operational_based/price/P_plus_50_forecasted_prices.xlsx",
+      "role": "Table 7/9 operational_based P_plus_50 forecasted input",
+      "original_relative_path": "RT/Altruistic/Price +50/Forecasted (2).xlsx"
+    },
+    {
+      "destination": "real_time/operational_based/price/P_minus_25_result.xlsx",
+      "role": "Table 7/9 operational_based P_minus_25 result",
+      "original_relative_path": "RT/Altruistic/Price -25/price_minus_25 alt.xlsx"
+    },
+    {
+      "destination": "real_time/operational_based/price/P_minus_25_forecasted_prices.xlsx",
+      "role": "Table 7/9 operational_based P_minus_25 forecasted input",
+      "original_relative_path": "RT/Altruistic/Price -25/Forecasted(1).xlsx"
+    },
+    {
+      "destination": "real_time/operational_based/price/P_minus_50_result.xlsx",
+      "role": "Table 7/9 operational_based P_minus_50 result",
+      "original_relative_path": "RT/Altruistic/Price -50/price_minus_50 alt.xlsx"
+    },
+    {
+      "destination": "real_time/operational_based/price/P_minus_50_forecasted_prices.xlsx",
+      "role": "Table 7/9 operational_based P_minus_50 forecasted input",
+      "original_relative_path": "RT/Altruistic/Price -50/Forecasted.xlsx"
+    },
+    {
+      "destination": "real_time/profit_based/combined/C_Seq_forecasted_state.xlsx",
+      "role": "Table 7/9 profit_based C_Seq forecasted_state",
+      "original_relative_path": "Combined disturbances/Selfish/Sequential/Forecasted(8).xlsx"
+    },
+    {
+      "destination": "real_time/profit_based/combined/C_Seq_result.xlsx",
+      "role": "Table 7/9 profit_based C_Seq result",
+      "original_relative_path": "Combined disturbances/Selfish/Sequential/Selfish _sequential_dist.xlsx"
+    },
+    {
+      "destination": "real_time/profit_based/combined/C_Seq_disturbance_definition.xlsx",
+      "role": "Table 7/9 profit_based C_Seq disturbance_definition",
+      "original_relative_path": "Combined disturbances/Selfish/Sequential/rt_disturbance_scenarios_multiple_sequential.xlsx"
+    },
+    {
+      "destination": "real_time/profit_based/combined/C_All_5_48_forecasted_state.xlsx",
+      "role": "Table 7/9 profit_based C_All_5_48 forecasted_state",
+      "original_relative_path": "Combined disturbances/Selfish/5-48/Forecasted(6).xlsx"
+    },
+    {
+      "destination": "real_time/profit_based/combined/C_All_5_48_result.xlsx",
+      "role": "Table 7/9 profit_based C_All_5_48 result",
+      "original_relative_path": "Combined disturbances/Selfish/5-48/Selfish_Together_multiple_5_48.xlsx"
+    },
+    {
+      "destination": "real_time/profit_based/combined/C_All_5_48_disturbance_definition.xlsx",
+      "role": "Table 7/9 profit_based C_All_5_48 disturbance_definition",
+      "original_relative_path": "Combined disturbances/Selfish/5-48/rt_disturbance_scenarios_multiple_5_48.xlsx"
+    },
+    {
+      "destination": "real_time/profit_based/combined/C_All_5_25_forecasted_state.xlsx",
+      "role": "Table 7/9 profit_based C_All_5_25 forecasted_state",
+      "original_relative_path": "Combined disturbances/Selfish/5-25/Forecasted(5).xlsx"
+    },
+    {
+      "destination": "real_time/profit_based/combined/C_All_5_25_result.xlsx",
+      "role": "Table 7/9 profit_based C_All_5_25 result",
+      "original_relative_path": "Combined disturbances/Selfish/5-25/Selfish_together_5to 25.xlsx"
+    },
+    {
+      "destination": "real_time/profit_based/combined/C_All_5_25_disturbance_definition.xlsx",
+      "role": "Table 7/9 profit_based C_All_5_25 disturbance_definition",
+      "original_relative_path": "Combined disturbances/Selfish/5-25/rt_disturbance_scenarios_multiple5to25.xlsx"
+    },
+    {
+      "destination": "real_time/profit_based/combined/C_All_20_48_forecasted_state.xlsx",
+      "role": "Table 7/9 profit_based C_All_20_48 forecasted_state",
+      "original_relative_path": "Combined disturbances/Selfish/20-48/Forecasted(7).xlsx"
+    },
+    {
+      "destination": "real_time/profit_based/combined/C_All_20_48_result.xlsx",
+      "role": "Table 7/9 profit_based C_All_20_48 result",
+      "original_relative_path": "Combined disturbances/Selfish/20-48/Selfish_together_20_48.xlsx"
+    },
+    {
+      "destination": "real_time/profit_based/combined/C_All_20_48_disturbance_definition.xlsx",
+      "role": "Table 7/9 profit_based C_All_20_48 disturbance_definition",
+      "original_relative_path": "Combined disturbances/Selfish/20-48/rt_disturbance_scenarios_multiple20to48.xlsx"
+    },
+    {
+      "destination": "real_time/operational_based/combined/C_Seq_result.xlsx",
+      "role": "Table 7/9 operational_based C_Seq result",
+      "original_relative_path": "Combined disturbances/Altruistic/Sequential/Altruistic_together_sequential.xlsx"
+    },
+    {
+      "destination": "real_time/operational_based/combined/C_Seq_forecasted_state.xlsx",
+      "role": "Table 7/9 operational_based C_Seq forecasted_state",
+      "original_relative_path": "Combined disturbances/Altruistic/Sequential/Forecasted-3.xlsx"
+    },
+    {
+      "destination": "real_time/operational_based/combined/C_Seq_disturbance_definition.xlsx",
+      "role": "Table 7/9 operational_based C_Seq disturbance_definition",
+      "original_relative_path": "Combined disturbances/Altruistic/Sequential/rt_disturbance_scenarios_multiple-2.xlsx"
+    },
+    {
+      "destination": "real_time/operational_based/combined/C_All_5_48_result.xlsx",
+      "role": "Table 7/9 operational_based C_All_5_48 result",
+      "original_relative_path": "Combined disturbances/Altruistic/5-48/Altruistic_together_5 to 48.xlsx"
+    },
+    {
+      "destination": "real_time/operational_based/combined/C_All_5_48_forecasted_state.xlsx",
+      "role": "Table 7/9 operational_based C_All_5_48 forecasted_state",
+      "original_relative_path": "Combined disturbances/Altruistic/5-48/Forecasted-5.xlsx"
+    },
+    {
+      "destination": "real_time/operational_based/combined/C_All_5_48_disturbance_definition.xlsx",
+      "role": "Table 7/9 operational_based C_All_5_48 disturbance_definition",
+      "original_relative_path": "Combined disturbances/Altruistic/5-48/rt_disturbance_scenarios_multiple-4.xlsx"
+    },
+    {
+      "destination": "real_time/operational_based/combined/C_All_5_25_result.xlsx",
+      "role": "Table 7/9 operational_based C_All_5_25 result",
+      "original_relative_path": "Combined disturbances/Altruistic/5-25/Altruistic_together_5 to 25.xlsx"
+    },
+    {
+      "destination": "real_time/operational_based/combined/C_All_5_25_forecasted_state.xlsx",
+      "role": "Table 7/9 operational_based C_All_5_25 forecasted_state",
+      "original_relative_path": "Combined disturbances/Altruistic/5-25/Forecasted-4.xlsx"
+    },
+    {
+      "destination": "real_time/operational_based/combined/C_All_5_25_disturbance_definition.xlsx",
+      "role": "Table 7/9 operational_based C_All_5_25 disturbance_definition",
+      "original_relative_path": "Combined disturbances/Altruistic/5-25/rt_disturbance_scenarios_multiple-3.xlsx"
+    },
+    {
+      "destination": "real_time/operational_based/combined/C_All_20_48_result.xlsx",
+      "role": "Table 7/9 operational_based C_All_20_48 result",
+      "original_relative_path": "Combined disturbances/Altruistic/20-48/Altruistic_Together_20 to 48.xlsx"
+    },
+    {
+      "destination": "real_time/operational_based/combined/C_All_20_48_forecasted_state.xlsx",
+      "role": "Table 7/9 operational_based C_All_20_48 forecasted_state",
+      "original_relative_path": "Combined disturbances/Altruistic/20-48/Forecasted-2.xlsx"
+    },
+    {
+      "destination": "real_time/operational_based/combined/C_All_20_48_disturbance_definition.xlsx",
+      "role": "Table 7/9 operational_based C_All_20_48 disturbance_definition",
+      "original_relative_path": "Combined disturbances/Altruistic/20-48/rt_disturbance_scenarios_multiple.xlsx"
+    }
+  ]
+}
