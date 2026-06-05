@@ -33,6 +33,37 @@ def get_job(job_id):
     return load_jobs().get(job_id)
 
 
+def configure_milp_solver(time_limit=60, mip_gap=0.04):
+    """Return the first available MILP solver supported by this project."""
+    solver_candidates = ('gurobi', 'appsi_highs', 'highs', 'cbc', 'glpk')
+    for solver_name in solver_candidates:
+        try:
+            solver = pyo.SolverFactory(solver_name)
+            if solver is None or not solver.available(False):
+                continue
+        except Exception:
+            continue
+
+        if solver_name == 'gurobi':
+            solver.options['TimeLimit'] = time_limit
+            solver.options['MIPGap'] = mip_gap
+        elif solver_name in {'appsi_highs', 'highs'}:
+            solver.options['time_limit'] = time_limit
+            solver.options['mip_rel_gap'] = mip_gap
+        elif solver_name == 'cbc':
+            solver.options['seconds'] = time_limit
+            solver.options['ratio'] = mip_gap
+        elif solver_name == 'glpk':
+            solver.options['tmlim'] = time_limit
+
+        return solver, solver_name
+
+    raise RuntimeError(
+        'No supported MILP solver is available. Install Gurobi, HiGHS '
+        '(highspy), CBC, or GLPK before running the optimization.'
+    )
+
+
 MOCK_RESULT = {
     "status":                "complete",
     "is_mock":               True,
@@ -880,10 +911,8 @@ def solvePTO(sc):
 
     model.obj = pyo.Objective(rule=rule_obj, sense=pyo.minimize)
 
-    print('Solving PTO')
-    opt = pyo.SolverFactory('gurobi')
-    opt.options['TimeLimit'] = 60
-    opt.options['MIPGap'] = 0.04
+    opt, solver_name = configure_milp_solver(time_limit=60, mip_gap=0.04)
+    print(f'Solving PTO with {solver_name}')
     results = opt.solve(model, load_solutions=False, tee=True)
     
     tc = results.solver.termination_condition

@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pyomo.environ as pyo
 
-from app import build_dataframes, extract_scalars
+from app import build_dataframes, configure_milp_solver, extract_scalars
 from generate_benchmark_files import build_input_data
 from scenario_summary import (
     append_agent_reasoning,
@@ -166,10 +166,8 @@ def solve_dumb_charging(sc: dict):
 
     model.obj = pyo.Objective(rule=rule_obj, sense=pyo.maximize)
 
-    print('Solving dumb charging model')
-    opt = pyo.SolverFactory('gurobi')
-    opt.options['TimeLimit'] = 60
-    opt.options['MIPGap'] = 0.04
+    opt, solver_name = configure_milp_solver(time_limit=60, mip_gap=0.04)
+    print(f'Solving dumb charging model with {solver_name}')
     results = opt.solve(model, load_solutions=False, tee=True)
 
     tc = results.solver.termination_condition

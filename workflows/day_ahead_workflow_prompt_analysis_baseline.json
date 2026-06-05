@@ -1,0 +1,1702 @@
+{
+  "name": "Day_ahead_workflow Prompt Analysis Baseline",
+  "nodes": [
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Settings",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "f91c98f2-a74e-46ea-9e54-cc77c973101c",
+      "name": "Fetch Setting",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -400,
+        9216
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    mode: 'altruistic',  // 'selfish' or 'altruistic'\n    prompt_paradigm: 'few-shot-cot',  // 'zero-shot', 'cot', 'few-shot', 'few-shot-cot'\n    description: 'altruistic = minimize PTO costs, selfish = maximize aggregator revenue'\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        9072
+      ],
+      "id": "9cb53048-622c-4832-b880-49af55c67004",
+      "name": "Workflow Config"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Sheet1",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "ec705ef1-d7f4-4346-82fc-d9e2e2b1f848",
+      "name": "Fetch Disturbances",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -400,
+        8928
+      ]
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"action\": { \"type\": \"string\", \"enum\": [\"optimize\"] },\n    \"reasoning\": { \"type\": \"string\" },\n    \"confidence\": { \"type\": \"number\" },\n    \"price_guidance\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"buy_multipliers\":  { \"type\": \"array\", \"items\": { \"type\": \"number\" }, \"minItems\": 48, \"maxItems\": 48 },\n        \"sell_multipliers\": { \"type\": \"array\", \"items\": { \"type\": \"number\" }, \"minItems\": 48, \"maxItems\": 48 },\n        \"mode\":             { \"type\": \"string\" }\n      },\n      \"required\": [\"buy_multipliers\", \"sell_multipliers\", \"mode\"]\n    }\n  },\n  \"required\": [\"action\", \"reasoning\", \"confidence\", \"price_guidance\"]\n}",
+        "autoFix": true
+      },
+      "id": "2318ca30-ed08-41f1-b0d3-7e8503bdddbc",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        944,
+        9040
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Spot Prices",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "3124b2ff-35e1-49f6-8c90-0f988d428bed",
+      "name": "Fetch Prices",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -400,
+        8736
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "realtime_plan",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestep": "={{ $json.timestep }}",
+            "w_buy": "={{ $json.w_buy }}",
+            "w_sell": "={{ $json.w_sell }}",
+            "bus_1_kwh": "={{ $json.bus_1_kwh }}",
+            "bus_2_kwh": "={{ $json.bus_2_kwh }}",
+            "bus_4_kwh": "={{ $json.bus_4_kwh }}",
+            "bus_3_kwh": "={{ $json.bus_3_kwh }}",
+            "bus_5_kwh": "={{ $json.bus_5_kwh }}",
+            "bus_6_kwh": "={{ $json.bus_6_kwh }}",
+            "bus_7_kwh": "={{ $json.bus_7_kwh }}",
+            "bus_8_kwh": "={{ $json.bus_8_kwh }}"
+          },
+          "matchingColumns": [
+            "timestep"
+          ],
+          "schema": [
+            {
+              "id": "timestep",
+              "displayName": "timestep",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "w_buy",
+              "displayName": "w_buy",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "w_sell",
+              "displayName": "w_sell",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "bus_1_kwh",
+              "displayName": "bus_1_kwh",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "bus_2_kwh",
+              "displayName": "bus_2_kwh",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "bus_3_kwh",
+              "displayName": "bus_3_kwh",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "bus_4_kwh",
+              "displayName": "bus_4_kwh",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "bus_5_kwh",
+              "displayName": "bus_5_kwh",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "bus_6_kwh",
+              "displayName": "bus_6_kwh",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "bus_7_kwh",
+              "displayName": "bus_7_kwh",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "bus_8_kwh",
+              "displayName": "bus_8_kwh",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "3b9e6641-faae-4d6d-9699-60dfaebf7bc9",
+      "name": "Save realtime_plan",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        5120,
+        8640
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        3408,
+        9072
+      ],
+      "id": "46ffff97-4d5a-4ecd-8f03-7e5fd85a19cc",
+      "name": "OpenAI Chat Model1"
+    },
+    {
+      "parameters": {
+        "numberInputs": 6
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -176,
+        8576
+      ],
+      "id": "d4cebb12-bbb1-47e8-a32a-b76cb33d4b62",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $('Evaluate & Adapt').first().json;\nconst result = raw.output ?? raw;\n\nconst MAX_RERUNS = 3;\nconst rerun_count = result.rerun_count ?? 0;\n\n// Best state pass-through\nconst best_state = {\n  best_selfish_revenue:  result.best_selfish_revenue  ?? null,\n  best_altruistic_cost:  result.best_altruistic_cost  ?? null,\n  best_buy_multipliers:  result.best_buy_multipliers  ?? null,\n  best_sell_multipliers: result.best_sell_multipliers ?? null,\n  best_mode:             result.best_mode             ?? null,\n};\n\nconst safeDefaults = {\n  selfish:    { buy: Array(48).fill(1.20), sell: Array(48).fill(0.55) },\n  altruistic: { buy: Array(48).fill(1.03), sell: Array(48).fill(0.90) },\n};\nconst mode = result.best_mode || 'altruistic';\n\nif (rerun_count >= MAX_RERUNS) {\n  return [{\n    json: {\n      outcome: 'accept',\n      reasoning: `Rerun cap of ${MAX_RERUNS} reached. Accepting best result found.`,\n      adjusted_guidance: result.adjusted_guidance || {\n        buy_multipliers:  safeDefaults[mode].buy,\n        sell_multipliers: safeDefaults[mode].sell,\n        mode:             mode,\n      },\n      rerun_count: 0,\n      ...best_state,\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    outcome:           result.outcome,\n    reasoning:         result.reasoning,\n    adjusted_guidance: result.adjusted_guidance || {\n      buy_multipliers:  safeDefaults[mode].buy,\n      sell_multipliers: safeDefaults[mode].sell,\n      mode:             mode,\n    },\n    rerun_count: result.outcome === 'accept' ? 0 : rerun_count + 1,\n    ...best_state,\n  }\n}];"
+      },
+      "id": "c265e407-dfc2-4a15-ae07-8608ffe5294d",
+      "name": "Check Rerun Cap",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4224,
+        8560
+      ]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "day_ahead_plan",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        4896,
+        8624
+      ],
+      "id": "060bfaac-0199-4c93-92ae-922292bf16c3",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "jsCode": "const allInputs = $input.all();\n// Find data item (has 'input' key)\nconst dataItem = allInputs.find(item => item.json.input) || allInputs[0];\nconst data = dataItem.json;\n\n// ── Mode and prompt paradigm (passed from Workflow Config) ────────────────────\nlet mode = 'altruistic';\nlet promptParadigm = 'zero-shot';\ntry {\n  mode = $('Workflow Config').first().json.mode || 'altruistic';\n  promptParadigm = $('Workflow Config').first().json.prompt_paradigm || 'zero-shot';\n} catch(e) {\n  mode = 'altruistic';\n  promptParadigm = 'zero-shot';\n}\n\n// ── Grid prices ───────────────────────────────────────────────────────────────\nconst prices = data.input?.prices || [];\nconst spotPrices = prices.map(p => p.spot_market).filter(p => p != null);\nif (spotPrices.length === 0) {\n  throw new Error('No spot market prices found in input');\n}\n\nconst T = spotPrices.length;\nconst avgPrice   = spotPrices.reduce((a, b) => a + b, 0) / T;\nconst minPrice   = Math.min(...spotPrices);\nconst maxPrice   = Math.max(...spotPrices);\nconst priceSpread = maxPrice - minPrice;\n\n// ── Lowest and highest price timesteps ───────────────────────────────────────\nconst lowestPriceTimestep  = spotPrices.indexOf(minPrice);\nconst highestPriceTimestep = spotPrices.indexOf(maxPrice);\n\n// ── Period boundaries (matching app.py defaults) ──────────────────────────────\nconst b1 = Math.floor(T / 3);\nconst b2 = Math.floor(T * 2 / 3);\n\nconst period1Prices = spotPrices.slice(0, b1);\nconst period2Prices = spotPrices.slice(b1, b2);\nconst period3Prices = spotPrices.slice(b2);\n\nconst avgPeriod1 = (period1Prices.reduce((a, b) => a + b, 0) / period1Prices.length).toFixed(6);\nconst avgPeriod2 = (period2Prices.reduce((a, b) => a + b, 0) / period2Prices.length).toFixed(6);\nconst avgPeriod3 = (period3Prices.reduce((a, b) => a + b, 0) / period3Prices.length).toFixed(6);\n\nconst minPeriod1 = Math.min(...period1Prices).toFixed(6);\nconst minPeriod2 = Math.min(...period2Prices).toFixed(6);\nconst minPeriod3 = Math.min(...period3Prices).toFixed(6);\n\nconst maxPeriod1 = Math.max(...period1Prices).toFixed(6);\nconst maxPeriod2 = Math.max(...period2Prices).toFixed(6);\nconst maxPeriod3 = Math.max(...period3Prices).toFixed(6);\n\nconst spreadPeriod1 = (Math.max(...period1Prices) - Math.min(...period1Prices)).toFixed(6);\nconst spreadPeriod2 = (Math.max(...period2Prices) - Math.min(...period2Prices)).toFixed(6);\nconst spreadPeriod3 = (Math.max(...period3Prices) - Math.min(...period3Prices)).toFixed(6);\n\n// ── Identify lowest and highest price periods ─────────────────────────────────\nconst periodAvgs = [\n  parseFloat(avgPeriod1),\n  parseFloat(avgPeriod2),\n  parseFloat(avgPeriod3),\n];\nconst lowestPricePeriod  = periodAvgs.indexOf(Math.min(...periodAvgs)) + 1;\nconst highestPricePeriod = periodAvgs.indexOf(Math.max(...periodAvgs)) + 1;\n\n// ── Final context ─────────────────────────────────────────────────────────────\nconst context = {\n  mode: mode,\n  prompt_paradigm: promptParadigm,\n  period_boundaries: [b1, b2, T],\n  T_steps: T,\n  avg_grid_price: avgPrice.toFixed(6),\n  spot_prices: spotPrices,\n  price_summary: {\n    avg:    avgPrice.toFixed(6),\n    min:    minPrice.toFixed(6),\n    max:    maxPrice.toFixed(6),\n    spread: priceSpread.toFixed(6),\n    period_1_avg: avgPeriod1,\n    period_2_avg: avgPeriod2,\n    period_3_avg: avgPeriod3,\n    period_1_min: minPeriod1,\n    period_2_min: minPeriod2,\n    period_3_min: minPeriod3,\n    period_1_max: maxPeriod1,\n    period_2_max: maxPeriod2,\n    period_3_max: maxPeriod3,\n    period_1_spread: spreadPeriod1,\n    period_2_spread: spreadPeriod2,\n    period_3_spread: spreadPeriod3,\n    lowest_price_period:   lowestPricePeriod,\n    highest_price_period:  highestPricePeriod,\n    lowest_price_timestep:  lowestPriceTimestep,\n    highest_price_timestep: highestPriceTimestep,\n  },\n};\n\nreturn [{ json: { context, data: data.input } }];"
+      },
+      "id": "c7aaef27-86f8-40c8-b3bc-589894731619",
+      "name": "Build LLM Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        8816
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ JSON.stringify($json.context) }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are the EBA (Electric Bus Aggregator) price-setting agent for day-ahead optimization.\nYour job is to set buy/sell multipliers for all 48 timesteps of the day.\n\n═══════════════════════════════════════\nSYSTEM CONTEXT\n═══════════════════════════════════════\nMode: {{ $('Build LLM Context').first().json.context.mode }}\nPrompt paradigm: {{ $('Build LLM Context').first().json.context.prompt_paradigm }}\nTimesteps: 48 (30-min intervals, t0=00:00 to t47=23:30)\n\n═══════════════════════════════════════\nINSTRUCTIONS\n═══════════════════════════════════════\nOutput buy_multipliers as exactly 1.01 for all 48 timesteps.\nOutput sell_multipliers as exactly 0.97 for all 48 timesteps.\nNo calculation needed.\n\n═══════════════════════════════════════\nRESPONSE FORMAT\n═══════════════════════════════════════\nJSON only, no text outside the JSON:\n{\n  \"action\": \"optimize\",\n  \"reasoning\": \"Altruistic baseline: buy=1.01 and sell=0.97 flat across all 48 timesteps.\",\n  \"confidence\": 1.0,\n  \"price_guidance\": {\n    \"buy_multipliers\":  [1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01,1.01],\n    \"sell_multipliers\": [0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97,0.97],\n    \"mode\": \"{{ $('Build LLM Context').first().json.context.mode }}\"\n  }\n}"
+        }
+      },
+      "id": "8a4220a0-4ed4-475c-9b88-e9f760c38580",
+      "name": "LLM Decision Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        960,
+        8816
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const buses              = $('Fetch Buses').all().map(i => i.json);\nconst chargers           = $('Fetch Chargers').all().map(i => i.json);\nconst trip_time          = $('Fetch Trips').all().map(i => i.json);\nconst prices             = $('Fetch Prices').all().map(i => i.json);\nconst settings           = $(\"Fetch Setting\").all().map(i => i.json);\n\n\nreturn [{ json: { buses, chargers, trip_time, prices, settings } }];"
+      },
+      "id": "7588e9b2-4cd0-4c8e-8ac7-d78125bbf2c2",
+      "name": "Combine Inputs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        48,
+        8640
+      ]
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"outcome\": { \"type\": \"string\", \"enum\": [\"accept\", \"rerun\"] },\n    \"reasoning\": { \"type\": \"string\" },\n    \"adjusted_guidance\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"buy_multipliers\":  { \"type\": \"array\", \"items\": { \"type\": \"number\" }, \"minItems\": 48, \"maxItems\": 48 },\n        \"sell_multipliers\": { \"type\": \"array\", \"items\": { \"type\": \"number\" }, \"minItems\": 48, \"maxItems\": 48 },\n        \"mode\":             { \"type\": \"string\" }\n      },\n      \"required\": [\"buy_multipliers\", \"sell_multipliers\", \"mode\"]\n    },\n    \"rerun_count\": { \"type\": \"number\" },\n    \"best_selfish_revenue\":  { \"type\": [\"number\", \"null\"] },\n    \"best_altruistic_cost\":  { \"type\": [\"number\", \"null\"] },\n    \"best_buy_multipliers\":  { \"type\": [\"string\", \"null\"] },\n    \"best_sell_multipliers\": { \"type\": [\"string\", \"null\"] },\n    \"best_mode\":             { \"type\": [\"string\", \"null\"] }\n  },\n  \"required\": [\"outcome\", \"reasoning\", \"adjusted_guidance\", \"rerun_count\"]\n}",
+        "autoFix": true
+      },
+      "id": "bd519af6-b77d-4a61-82d0-72a2570c285f",
+      "name": "Structured Output Parser1",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        3408,
+        8864
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "91d74f06-5caf-4872-be27-dc8f9d7d6efa",
+      "name": "Combine Data and State",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        496,
+        8816
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Trips",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "59e5b9e1-8664-483b-8cb0-7ab9c7d0e6a4",
+      "name": "Fetch Trips",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -400,
+        8544
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "day_ahead_plan",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "bus_1_kwh": "={{ $json.bus_1_kwh }}",
+            "bus_2_kwh": "={{ $json.bus_2_kwh }}",
+            "bus_3_kwh": "={{ $json.bus_3_kwh }}",
+            "bus_4_kwh": "={{ $json.bus_4_kwh }}",
+            "bus_5_kwh": "={{ $json.bus_5_kwh }}",
+            "bus_6_kwh": "={{ $json.bus_6_kwh }}",
+            "bus_7_kwh": "={{ $json.bus_7_kwh }}",
+            "bus_8_kwh": "={{ $json.bus_8_kwh }}",
+            "w_buy": "={{ $json.w_buy }}",
+            "w_sell": "={{ $json.w_sell }}",
+            "timestep": "={{ $json.timestep }}",
+            "date": "={{ $now.toFormat('yyyy-MM-dd') }}",
+            "mode": "={{ $('Generate Summary').first().json.mode }}"
+          },
+          "matchingColumns": [
+            "timestep"
+          ],
+          "schema": [
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "mode",
+              "displayName": "mode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "timestep",
+              "displayName": "timestep",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "w_buy",
+              "displayName": "w_buy",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "w_sell",
+              "displayName": "w_sell",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "bus_1_kwh",
+              "displayName": "bus_1_kwh",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "bus_2_kwh",
+              "displayName": "bus_2_kwh",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "bus_3_kwh",
+              "displayName": "bus_3_kwh",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "bus_4_kwh",
+              "displayName": "bus_4_kwh",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "bus_5_kwh",
+              "displayName": "bus_5_kwh",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "bus_6_kwh",
+              "displayName": "bus_6_kwh",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "bus_7_kwh",
+              "displayName": "bus_7_kwh",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "bus_8_kwh",
+              "displayName": "bus_8_kwh",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "8df09564-8d98-470d-94c4-feeb31a16817",
+      "name": "Save day_ahead_plan",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        5120,
+        8448
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json;\n\nfunction toSnakeCase(str) {\n  return String(str)\n    .toLowerCase()\n    .replace(/[()\\/]/g, '')       // remove brackets, slashes\n    .replace(/[^a-z0-9\\s_]/g, '') // remove remaining special chars\n    .trim()\n    .replace(/\\s+/g, '_');\n}\n\nfunction processTable(rows) {\n  if (!rows || rows.length === 0) return [];\n\n  return rows\n    .map(row => {\n      const normalized = {};\n      for (const [key, val] of Object.entries(row)) {\n        if (key === null || key === undefined || key === '') continue;\n        const newKey = toSnakeCase(key);\n        // Convert to number if possible, else keep as-is\n        normalized[newKey] = (val !== null && val !== '' && !isNaN(val)) \n          ? Number(val) \n          : val;\n      }\n      return normalized;\n    })\n    .filter(row =>\n      // Remove rows where all values are null/empty\n      Object.values(row).some(v => v !== null && v !== undefined && v !== '')\n    );\n}\n\nconst output = {\n  buses:              processTable(raw.buses),\n  chargers:           processTable(raw.chargers),\n  trip_time:          processTable(raw.trip_time),\n  prices:             processTable(raw.prices),\n  settings:           processTable(raw.settings),\n};\n\nreturn [{ json: { input: output } }];"
+      },
+      "id": "2b58af4e-379d-4ea7-9213-eecc75292e3f",
+      "name": "Preprocess Inputs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        8640
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const preprocessed = $('Preprocess Inputs').first().json;\nconst llmOutput = $('LLM Decision Agent').first().json;\n\nlet priceGuidance;\nlet rerunCount = 0;\n\ntry {\n  const evalOutput = $('Check Rerun Cap').first().json;\n  if (evalOutput && evalOutput.outcome === 'rerun') {\n    priceGuidance = evalOutput.adjusted_guidance;\n    rerunCount = evalOutput.rerun_count;\n  }\n} catch(e) {}\n\nif (!priceGuidance) {\n  priceGuidance = llmOutput.output?.price_guidance || {\n    buy_multipliers:  [1.10, 1.15, 1.10],\n    sell_multipliers: [0.80, 0.85, 0.80],\n    period_boundaries: [32, 64, 96]\n  };\n}\n\nlet disturbances = [];\ntry {\n  disturbances = $('Build LLM Context').first().json.context.disturbances.active || [];\n} catch(e) {}\n\nreturn [{\n  json: {\n    input: preprocessed.input,\n    price_guidance: priceGuidance,\n    disturbances: disturbances,\n    rerun_count: rerunCount,\n    max_iter: 1\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1536,
+        8816
+      ],
+      "id": "859c9c9a-5015-4e15-b655-692a9763bd1b",
+      "name": "Prepare Optimization Request"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Buses",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "6258364d-f325-4645-90c7-be5ca8a4a39a",
+      "name": "Fetch Buses",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -400,
+        8352
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:5002/optimize",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "ngrok-skip-browser-warning",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($('Prepare Optimization Request').first().json) }}",
+        "options": {
+          "timeout": 600000
+        }
+      },
+      "id": "00d03f80-28dc-48a2-bff2-2619f161e580",
+      "name": "Start Optimization Job",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1760,
+        8640
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "9152af98-a7b1-4ef6-a9b6-a78c97bc61a9",
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1984,
+        8640
+      ],
+      "webhookId": "ea08d54a-29c4-4645-87cd-450ae90e9b19"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "complete",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "d6013cea-69bc-486e-9bb3-f74ab0abd86d",
+      "name": "Is Job Complete",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2432,
+        8640
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = $('Poll Job Result').first().json;\n\nlet rerun_count = 0;\ntry {\n  rerun_count = $('Check Rerun Cap').first().json.rerun_count ?? 0;\n} catch(e) {}\n\nreturn [{\n  json: {\n    status:                  result.status,\n    is_mock:                 result.is_mock,\n    mock_reason:             result.mock_reason ?? null,\n    // Price settings\n    buy_multipliers:         result.buy_multipliers,\n    sell_multipliers:        result.sell_multipliers,\n    period_boundaries:       result.period_boundaries,\n    avg_grid_price:          result.avg_grid_price,\n    avg_buy_price:           result.avg_buy_price,\n    avg_sell_price:          result.avg_sell_price,\n    price_guidance_used:     result.price_guidance_used,\n    // Economic outcomes\n    pto_daily_cost:          result.pto_daily_cost,\n    aggregator_revenue:      result.aggregator_revenue,\n    aggregator_buy_margin:   result.aggregator_buy_margin,\n    aggregator_sell_margin:  result.aggregator_sell_margin,\n    total_buy_cost:          result.total_buy_cost,\n    total_sell_revenue:      result.total_sell_revenue,\n    total_degradation:       result.total_degradation ?? null,\n    total_kwh_sold:          result.total_kwh_sold,\n    total_kwh_bought:        result.total_kwh_bought,\n    // Time series\n    w_buy:                   result.w_buy,\n    w_sell:                  result.w_sell,\n    energy:                  result.energy,\n    // Pass-through\n    rerun_count:             rerun_count,\n    disturbances_applied:    [],\n  }\n}];"
+      },
+      "id": "f88da9ba-e648-4265-b34b-2da7cfbb060f",
+      "name": "Extract Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2656,
+        8640
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=═══════════════════════════════════════\nOPTIMIZATION RESULT\n═══════════════════════════════════════\nPTO daily cost (€):           {{ $('Update Best State').first().json.pto_daily_cost }}\nAggregator total revenue (€): {{ $('Update Best State').first().json.aggregator_revenue }}\n  - Charging margin (€):      {{ $('Update Best State').first().json.aggregator_buy_margin }}\n  - V2G margin (€):           {{ $('Update Best State').first().json.aggregator_sell_margin }}\nTotal kWh bought by PTO:      {{ $('Update Best State').first().json.total_kwh_bought }}\nTotal kWh sold via V2G:       {{ $('Update Best State').first().json.total_kwh_sold }}\nIs mock (infeasible):         {{ $('Update Best State').first().json.is_mock }}\nIs new best result:           {{ $('Update Best State').first().json.is_new_best }}\n\n═══════════════════════════════════════\nPRICE SETTINGS USED THIS RUN\n═══════════════════════════════════════\nMode:                  {{ $('Update Best State').first().json.mode }}\nBuy multipliers:       {{ JSON.stringify($('Update Best State').first().json.buy_multipliers) }}\nSell multipliers:      {{ JSON.stringify($('Update Best State').first().json.sell_multipliers) }}\nAvg buy price (€/kWh): {{ $('Update Best State').first().json.avg_buy_price }}\nAvg sell price (€/kWh):{{ $('Update Best State').first().json.avg_sell_price }}\nAvg grid price (€/kWh):{{ $('Update Best State').first().json.avg_grid_price }}\nPer-timestep grid prices: {{ JSON.stringify($('Build LLM Context').first().json.context.spot_prices) }}\nRerun count:           {{ $('Update Best State').first().json.rerun_count ?? 0 }}\nMax reruns allowed:    3\n\n═══════════════════════════════════════\nBEST KNOWN SOLUTIONS\n═══════════════════════════════════════\nBest selfish revenue (€):     {{ $('Update Best State').first().json.best_selfish_revenue ?? 'null' }}\nBest altruistic PTO cost (€): {{ $('Update Best State').first().json.best_altruistic_cost ?? 'null' }}\nBest buy multipliers:         {{ JSON.stringify($('Update Best State').first().json.best_buy_multipliers) ?? 'null' }}\nBest sell multipliers:        {{ JSON.stringify($('Update Best State').first().json.best_sell_multipliers) ?? 'null' }}\n\n═══════════════════════════════════════\nRESPONSE FORMAT\n═══════════════════════════════════════\nJSON only, no text outside the JSON:\n{\n  \"outcome\": \"accept\" or \"rerun\",\n  \"reasoning\": \"one sentence: mode, which rule applied (Rule X), current rerun_count, what changed vs best, which multipliers returned and why\",\n  \"adjusted_guidance\": {\n    \"buy_multipliers\":  [48 numbers],\n    \"sell_multipliers\": [48 numbers],\n    \"mode\": \"{{ $('Update Best State').first().json.mode }}\"\n  },\n  \"rerun_count\": {{ $('Update Best State').first().json.rerun_count ?? 0 }},\n  \"best_selfish_revenue\":  {{ $('Update Best State').first().json.best_selfish_revenue ?? 'null' }},\n  \"best_altruistic_cost\":  {{ $('Update Best State').first().json.best_altruistic_cost ?? 'null' }},\n  \"best_buy_multipliers\":  {{ JSON.stringify($('Update Best State').first().json.best_buy_multipliers) ?? 'null' }},\n  \"best_sell_multipliers\": {{ JSON.stringify($('Update Best State').first().json.best_sell_multipliers) ?? 'null' }},\n  \"best_mode\":             \"{{ $('Update Best State').first().json.best_mode ?? 'null' }}\"\n}\nAlways populate adjusted_guidance even when accepting.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Simply accept the results"
+        }
+      },
+      "id": "f0944bfe-6373-4d33-ae46-e704852a25a5",
+      "name": "Evaluate & Adapt",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        3328,
+        8640
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = $('Extract Result').first().json;\n\nlet mode = 'altruistic';\ntry {\n  mode = $('Workflow Config').first().json.mode || 'altruistic';\n} catch(e) {\n  try {\n    mode = $('Build LLM Context').first().json.context.mode || 'altruistic';\n  } catch(e2) { mode = 'altruistic'; }\n}\n\n// Selfish:    maximize aggregator_revenue\n// Altruistic: minimize pto_daily_cost (negate so higher = better for comparison)\nconst aggregator_profit = mode === 'selfish'\n  ? (result.aggregator_revenue ?? 0)\n  : -(result.pto_daily_cost ?? 0);\n\nreturn [{\n  json: {\n    ...result,\n    aggregator_profit: aggregator_profit,\n    mode: mode,\n  }\n}];"
+      },
+      "id": "bf912d34-e8bf-4257-8299-3d1b934112c2",
+      "name": "Compute Metrics",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2880,
+        8640
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "let metrics = {};\ntry { metrics = $('Compute Metrics').first().json; } catch(e) {\n  try { metrics = $('Extract Result').first().json; } catch(e2) {}\n}\n\n// Load best from previous loop iteration via Check Rerun Cap\nlet prev = {};\ntry { prev = $('Check Rerun Cap').first().json; } catch(e) {}\n\nconst current_mode = metrics.mode || 'altruistic';\n\n// ── Rerun count — passed through from Check Rerun Cap ────────────────────────\nconst rerun_count = prev.rerun_count ?? 0;\n\n// ── Best known state ──────────────────────────────────────────────────────────\nconst current_best_selfish    = parseFloat(prev.best_selfish_revenue) || -Infinity;\nconst current_best_altruistic = parseFloat(prev.best_altruistic_cost) ||  Infinity;\n\nlet best_selfish_revenue  = isFinite(current_best_selfish)    ? current_best_selfish    : -Infinity;\nlet best_altruistic_cost  = isFinite(current_best_altruistic) ? current_best_altruistic :  Infinity;\nlet best_buy_mults        = prev.best_buy_multipliers  ?? null;\nlet best_sell_mults       = prev.best_sell_multipliers ?? null;\nlet best_mode             = prev.best_mode             ?? current_mode;\nlet is_new_best           = false;\n\n// ── Update best if improved ───────────────────────────────────────────────────\nif (!metrics.is_mock) {\n  if (current_mode === 'selfish' &&\n      metrics.aggregator_revenue !== null &&\n      metrics.aggregator_revenue !== undefined &&\n      isFinite(parseFloat(metrics.aggregator_revenue)) &&\n      parseFloat(metrics.aggregator_revenue) > best_selfish_revenue) {\n    best_selfish_revenue = parseFloat(metrics.aggregator_revenue);\n    best_buy_mults       = JSON.stringify(metrics.buy_multipliers  || Array(48).fill(1.20));\n    best_sell_mults      = JSON.stringify(metrics.sell_multipliers || Array(48).fill(0.55));\n    best_mode            = 'selfish';\n    is_new_best          = true;\n  }\n  if (current_mode === 'altruistic' &&\n      metrics.pto_daily_cost !== null &&\n      metrics.pto_daily_cost !== undefined &&\n      isFinite(parseFloat(metrics.pto_daily_cost)) &&\n      parseFloat(metrics.pto_daily_cost) < best_altruistic_cost) {\n    best_altruistic_cost = parseFloat(metrics.pto_daily_cost);\n    best_buy_mults       = JSON.stringify(metrics.buy_multipliers  || Array(48).fill(1.03));\n    best_sell_mults      = JSON.stringify(metrics.sell_multipliers || Array(48).fill(0.90));\n    best_mode            = 'altruistic';\n    is_new_best          = true;\n  }\n}\n\nreturn [{\n  json: {\n    ...metrics,\n    best_selfish_revenue:  best_selfish_revenue === -Infinity ? null : best_selfish_revenue,\n    best_altruistic_cost:  best_altruistic_cost ===  Infinity ? null : best_altruistic_cost,\n    best_buy_multipliers:  best_buy_mults,\n    best_sell_multipliers: best_sell_mults,\n    best_mode:             best_mode,\n    is_new_best:           is_new_best,\n    rerun_count:           rerun_count,\n  }\n}];"
+      },
+      "id": "928cbe5a-34bf-4a39-9c2a-f062ecb1b7e4",
+      "name": "Update Best State",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3104,
+        8640
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output.outcome }}",
+                    "rightValue": "accept",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "42b1859b-3050-438b-84e6-6c54d1532010"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Accept"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output.outcome }}",
+                    "rightValue": "rerun",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "233857b8-652c-4060-bbf4-7c82006872df"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Rerun"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "02268b44-485e-4ba1-99d5-4eac5dfd9e45",
+      "name": "Route by Outcome",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        4000,
+        8624
+      ],
+      "retryOnFail": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const decision = $('LLM Decision Agent').first().json || {};\nconst action = decision.action || 'unknown';\nconst reasoning = decision.reasoning || 'No reasoning provided';\nconst confidence = decision.confidence || 0;\nconst price_guidance = decision.price_guidance || {};\n\nlet upper_bound = null, lower_bound = null, is_mock = null;\nlet pho_plus = null, pho_minus = null;\nlet energy = null, w_buy = null, w_sell = null;\nlet pto_daily_cost = null, aggregator_revenue = null;\nlet buy_multipliers = null, sell_multipliers = null, avg_grid_price = null;\n\ntry {\n  const result = $('Extract Result').first()?.json || {};\n  upper_bound       = result.upper_bound       ?? null;\n  lower_bound       = result.lower_bound       ?? null;\n  is_mock           = result.is_mock           ?? null;\n  pho_plus          = result.pho_plus?.[0]     ?? null;\n  pho_minus         = result.pho_minus?.[0]    ?? null;\n  energy            = result.energy            ?? null;\n  w_buy             = result.w_buy             ?? null;\n  w_sell            = result.w_sell            ?? null;\n  pto_daily_cost    = result.pto_daily_cost    ?? null;\n  aggregator_revenue= result.aggregator_revenue?? null;\n  buy_multipliers   = result.buy_multipliers   ?? null;\n  sell_multipliers  = result.sell_multipliers  ?? null;\n  avg_grid_price    = result.avg_grid_price    ?? null;\n} catch(e) {}\n\nconst context = $('Build LLM Context').first().json?.context || {};\nconst mode                   = context.mode                          ?? null;\nconst disturbances_count     = context.disturbances?.count          ?? 0;\nconst has_severe_disturbance = context.disturbances?.has_severe     ?? false;\nconst price_avg              = context.price_summary?.average       ?? null;\nconst price_change_pct       = context.price_summary?.change_pct   ?? null;\nconst hours_since_last_opt   = context.hours_since_last_optimization?? null;\n\n// --- Day-ahead summary row (single row, overwrites daily) ---\nconst today = new Date().toISOString().slice(0, 10);\nconst day_ahead_summary = {\n  date:               today,\n  mode,\n  pto_daily_cost,\n  aggregator_revenue,\n  buy_multipliers:    JSON.stringify(buy_multipliers),\n  sell_multipliers:   JSON.stringify(sell_multipliers),\n  avg_grid_price\n};\n\n// --- Day-ahead plan rows (48 rows, one per timestep) ---\nconst day_ahead_plan = [];\nfor (let t = 0; t < 48; t++) {\n  const row = {\n    timestep: t,\n    w_buy:    w_buy?.[t]  ?? null,\n    w_sell:   w_sell?.[t] ?? null,\n  };\n  for (let b = 0; b < 8; b++) {\n    row[`bus_${b + 1}_kwh`] = energy?.[b]?.[t] ?? null;\n  }\n  day_ahead_plan.push(row);\n}\n\n// --- Existing summary string ---\nlet summary = `Decision: ${action.toUpperCase()}\\nReasoning: ${reasoning}\\nConfidence: ${(confidence * 100).toFixed(0)}%\\n`;\nsummary += `\\nPrice Guidance:\\n- X_avg: ${price_guidance.X_avg}\\n- Mi_avg: ${price_guidance.Mi_avg}\\n- Delta: ${price_guidance.delta}`;\nif (action === 'optimize') {\n  summary += `\\nOptimization Results:\\n- Upper Bound: ${upper_bound}\\n- Lower Bound: ${lower_bound}\\n- Is Mock: ${is_mock}`;\n}\n\nreturn [{ json: {\n  summary,\n  action,\n  reasoning,\n  confidence,\n  mode,\n  disturbances_count,\n  has_severe_disturbance,\n  price_avg,\n  price_change_pct,\n  hours_since_last_opt,\n  price_guidance_X_avg:  price_guidance.X_avg  ?? null,\n  price_guidance_Mi_avg: price_guidance.Mi_avg ?? null,\n  price_guidance_delta:  price_guidance.delta  ?? null,\n  upper_bound,\n  lower_bound,\n  is_mock,\n  pho_plus,\n  pho_minus,\n  day_ahead_summary,   // single object → Sheet 1\n  day_ahead_plan,      // array of 48 → Sheet 2\n  timestamp: new Date().toISOString()\n} }];"
+      },
+      "id": "3dbd741a-2dd2-410d-9e4c-41436a4608c7",
+      "name": "Generate Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4672,
+        8640
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "day_ahead_summary",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "date": "={{ $json.day_ahead_summary.date }}",
+            "mode": "={{ $json.day_ahead_summary.mode }}",
+            "pto_daily_cost": "={{ $json.day_ahead_summary.pto_daily_cost }}",
+            "aggregator_revenue": "={{ $json.day_ahead_summary.aggregator_revenue }}",
+            "buy_multipliers": "={{ $json.day_ahead_summary.buy_multipliers }}",
+            "sell_multipliers": "={{ $json.day_ahead_summary.sell_multipliers }}",
+            "avg_grid_price": "={{ $json.day_ahead_summary.avg_grid_price }}",
+            "run_timestamp": "={{ $now.toISO() }}",
+            "prompt_paradign": "={{ $('Workflow Config').first().json.prompt_paradigm }}"
+          },
+          "matchingColumns": [
+            "date"
+          ],
+          "schema": [
+            {
+              "id": "run_timestamp",
+              "displayName": "run_timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "mode",
+              "displayName": "mode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "pto_daily_cost",
+              "displayName": "pto_daily_cost",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "aggregator_revenue",
+              "displayName": "aggregator_revenue",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "buy_multipliers",
+              "displayName": "buy_multipliers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sell_multipliers",
+              "displayName": "sell_multipliers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "avg_grid_price",
+              "displayName": "avg_grid_price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "prompt_paradign",
+              "displayName": "prompt_paradign",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "bac12ec2-1df6-4057-92d9-9e195ee38788",
+      "name": "Save day_ahead summary",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4896,
+        8432
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=http://127.0.0.1:5002/result/{{ $('Start Optimization Job').first().json.job_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "ngrok-skip-browser-warning",
+              "value": "true"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "411281e4-3037-4843-871f-d5b7ac4a0e87",
+      "name": "Poll Job Result",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2208,
+        8560
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Chargers",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "9be6aaab-233d-4c8a-a8a7-1173ab6538ad",
+      "name": "Fetch Chargers",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -400,
+        8160
+      ]
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "c5f44743-7d52-4fb7-94d8-d1c662ddf929",
+      "typeVersion": 1.1,
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -624,
+        8800
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Token_Usage",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "date": "={{ $now.toFormat('yyyy-MM-dd') }}",
+            "mode": "={{ $('Workflow Config').first().json.mode }}",
+            "promp_paradigm": "={{ $('Workflow Config').first().json.prompt_paradigm }}",
+            "pricing_agent_input_token": "=",
+            "pricing_agent_output_tokens": "={{ $('LLM Decision Agent').all().reduce((sum, i) => sum + (i.json.tokenUsage?.completionTokens ?? 0), 0) }}",
+            "pricing_agent_total_tokens": "={{ $('Code after pricing').first().json.captured_total_tokens }}",
+            "evaluator_input_tokens": "={{ $('Evaluate & Adapt').all().reduce((sum, i) => sum + (i.json.tokenUsage?.promptTokens ?? 0), 0) }}",
+            "evaluator_output_tokens": "={{ $('Evaluate & Adapt').all().reduce((sum, i) => sum + (i.json.tokenUsage?.completionTokens ?? 0), 0) }}",
+            "evaluator_total_tokens": "={{ $('Code after Evaluator').first().json.captured_total_tokens }}",
+            "total_tokens": "={{ $('LLM Decision Agent').all().reduce((sum, i) => sum + (i.json.tokenUsage?.totalTokens ?? 0), 0) + $('Evaluate & Adapt').all().reduce((sum, i) => sum + (i.json.tokenUsage?.totalTokens ?? 0), 0) }}"
+          },
+          "matchingColumns": [
+            "timestep"
+          ],
+          "schema": [
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "mode",
+              "displayName": "mode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "promp_paradigm",
+              "displayName": "promp_paradigm",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "pricing_agent_input_token",
+              "displayName": "pricing_agent_input_token",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "pricing_agent_output_tokens",
+              "displayName": "pricing_agent_output_tokens",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "pricing_agent_total_tokens",
+              "displayName": "pricing_agent_total_tokens",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "evaluator_input_tokens",
+              "displayName": "evaluator_input_tokens",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "evaluator_output_tokens",
+              "displayName": "evaluator_output_tokens",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "evaluator_total_tokens",
+              "displayName": "evaluator_total_tokens",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "total_tokens",
+              "displayName": "total_tokens",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "d1bc39aa-e005-40f1-878e-8756d66491ad",
+      "name": "Save tokens",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4896,
+        8816
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "aca18d11-727e-4b44-81e9-f9104161c031",
+              "leftValue": "={{ $json.outcome  }}",
+              "rightValue": "accept",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        4448,
+        8560
+      ],
+      "id": "e681c0da-a2dc-4714-abbf-27a11959f0e3",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "const agentOutput = $input.first().json;\n\n// n8n stores LLM usage in different places depending on version\nconst usage = agentOutput.tokenUsage \n  || agentOutput.tokenUsageEstimate \n  || agentOutput.llmOutput?.tokenUsage\n  || agentOutput.llmOutput?.estimatedTokens\n  || {};\n\nreturn [{\n  json: {\n    ...agentOutput,\n    captured_prompt_tokens: usage.promptTokens ?? usage.prompt_tokens ?? 0,\n    captured_completion_tokens: usage.completionTokens ?? usage.completion_tokens ?? 0,\n    captured_total_tokens: usage.totalTokens ?? usage.total_tokens ?? 0,\n  }\n}];"
+      },
+      "id": "a774fa73-f86d-4363-a470-d730f8a453f8",
+      "name": "Code after Evaluator",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3776,
+        8640
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const agentOutput = $input.first().json;\n\n// n8n stores LLM usage in different places depending on version\nconst usage = agentOutput.tokenUsage \n  || agentOutput.tokenUsageEstimate \n  || agentOutput.llmOutput?.tokenUsage\n  || agentOutput.llmOutput?.estimatedTokens\n  || {};\n\nreturn [{\n  json: {\n    ...agentOutput,\n    captured_prompt_tokens: usage.promptTokens ?? usage.prompt_tokens ?? 0,\n    captured_completion_tokens: usage.completionTokens ?? usage.completion_tokens ?? 0,\n    captured_total_tokens: usage.totalTokens ?? usage.total_tokens ?? 0,\n  }\n}];"
+      },
+      "id": "ec688a77-13df-4776-b2f5-63d430d3a12f",
+      "name": "Code after pricing",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1312,
+        8816
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Fetch Buses": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Combine Inputs": {
+      "main": [
+        [
+          {
+            "node": "Preprocess Inputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Chargers": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Prices": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Combine Inputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preprocess Inputs": {
+      "main": [
+        [
+          {
+            "node": "Combine Data and State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Data and State": {
+      "main": [
+        [
+          {
+            "node": "Build LLM Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build LLM Context": {
+      "main": [
+        [
+          {
+            "node": "LLM Decision Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "LLM Decision Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM Decision Agent": {
+      "main": [
+        [
+          {
+            "node": "Code after pricing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Optimization Job": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Poll Job Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Poll Job Result": {
+      "main": [
+        [
+          {
+            "node": "Is Job Complete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Job Complete": {
+      "main": [
+        [
+          {
+            "node": "Extract Result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Result": {
+      "main": [
+        [
+          {
+            "node": "Compute Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "LLM Decision Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Evaluate & Adapt",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Structured Output Parser1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Optimization Request": {
+      "main": [
+        [
+          {
+            "node": "Start Optimization Job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Config": {
+      "main": [
+        [
+          {
+            "node": "Combine Data and State",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Fetch Disturbances": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Generate Summary": {
+      "main": [
+        [
+          {
+            "node": "Save day_ahead summary",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Evaluate & Adapt",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Rerun Cap": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate & Adapt": {
+      "main": [
+        [
+          {
+            "node": "Code after Evaluator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Outcome": {
+      "main": [
+        [
+          {
+            "node": "Generate Summary",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Rerun Cap",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compute Metrics": {
+      "main": [
+        [
+          {
+            "node": "Update Best State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Best State": {
+      "main": [
+        [
+          {
+            "node": "Evaluate & Adapt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Trips": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Fetch Setting": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 5
+          }
+        ]
+      ]
+    },
+    "Save day_ahead summary": {
+      "main": [
+        []
+      ]
+    },
+    "Save day_ahead_plan": {
+      "main": [
+        []
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Save day_ahead_plan",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Save realtime_plan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Fetch Buses",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Chargers",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Trips",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Prices",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Disturbances",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Setting",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Workflow Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Generate Summary",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Optimization Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code after pricing": {
+      "main": [
+        [
+          {
+            "node": "Prepare Optimization Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code after Evaluator": {
+      "main": [
+        [
+          {
+            "node": "Route by Outcome",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}
