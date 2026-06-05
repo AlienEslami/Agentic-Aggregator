@@ -222,9 +222,9 @@ def summarize_solution(sc: dict, model) -> dict:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description='Run dumb charging with direct grid tariffs and no V2G.')
-    parser.add_argument('--input', default='Files/Inputs.xlsx', help='Path to the input workbook.')
+    parser.add_argument('--input', default='data/inputs/case_study_inputs.xlsx', help='Path to the input workbook.')
     parser.add_argument('--spot-prices-file', default='', help='Optional workbook containing spot prices.')
-    parser.add_argument('--output', default='Files/dumb_charging_result.json', help='Path to the JSON result file.')
+    parser.add_argument('--output', default='results/dumb_charging_result.json', help='Path to the JSON result file.')
     parser.add_argument('--summary-workbook', default='', help='Workbook where day_ahead_summary rows should be appended. Defaults to --input.')
     parser.add_argument('--reasoning-source', default='', help='Optional source label for the agent reasoning row.')
     parser.add_argument('--reasoning-text', default='', help='Optional explicit reasoning text to store in the agent_reasoning sheet.')

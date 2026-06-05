@@ -18,37 +18,31 @@ Electric buses are becoming flexible energy assets, but their grid value depends
 ├── scripts/
 │   └── reproduce_paper_results.py      # One-command deterministic reproduction runner
 ├── scenario_summary.py                 # Summary and reasoning-sheet metrics
-├── benchmark_no_v2g_comparison.ipynb   # Notebook for baseline comparison
 ├── requirements.txt                    # Python dependencies
+├── data/
+│   ├── inputs/                          # Canonical case-study inputs
+│   └── intraday_prices/                 # RT price profiles by timestep
 ├── docs/
 │   ├── PAPER_ABSTRACT.md
 │   ├── PAPER_RESULTS.md
+│   ├── REPO_AUDIT.md
 │   └── REPRODUCIBILITY.md
 ├── paper_outputs/                     # Paper tables, RT outputs, prompt artifacts
 ├── workflows/
 │   ├── day_ahead_workflow_prompt_analysis_baseline.json
 │   ├── real_time_final.json
 │   └── README.md
-└── Files/
-    ├── Inputs.xlsx                     # Canonical input workbook
-    ├── SpotPrices.xlsx                 # Optional external spot prices
-    ├── Tariffs.xlsx                    # Optional external buy/sell tariffs
-    ├── IntradayPrices/                 # Intraday price scenarios by timestep
-    ├── day_ahead_benchmark/            # Rolling benchmark workbooks
-    ├── day_ahead_local_comparison.xlsx # Summary workbook
-    ├── dumb_charging_result.json
-    └── no_v2g_optimization_result.json
 ```
 
 ## File Usage
 
-`Files/Inputs.xlsx` is the main replication workbook. Its sheets define global settings, buses, chargers, trips, prices, tariffs, and real-time fleet state. Use this file when reproducing the paper scenarios or adapting the workflow to a new fleet.
+`data/inputs/case_study_inputs.xlsx` is the main replication workbook. Its sheets define global settings, buses, chargers, trips, prices, tariffs, and real-time fleet state. Use this file when reproducing the paper scenarios or adapting the workflow to a new fleet.
 
-`Files/SpotPrices.xlsx` and `Files/Tariffs.xlsx` decouple wholesale grid prices from aggregator buy/sell tariffs. Passing these files to the scripts makes the price inputs explicit and easier to audit.
+`data/inputs/spot_prices.xlsx` and `data/inputs/aggregator_tariffs.xlsx` decouple wholesale grid prices from aggregator buy/sell tariffs. Passing these files to the scripts makes the price inputs explicit and easier to audit.
 
-`Files/day_ahead_benchmark/` contains one workbook per timestep. Each workbook stores the day-ahead state translated into a real-time input for that timestep.
+`data/intraday_prices/` contains timestep-specific intraday price files used by the real-time workflow.
 
-`Files/IntradayPrices/` contains timestep-specific intraday price files used by the real-time workflow.
+`results/` is ignored by git and is used for regenerated benchmark files, JSON results, and local reproduction summaries.
 
 `workflows/` contains n8n exports for the agentic orchestration layer. These files preserve the workflow structure and prompts, but users must remap credentials, Google document IDs, and HTTP endpoint URLs before running them.
 
@@ -80,14 +74,14 @@ The LLM-driven S3/S4 day-ahead cases, real-time disturbances, and prompt-sensiti
 
 ```bash
 python generate_benchmark_files.py \
-  --input Files/Inputs.xlsx \
-  --spot-prices-file Files/SpotPrices.xlsx \
-  --tariffs-file Files/Tariffs.xlsx \
-  --output-dir Files/day_ahead_benchmark \
-  --summary-workbook Files/day_ahead_local_comparison.xlsx
+  --input data/inputs/case_study_inputs.xlsx \
+  --spot-prices-file data/inputs/spot_prices.xlsx \
+  --tariffs-file data/inputs/aggregator_tariffs.xlsx \
+  --output-dir results/day_ahead_benchmark \
+  --summary-workbook results/day_ahead_local_comparison.xlsx
 ```
 
-This appends summary rows to `Files/day_ahead_local_comparison.xlsx` and regenerates the rolling benchmark workbooks.
+This appends summary rows to `results/day_ahead_local_comparison.xlsx` and regenerates the rolling benchmark workbooks.
 
 ## Reproducing Baseline Comparisons
 
@@ -95,20 +89,20 @@ Optimized charging without V2G:
 
 ```bash
 python run_no_v2g_optimization.py \
-  --input Files/Inputs.xlsx \
-  --spot-prices-file Files/SpotPrices.xlsx \
-  --output Files/no_v2g_optimization_result.json \
-  --summary-workbook Files/day_ahead_local_comparison.xlsx
+  --input data/inputs/case_study_inputs.xlsx \
+  --spot-prices-file data/inputs/spot_prices.xlsx \
+  --output results/no_v2g_optimization_result.json \
+  --summary-workbook results/day_ahead_local_comparison.xlsx
 ```
 
 Dumb-charging benchmark:
 
 ```bash
 python run_dumb_charging.py \
-  --input Files/Inputs.xlsx \
-  --spot-prices-file Files/SpotPrices.xlsx \
-  --output Files/dumb_charging_result.json \
-  --summary-workbook Files/day_ahead_local_comparison.xlsx
+  --input data/inputs/case_study_inputs.xlsx \
+  --spot-prices-file data/inputs/spot_prices.xlsx \
+  --output results/dumb_charging_result.json \
+  --summary-workbook results/day_ahead_local_comparison.xlsx
 ```
 
 ## Running the APIs
@@ -140,7 +134,7 @@ After import, update:
 - Google document and folder IDs
 - OpenAI credentials
 - HTTP request URLs for the local or deployed API
-- Sheet names if your replicated data source differs from `Files/Inputs.xlsx`
+- Sheet names if your replicated data source differs from `data/inputs/case_study_inputs.xlsx`
 
 See `workflows/README.md` and `docs/REPRODUCIBILITY.md` for details.
 

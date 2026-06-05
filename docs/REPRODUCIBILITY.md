@@ -18,7 +18,7 @@ The optimization model is a MILP. The code now tries solvers in this order: Guro
 
 ## 2. Main Inputs
 
-Use `Files/Inputs.xlsx` as the canonical workbook. It contains:
+Use `data/inputs/case_study_inputs.xlsx` as the canonical workbook. It contains:
 
 - `Settings`: timestep length, optimization mode, V2G flag.
 - `Buses`: bus IDs, battery capacities, initial state of charge.
@@ -28,7 +28,7 @@ Use `Files/Inputs.xlsx` as the canonical workbook. It contains:
 - `Tariffs`: optional buy/sell tariffs used by the aggregator.
 - `Realtime state`: observed bus states used by real-time re-optimization.
 
-Optional external price inputs are stored in `Files/SpotPrices.xlsx`, `Files/Tariffs.xlsx`, and `Files/IntradayPrices/`.
+Optional external price inputs are stored in `data/inputs/spot_prices.xlsx`, `data/inputs/aggregator_tariffs.xlsx`, and `data/intraday_prices/`.
 
 The paper output artifacts are stored in `paper_outputs/`, with cleaned filenames that follow the paper structure. See `paper_outputs/README.md` and `paper_outputs/manifest.json`.
 
@@ -40,25 +40,25 @@ For the deterministic Python-side artifacts, run:
 python scripts/reproduce_paper_results.py
 ```
 
-This writes fresh artifacts to `results/reproduction/` and leaves the checked-in `Files/` artifacts unchanged. The manifest at `results/reproduction/manifest.json` records the detected solver, input paths, output paths, and key baseline metrics.
+This writes fresh artifacts to `results/reproduction/` and leaves the checked-in `data/` artifacts unchanged. The manifest at `results/reproduction/manifest.json` records the detected solver, input paths, output paths, and key baseline metrics.
 
-To regenerate the checked-in benchmark folder directly, use the lower-level command below.
+To regenerate the benchmark workbooks directly, use the lower-level command below.
 
 Generate the day-ahead optimization benchmark and rolling real-time input workbooks:
 
 ```bash
 python generate_benchmark_files.py \
-  --input Files/Inputs.xlsx \
-  --spot-prices-file Files/SpotPrices.xlsx \
-  --tariffs-file Files/Tariffs.xlsx \
-  --output-dir Files/day_ahead_benchmark \
-  --summary-workbook Files/day_ahead_local_comparison.xlsx
+  --input data/inputs/case_study_inputs.xlsx \
+  --spot-prices-file data/inputs/spot_prices.xlsx \
+  --tariffs-file data/inputs/aggregator_tariffs.xlsx \
+  --output-dir results/day_ahead_benchmark \
+  --summary-workbook results/day_ahead_local_comparison.xlsx
 ```
 
 Outputs:
 
-- `Files/day_ahead_benchmark/benchmark_summary.txt`
-- `Files/day_ahead_benchmark/benchmark_timestep_01.xlsx` through `benchmark_timestep_48.xlsx`
+- `results/day_ahead_benchmark/benchmark_summary.txt`
+- `results/day_ahead_benchmark/benchmark_timestep_01.xlsx` through `benchmark_timestep_48.xlsx`
 - appended rows in `day_ahead_summary` and `agent_reasoning` sheets of the summary workbook
 
 ## 4. Baseline Comparisons
@@ -67,20 +67,20 @@ Run the no-V2G optimizer:
 
 ```bash
 python run_no_v2g_optimization.py \
-  --input Files/Inputs.xlsx \
-  --spot-prices-file Files/SpotPrices.xlsx \
-  --output Files/no_v2g_optimization_result.json \
-  --summary-workbook Files/day_ahead_local_comparison.xlsx
+  --input data/inputs/case_study_inputs.xlsx \
+  --spot-prices-file data/inputs/spot_prices.xlsx \
+  --output results/no_v2g_optimization_result.json \
+  --summary-workbook results/day_ahead_local_comparison.xlsx
 ```
 
 Run the dumb-charging benchmark:
 
 ```bash
 python run_dumb_charging.py \
-  --input Files/Inputs.xlsx \
-  --spot-prices-file Files/SpotPrices.xlsx \
-  --output Files/dumb_charging_result.json \
-  --summary-workbook Files/day_ahead_local_comparison.xlsx
+  --input data/inputs/case_study_inputs.xlsx \
+  --spot-prices-file data/inputs/spot_prices.xlsx \
+  --output results/dumb_charging_result.json \
+  --summary-workbook results/day_ahead_local_comparison.xlsx
 ```
 
 ## 5. API and Agentic Workflows

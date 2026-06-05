@@ -268,8 +268,8 @@ def generate_benchmark_files(template_path: Path, output_dir: Path,
 
 def main() -> None:
     parser = argparse.ArgumentParser(description='Generate rolling benchmark Excel files from the day-ahead optimization.')
-    parser.add_argument('--input', default='Files/Inputs.xlsx', help='Path to the cleaned input workbook template.')
-    parser.add_argument('--output-dir', default='Files/day_ahead_benchmark', help='Folder where the benchmark workbooks will be written.')
+    parser.add_argument('--input', default='data/inputs/case_study_inputs.xlsx', help='Path to the cleaned input workbook template.')
+    parser.add_argument('--output-dir', default='results/day_ahead_benchmark', help='Folder where the benchmark workbooks will be written.')
     parser.add_argument('--spot-prices-file', default='', help="Optional Excel file containing spot prices (sheet 'Spot Prices' or 'Prices').")
     parser.add_argument('--tariffs-file', default='', help="Optional Excel file containing buy/sell tariffs (sheet 'Tariffs' or 'Prices').")
     parser.add_argument('--summary-workbook', default='', help='Workbook where day_ahead_summary rows should be appended. Defaults to --input.')

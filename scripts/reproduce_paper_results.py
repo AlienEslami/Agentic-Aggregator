@@ -89,9 +89,9 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Reproduce the repository's deterministic paper artifacts in a clean output folder."
     )
-    parser.add_argument("--input", default="Files/Inputs.xlsx", help="Canonical input workbook.")
-    parser.add_argument("--spot-prices-file", default="Files/SpotPrices.xlsx", help="External spot-price workbook.")
-    parser.add_argument("--tariffs-file", default="Files/Tariffs.xlsx", help="External aggregator tariff workbook.")
+    parser.add_argument("--input", default="data/inputs/case_study_inputs.xlsx", help="Canonical input workbook.")
+    parser.add_argument("--spot-prices-file", default="data/inputs/spot_prices.xlsx", help="External spot-price workbook.")
+    parser.add_argument("--tariffs-file", default="data/inputs/aggregator_tariffs.xlsx", help="External aggregator tariff workbook.")
     parser.add_argument("--output-dir", default="results/reproduction", help="Folder for generated artifacts.")
     parser.add_argument("--dry-run", action="store_true", help="Print commands without executing them.")
     parser.add_argument(
