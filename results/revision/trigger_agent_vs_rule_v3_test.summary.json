@@ -1,0 +1,362 @@
+{
+  "n_decisions": 96,
+  "n_sequences": 16,
+  "benchmark_split": [
+    "test"
+  ],
+  "bootstrap_repetitions": 100000,
+  "bootstrap_seed": 26062380,
+  "metrics": {
+    "action": {
+      "agent_accuracy": 0.9375,
+      "rule_accuracy": 0.75,
+      "paired_difference": 0.1875,
+      "paired_difference_percentage_points": 18.75,
+      "sequence_cluster_bootstrap_95pct_ci": [
+        0.08333333333333334,
+        0.2916666666666667
+      ],
+      "sequence_cluster_bootstrap_95pct_ci_percentage_points": [
+        8.333333333333334,
+        29.166666666666668
+      ]
+    },
+    "phase": {
+      "agent_accuracy": 0.90625,
+      "rule_accuracy": 0.5833333333333334,
+      "paired_difference": 0.32291666666666663,
+      "paired_difference_percentage_points": 32.291666666666664,
+      "sequence_cluster_bootstrap_95pct_ci": [
+        0.15625,
+        0.5
+      ],
+      "sequence_cluster_bootstrap_95pct_ci_percentage_points": [
+        15.625,
+        50.0
+      ]
+    },
+    "updates": {
+      "agent_accuracy": 0.78125,
+      "rule_accuracy": 0.6666666666666666,
+      "paired_difference": 0.11458333333333337,
+      "paired_difference_percentage_points": 11.458333333333337,
+      "sequence_cluster_bootstrap_95pct_ci": [
+        -0.06250000000000001,
+        0.30208333333333337
+      ],
+      "sequence_cluster_bootstrap_95pct_ci_percentage_points": [
+        -6.250000000000002,
+        30.208333333333336
+      ]
+    },
+    "uncertainty_estimates": {
+      "agent_accuracy": 0.6979166666666666,
+      "rule_accuracy": 0.5833333333333334,
+      "paired_difference": 0.11458333333333326,
+      "paired_difference_percentage_points": 11.458333333333325,
+      "sequence_cluster_bootstrap_95pct_ci": [
+        -0.10416666666666669,
+        0.33333333333333337
+      ],
+      "sequence_cluster_bootstrap_95pct_ci_percentage_points": [
+        -10.416666666666668,
+        33.333333333333336
+      ]
+    },
+    "uncertainty_recommendation": {
+      "agent_accuracy": 0.8958333333333334,
+      "rule_accuracy": 0.75,
+      "paired_difference": 0.14583333333333337,
+      "paired_difference_percentage_points": 14.583333333333337,
+      "sequence_cluster_bootstrap_95pct_ci": [
+        0.05208333333333333,
+        0.25
+      ],
+      "sequence_cluster_bootstrap_95pct_ci_percentage_points": [
+        5.208333333333333,
+        25.0
+      ]
+    }
+  },
+  "action_discordance": {
+    "agent_correct_rule_wrong": 24,
+    "rule_correct_agent_wrong": 6,
+    "discordant_pairs": 30,
+    "two_sided_exact_p_value": 0.001430906355381012
+  },
+  "by_wording_variant": {
+    "clean": {
+      "action": {
+        "agent_accuracy": 1.0,
+        "rule_accuracy": 1.0,
+        "paired_difference": 0.0
+      },
+      "phase": {
+        "agent_accuracy": 1.0,
+        "rule_accuracy": 1.0,
+        "paired_difference": 0.0
+      },
+      "updates": {
+        "agent_accuracy": 0.8333333333333334,
+        "rule_accuracy": 0.9583333333333334,
+        "paired_difference": -0.125
+      },
+      "uncertainty_estimates": {
+        "agent_accuracy": 0.7916666666666666,
+        "rule_accuracy": 1.0,
+        "paired_difference": -0.20833333333333337
+      },
+      "uncertainty_recommendation": {
+        "agent_accuracy": 1.0,
+        "rule_accuracy": 1.0,
+        "paired_difference": 0.0
+      }
+    },
+    "driver_chat": {
+      "action": {
+        "agent_accuracy": 0.9583333333333334,
+        "rule_accuracy": 0.5,
+        "paired_difference": 0.45833333333333337
+      },
+      "phase": {
+        "agent_accuracy": 0.9166666666666666,
+        "rule_accuracy": 0.16666666666666666,
+        "paired_difference": 0.75
+      },
+      "updates": {
+        "agent_accuracy": 0.8333333333333334,
+        "rule_accuracy": 0.375,
+        "paired_difference": 0.45833333333333337
+      },
+      "uncertainty_estimates": {
+        "agent_accuracy": 0.7083333333333334,
+        "rule_accuracy": 0.16666666666666666,
+        "paired_difference": 0.5416666666666667
+      },
+      "uncertainty_recommendation": {
+        "agent_accuracy": 0.9166666666666666,
+        "rule_accuracy": 0.5,
+        "paired_difference": 0.41666666666666663
+      }
+    },
+    "single_message": {
+      "action": {
+        "agent_accuracy": 1.0,
+        "rule_accuracy": 1.0,
+        "paired_difference": 0.0
+      },
+      "phase": {
+        "agent_accuracy": 1.0,
+        "rule_accuracy": 1.0,
+        "paired_difference": 0.0
+      },
+      "updates": {
+        "agent_accuracy": 0.8333333333333334,
+        "rule_accuracy": 0.9583333333333334,
+        "paired_difference": -0.125
+      },
+      "uncertainty_estimates": {
+        "agent_accuracy": 0.7083333333333334,
+        "rule_accuracy": 1.0,
+        "paired_difference": -0.29166666666666663
+      },
+      "uncertainty_recommendation": {
+        "agent_accuracy": 1.0,
+        "rule_accuracy": 1.0,
+        "paired_difference": 0.0
+      }
+    },
+    "uncertain_chat": {
+      "action": {
+        "agent_accuracy": 0.7916666666666666,
+        "rule_accuracy": 0.5,
+        "paired_difference": 0.29166666666666663
+      },
+      "phase": {
+        "agent_accuracy": 0.7083333333333334,
+        "rule_accuracy": 0.16666666666666666,
+        "paired_difference": 0.5416666666666667
+      },
+      "updates": {
+        "agent_accuracy": 0.625,
+        "rule_accuracy": 0.375,
+        "paired_difference": 0.25
+      },
+      "uncertainty_estimates": {
+        "agent_accuracy": 0.5833333333333334,
+        "rule_accuracy": 0.16666666666666666,
+        "paired_difference": 0.41666666666666674
+      },
+      "uncertainty_recommendation": {
+        "agent_accuracy": 0.6666666666666666,
+        "rule_accuracy": 0.5,
+        "paired_difference": 0.16666666666666663
+      }
+    }
+  },
+  "by_uncertainty_case": {
+    "onset": {
+      "action": {
+        "agent_accuracy": 0.75,
+        "rule_accuracy": 1.0,
+        "paired_difference": -0.25
+      },
+      "phase": {
+        "agent_accuracy": 0.75,
+        "rule_accuracy": 1.0,
+        "paired_difference": -0.25
+      },
+      "updates": {
+        "agent_accuracy": 0.625,
+        "rule_accuracy": 0.5,
+        "paired_difference": 0.125
+      },
+      "uncertainty_estimates": {
+        "agent_accuracy": 0.625,
+        "rule_accuracy": 0.5,
+        "paired_difference": 0.125
+      },
+      "uncertainty_recommendation": {
+        "agent_accuracy": 0.75,
+        "rule_accuracy": 1.0,
+        "paired_difference": -0.25
+      }
+    },
+    "persistence": {
+      "action": {
+        "agent_accuracy": 1.0,
+        "rule_accuracy": 0.5,
+        "paired_difference": 0.5
+      },
+      "phase": {
+        "agent_accuracy": 0.75,
+        "rule_accuracy": 0.5,
+        "paired_difference": 0.25
+      },
+      "updates": {
+        "agent_accuracy": 0.625,
+        "rule_accuracy": 0.5,
+        "paired_difference": 0.125
+      },
+      "uncertainty_estimates": {
+        "agent_accuracy": 0.625,
+        "rule_accuracy": 0.5,
+        "paired_difference": 0.125
+      },
+      "uncertainty_recommendation": {
+        "agent_accuracy": 0.8125,
+        "rule_accuracy": 0.5,
+        "paired_difference": 0.3125
+      }
+    },
+    "recovery": {
+      "action": {
+        "agent_accuracy": 1.0,
+        "rule_accuracy": 1.0,
+        "paired_difference": 0.0
+      },
+      "phase": {
+        "agent_accuracy": 1.0,
+        "rule_accuracy": 0.5,
+        "paired_difference": 0.5
+      },
+      "updates": {
+        "agent_accuracy": 0.75,
+        "rule_accuracy": 0.5,
+        "paired_difference": 0.25
+      },
+      "uncertainty_estimates": {
+        "agent_accuracy": 0.3125,
+        "rule_accuracy": 0.5,
+        "paired_difference": -0.1875
+      },
+      "uncertainty_recommendation": {
+        "agent_accuracy": 1.0,
+        "rule_accuracy": 1.0,
+        "paired_difference": 0.0
+      }
+    },
+    "severity_change": {
+      "action": {
+        "agent_accuracy": 0.875,
+        "rule_accuracy": 1.0,
+        "paired_difference": -0.125
+      },
+      "phase": {
+        "agent_accuracy": 0.9375,
+        "rule_accuracy": 0.5,
+        "paired_difference": 0.4375
+      },
+      "updates": {
+        "agent_accuracy": 0.6875,
+        "rule_accuracy": 0.5,
+        "paired_difference": 0.1875
+      },
+      "uncertainty_estimates": {
+        "agent_accuracy": 0.6875,
+        "rule_accuracy": 0.5,
+        "paired_difference": 0.1875
+      },
+      "uncertainty_recommendation": {
+        "agent_accuracy": 0.875,
+        "rule_accuracy": 1.0,
+        "paired_difference": -0.125
+      }
+    },
+    "stable": {
+      "action": {
+        "agent_accuracy": 1.0,
+        "rule_accuracy": 0.5,
+        "paired_difference": 0.5
+      },
+      "phase": {
+        "agent_accuracy": 1.0,
+        "rule_accuracy": 0.5,
+        "paired_difference": 0.5
+      },
+      "updates": {
+        "agent_accuracy": 1.0,
+        "rule_accuracy": 1.0,
+        "paired_difference": 0.0
+      },
+      "uncertainty_estimates": {
+        "agent_accuracy": 1.0,
+        "rule_accuracy": 1.0,
+        "paired_difference": 0.0
+      },
+      "uncertainty_recommendation": {
+        "agent_accuracy": 1.0,
+        "rule_accuracy": 0.5,
+        "paired_difference": 0.5
+      }
+    },
+    "warning": {
+      "action": {
+        "agent_accuracy": 1.0,
+        "rule_accuracy": 0.5,
+        "paired_difference": 0.5
+      },
+      "phase": {
+        "agent_accuracy": 1.0,
+        "rule_accuracy": 0.5,
+        "paired_difference": 0.5
+      },
+      "updates": {
+        "agent_accuracy": 1.0,
+        "rule_accuracy": 1.0,
+        "paired_difference": 0.0
+      },
+      "uncertainty_estimates": {
+        "agent_accuracy": 0.9375,
+        "rule_accuracy": 0.5,
+        "paired_difference": 0.4375
+      },
+      "uncertainty_recommendation": {
+        "agent_accuracy": 0.9375,
+        "rule_accuracy": 0.5,
+        "paired_difference": 0.4375
+      }
+    }
+  },
+  "interpretation": "Bootstrap confidence intervals resample complete scenario/wording lifecycle sequences. The exact McNemar result is supplementary because individual decisions within a lifecycle are not independent."
+}

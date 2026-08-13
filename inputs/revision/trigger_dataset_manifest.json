@@ -1,0 +1,28 @@
+{
+  "dataset_version": "trigger_notices_v2",
+  "generation": "deterministic; scenario truth defined before wording variants",
+  "scenario_count": 8,
+  "lifecycle_phases": [
+    "onset",
+    "persistence",
+    "severity_change",
+    "recovery",
+    "stable"
+  ],
+  "wording_variants": [
+    "explicit",
+    "indirect",
+    "operational"
+  ],
+  "decision_count": 120,
+  "method_input_excludes": [
+    "canonical",
+    "scenario_id",
+    "wording_variant"
+  ],
+  "sha256": {
+    "trigger_scenarios.json": "d5a78729111a7191c50392ec37e7ca4febb395d3e0d31db618f2d14e4f4bd7f9",
+    "trigger_notices.json": "9c257d3be4e6946552c81415cd7d7c4d80986755fcf824127e3d8cba94a372c5",
+    "trigger_notices.csv": "f21ee1d3d8175c2d5732aa8a8c4fe87997709387a4229a463736b06f11cd4a23"
+  }
+}

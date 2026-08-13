@@ -33,9 +33,11 @@ def get_job(job_id):
     return load_jobs().get(job_id)
 
 
-def configure_milp_solver(time_limit=60, mip_gap=0.04):
+def configure_milp_solver(time_limit=60, mip_gap=0.04, solver_candidates=None):
     """Return the first available MILP solver supported by this project."""
-    solver_candidates = ('gurobi', 'appsi_highs', 'highs', 'cbc', 'glpk')
+    solver_candidates = solver_candidates or (
+        'gurobi', 'appsi_highs', 'highs', 'cbc', 'glpk'
+    )
     for solver_name in solver_candidates:
         try:
             solver = pyo.SolverFactory(solver_name)
@@ -911,18 +913,50 @@ def solvePTO(sc):
 
     model.obj = pyo.Objective(rule=rule_obj, sense=pyo.minimize)
 
-    opt, solver_name = configure_milp_solver(time_limit=60, mip_gap=0.04)
-    print(f'Solving PTO with {solver_name}')
-    results = opt.solve(model, load_solutions=False, tee=True)
-    
-    tc = results.solver.termination_condition
-    print(f'PTO termination: {tc}')
-    if tc in (pyo.TerminationCondition.optimal, pyo.TerminationCondition.feasible):
-        model.solutions.load_from(results)
-        print('PTO done')
-        return model
-    print(f'PTO infeasible: {tc}')
-    return None
+    time_limit = float(os.environ.get('DA_SOLVER_TIME_LIMIT', '60'))
+    mip_gap = float(os.environ.get('DA_SOLVER_MIP_GAP', '0.04'))
+    solver_tee = parse_bool(os.environ.get('DA_SOLVER_TEE'), default=False)
+    configured_order = os.environ.get(
+        'DA_SOLVER_ORDER', 'gurobi,appsi_highs,highs,cbc,glpk'
+    )
+    solver_names = [name.strip() for name in configured_order.split(',') if name.strip()]
+    solver_errors = []
+    available_count = 0
+    for candidate in solver_names:
+        try:
+            opt, solver_name = configure_milp_solver(
+                time_limit=time_limit,
+                mip_gap=mip_gap,
+                solver_candidates=(candidate,),
+            )
+        except RuntimeError:
+            continue
+        available_count += 1
+        print(f'Solving PTO with {solver_name}')
+        try:
+            results = opt.solve(
+                model, load_solutions=False, tee=solver_tee
+            )
+        except Exception as exc:
+            # Solver discovery does not prove that a license/runtime is usable.
+            # Record the failure and continue to the next declared solver.
+            solver_errors.append(f'{solver_name}: {type(exc).__name__}: {exc}')
+            continue
+
+        tc = results.solver.termination_condition
+        print(f'PTO termination: {tc}')
+        if tc in (pyo.TerminationCondition.optimal, pyo.TerminationCondition.feasible):
+            model.solutions.load_from(results)
+            model._solver_name = solver_name
+            model._solver_fallback_errors = solver_errors
+            print('PTO done')
+            return model
+        print(f'PTO infeasible: {tc}')
+        return None
+
+    if available_count == 0:
+        raise RuntimeError('No supported MILP solver is available for app.py')
+    raise RuntimeError('All available MILP solvers failed: ' + ' | '.join(solver_errors))
 
 
 # ==============================================================================
@@ -997,7 +1031,6 @@ def run_optimization(job_id, input_data, price_guidance=None,
             (sc['P'][t-1] - sc['S_sell'][t-1]) * pyo.value(model.w_sell[t])
             for t in range(1, T+1))
         aggregator_revenue = agg_buy_margin + agg_sell_margin
-
         total_kwh_sold   = sum(pyo.value(model.w_sell[t]) for t in range(1, T+1))
         total_kwh_bought = sum(pyo.value(model.w_buy[t])  for t in range(1, T+1))
 
@@ -1017,6 +1050,8 @@ def run_optimization(job_id, input_data, price_guidance=None,
             "v2g_enabled":           sc.get('v2g_enabled', True),
             "price_guidance_used":    price_guidance,
             "disturbances_applied":   disturbances,
+            "solver_name":            getattr(model, '_solver_name', None),
+            "solver_fallback_errors": getattr(model, '_solver_fallback_errors', []),
             # Price settings
             "buy_multipliers":        sc['buy_multipliers'],
             "sell_multipliers":       sc['sell_multipliers'],

@@ -1,0 +1,70 @@
+{
+  "created_utc": "2026-08-13T01:44:17.893794+00:00",
+  "configuration": "agent_trigger_only",
+  "model": "gpt-5.6-luna",
+  "notice_scenarios": [
+    "v3_route6_closure",
+    "v3_bus2_energy_sensor",
+    "v3_charger7_relay",
+    "v3_bus8_charger8"
+  ],
+  "notice_variant": "all_test_variants",
+  "llm_settings": {
+    "temperature": "provider/model default; no temperature parameter sent",
+    "seed": "not set; repeated calls quantify nondeterminism",
+    "reasoning_effort": "low",
+    "max_structured_output_attempts": 3,
+    "cost_rates_usd_per_million": {
+      "input": 0.2,
+      "cached_input": 0.02,
+      "cache_write": 0.25,
+      "output": 1.2
+    }
+  },
+  "solver_settings": {
+    "order": "gurobi,appsi_highs,highs,cbc,glpk",
+    "time_limit_seconds": "60",
+    "mip_gap": "0.02"
+  },
+  "runtime": {
+    "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",
+    "packages": {
+      "openai": "2.45.0",
+      "pydantic": "2.13.4",
+      "pandas": "3.0.3",
+      "pyomo": "6.10.1",
+      "highspy": "1.15.1",
+      "openpyxl": "3.1.5"
+    }
+  },
+  "files": {
+    "agentic_workflow/prompts/evaluator_system.txt": "2d11b9f05cc0ca9436100e4d58fa60269cda80291f8addb4ba437e06ba1acb66",
+    "agentic_workflow/prompts/pricing_altruistic_system.txt": "2761e9c1e4fc554b2883700beec07141a90473942b3357fa8c72844e38e73a68",
+    "agentic_workflow/prompts/pricing_selfish_system.txt": "5a68eb9180652e059deba0334b45f98f5aee4de52125c2419b1e6c83d7602d4f",
+    "agentic_workflow/prompts/trigger_system.txt": "aebaed30dcf7c0c4dee04dc5f0fbad8038e28490d159f1bd6cb01e7125e983d7",
+    "inputs/revision/trigger_scenarios.json": "d5a78729111a7191c50392ec37e7ca4febb395d3e0d31db618f2d14e4f4bd7f9",
+    "inputs/revision/trigger_notices.json": "9c257d3be4e6946552c81415cd7d7c4d80986755fcf824127e3d8cba94a372c5",
+    "inputs/revision/trigger_dataset_manifest.json": "db35d03e1313e19ed24f3f2b0cd1f95c90b0ed3a0d4a14a70edeb189076d916f",
+    "inputs/revision/trigger_scenarios_v3.json": "5d507ff3b06061f5fcf6065d54698ffc16e8ddbc8ef6a9a4616534848bd08b7a",
+    "inputs/revision/trigger_notices_v3.json": "d4b51157c4b8625e71395b5bfb8294323d8a828ebc93c346654359f53ad62a5f",
+    "inputs/revision/trigger_dataset_manifest_v3.json": "c681f2e08a927baad68b3a8cdde7a76c8cdba234643d60fcad70319e3ef62070",
+    "inputs/revision/trigger_split_v3.json": "0349d87657c98b119752a8385e2a1ce8d2ec467e7e5edb41647e690f750cd8c5",
+    "inputs/revision/uncertainty_chat_mapping_v3.md": "df1aeb51726c01a158896917b380822ea1021feed73b03dc5da1120afc290d00",
+    "agentic_workflow/notices.py": "2b5ebc6d7cf4096d763e44d69e57272cdb859a6fea2d25926d5643ebd629d0c9",
+    "agentic_workflow/trigger_evaluation.py": "54af559b163418257b32b2097a4fe1c8072cf0807c092aebb39521a10393ccff",
+    "agentic_workflow/uncertainty.py": "bcaef1699aa3f9561bed2597c29dbe1bad90cfddd6448de4aed3a2923fe2f25a",
+    "agentic_workflow/config.py": "1b6ca72d3bba7696e06a1f6b90bddfe64b629134d17779ebf78c68e0336db592",
+    "agentic_workflow/agents.py": "58294d4168e6fc93e1e21c7db269a806956ae0b6b86b8d3c9c6799a59fcf31b0",
+    "agentic_workflow/runner.py": "2a476f66b9e7938265eceb2fbe961dfd16096fb81455acb77da45236ba279e42",
+    "agentic_workflow/state.py": "e99559edfcfabe9b6603642a82dba25b99923384ed24acc4bd113d9d1c6988a8",
+    "agentic_workflow/telemetry.py": "d1a6e3bfdc244ad3099be18fda6482a5bf314f3daf12c02317312fe33e20cf88",
+    "scripts/evaluate_trigger_notices.py": "dace874713812afe7c843f20d16cdc510f10c5658057d3560dc46e2a8c930b3f",
+    "scripts/evaluate_trigger_agent.py": "85b818622c975d474839970c28c0ee12a96381cd274551519e4420cfe62a8662",
+    "scripts/build_uncertain_chat_dataset.py": "6c351643431fb588759fcd98e70a88ef5908232bf7df48e429f50c2ecc7687ff",
+    "scripts/compare_trigger_evaluations.py": "87f57514289ca4ddf2937e5842c3c65e6be2a0b169bcb4bef314334cf10a84d8",
+    "app.py": "8390da1222b005cba4ffaedd56ff34be56e054bfe0e58db63346ca5302842f62",
+    "app_rt.py": "54d2b1418bb9873640f84581bc6b98a150eacf7eb2c45c3b38df7df49414268f"
+  }
+}

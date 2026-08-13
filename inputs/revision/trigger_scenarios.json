@@ -1,0 +1,1162 @@
+[
+  {
+    "scenario_id": "svc_route4_detour",
+    "event_id": "SVC-01",
+    "source_type": "service_alert",
+    "event_type": "service_delay",
+    "phase": "onset",
+    "affected_buses": [
+      4
+    ],
+    "affected_chargers": [],
+    "effective_timestep": 10,
+    "expected_end_timestep": 14,
+    "uncertainty": true,
+    "material": true,
+    "updates": {
+      "delay_minutes_by_bus": {
+        "4": 25
+      },
+      "energy_multiplier_by_bus": {
+        "4": 1.1
+      },
+      "charger_power_kw": {},
+      "unavailable_chargers": []
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "svc_route4_detour"
+    ]
+  },
+  {
+    "scenario_id": "svc_route4_detour",
+    "event_id": "SVC-01",
+    "source_type": "service_alert",
+    "event_type": "service_delay",
+    "phase": "persistence",
+    "affected_buses": [
+      4
+    ],
+    "affected_chargers": [],
+    "effective_timestep": 11,
+    "expected_end_timestep": 14,
+    "uncertainty": true,
+    "material": true,
+    "updates": {
+      "delay_minutes_by_bus": {
+        "4": 25
+      },
+      "energy_multiplier_by_bus": {
+        "4": 1.1
+      },
+      "charger_power_kw": {},
+      "unavailable_chargers": []
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "svc_route4_detour"
+    ]
+  },
+  {
+    "scenario_id": "svc_route4_detour",
+    "event_id": "SVC-01",
+    "source_type": "service_alert",
+    "event_type": "service_delay",
+    "phase": "severity_change",
+    "affected_buses": [
+      4
+    ],
+    "affected_chargers": [],
+    "effective_timestep": 12,
+    "expected_end_timestep": 14,
+    "uncertainty": true,
+    "material": true,
+    "updates": {
+      "delay_minutes_by_bus": {
+        "4": 35
+      },
+      "energy_multiplier_by_bus": {
+        "4": 1.15
+      },
+      "charger_power_kw": {},
+      "unavailable_chargers": []
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "svc_route4_detour"
+    ]
+  },
+  {
+    "scenario_id": "svc_route4_detour",
+    "event_id": "SVC-01",
+    "source_type": "service_alert",
+    "event_type": "service_delay",
+    "phase": "recovery",
+    "affected_buses": [
+      4
+    ],
+    "affected_chargers": [],
+    "effective_timestep": 14,
+    "expected_end_timestep": null,
+    "uncertainty": false,
+    "material": true,
+    "updates": {
+      "delay_minutes_by_bus": {
+        "4": 0
+      },
+      "energy_multiplier_by_bus": {
+        "4": 1.0
+      },
+      "charger_power_kw": {},
+      "unavailable_chargers": []
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "svc_route4_detour"
+    ]
+  },
+  {
+    "scenario_id": "svc_route4_detour",
+    "event_id": "SVC-01",
+    "source_type": "service_alert",
+    "event_type": "service_delay",
+    "phase": "stable",
+    "affected_buses": [
+      4
+    ],
+    "affected_chargers": [],
+    "effective_timestep": 15,
+    "expected_end_timestep": null,
+    "uncertainty": false,
+    "material": false,
+    "updates": {
+      "delay_minutes_by_bus": {
+        "4": 0
+      },
+      "energy_multiplier_by_bus": {
+        "4": 1.0
+      },
+      "charger_power_kw": {},
+      "unavailable_chargers": []
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "svc_route4_detour"
+    ]
+  },
+  {
+    "scenario_id": "svc_route6_closure",
+    "event_id": "SVC-02",
+    "source_type": "service_alert",
+    "event_type": "service_delay",
+    "phase": "onset",
+    "affected_buses": [
+      6
+    ],
+    "affected_chargers": [],
+    "effective_timestep": 10,
+    "expected_end_timestep": 14,
+    "uncertainty": true,
+    "material": true,
+    "updates": {
+      "delay_minutes_by_bus": {
+        "6": 20
+      },
+      "energy_multiplier_by_bus": {
+        "6": 1.08
+      },
+      "charger_power_kw": {},
+      "unavailable_chargers": []
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "svc_route6_closure"
+    ]
+  },
+  {
+    "scenario_id": "svc_route6_closure",
+    "event_id": "SVC-02",
+    "source_type": "service_alert",
+    "event_type": "service_delay",
+    "phase": "persistence",
+    "affected_buses": [
+      6
+    ],
+    "affected_chargers": [],
+    "effective_timestep": 11,
+    "expected_end_timestep": 14,
+    "uncertainty": true,
+    "material": true,
+    "updates": {
+      "delay_minutes_by_bus": {
+        "6": 20
+      },
+      "energy_multiplier_by_bus": {
+        "6": 1.08
+      },
+      "charger_power_kw": {},
+      "unavailable_chargers": []
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "svc_route6_closure"
+    ]
+  },
+  {
+    "scenario_id": "svc_route6_closure",
+    "event_id": "SVC-02",
+    "source_type": "service_alert",
+    "event_type": "service_delay",
+    "phase": "severity_change",
+    "affected_buses": [
+      6
+    ],
+    "affected_chargers": [],
+    "effective_timestep": 12,
+    "expected_end_timestep": 14,
+    "uncertainty": true,
+    "material": true,
+    "updates": {
+      "delay_minutes_by_bus": {
+        "6": 28
+      },
+      "energy_multiplier_by_bus": {
+        "6": 1.12
+      },
+      "charger_power_kw": {},
+      "unavailable_chargers": []
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "svc_route6_closure"
+    ]
+  },
+  {
+    "scenario_id": "svc_route6_closure",
+    "event_id": "SVC-02",
+    "source_type": "service_alert",
+    "event_type": "service_delay",
+    "phase": "recovery",
+    "affected_buses": [
+      6
+    ],
+    "affected_chargers": [],
+    "effective_timestep": 14,
+    "expected_end_timestep": null,
+    "uncertainty": false,
+    "material": true,
+    "updates": {
+      "delay_minutes_by_bus": {
+        "6": 0
+      },
+      "energy_multiplier_by_bus": {
+        "6": 1.0
+      },
+      "charger_power_kw": {},
+      "unavailable_chargers": []
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "svc_route6_closure"
+    ]
+  },
+  {
+    "scenario_id": "svc_route6_closure",
+    "event_id": "SVC-02",
+    "source_type": "service_alert",
+    "event_type": "service_delay",
+    "phase": "stable",
+    "affected_buses": [
+      6
+    ],
+    "affected_chargers": [],
+    "effective_timestep": 15,
+    "expected_end_timestep": null,
+    "uncertainty": false,
+    "material": false,
+    "updates": {
+      "delay_minutes_by_bus": {
+        "6": 0
+      },
+      "energy_multiplier_by_bus": {
+        "6": 1.0
+      },
+      "charger_power_kw": {},
+      "unavailable_chargers": []
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "svc_route6_closure"
+    ]
+  },
+  {
+    "scenario_id": "svc_route2_substitution",
+    "event_id": "SVC-03",
+    "source_type": "service_alert",
+    "event_type": "route_energy_change",
+    "phase": "onset",
+    "affected_buses": [
+      2
+    ],
+    "affected_chargers": [],
+    "effective_timestep": 10,
+    "expected_end_timestep": 14,
+    "uncertainty": true,
+    "material": true,
+    "updates": {
+      "delay_minutes_by_bus": {
+        "2": 15
+      },
+      "energy_multiplier_by_bus": {
+        "2": 1.12
+      },
+      "charger_power_kw": {},
+      "unavailable_chargers": []
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "svc_route2_substitution"
+    ]
+  },
+  {
+    "scenario_id": "svc_route2_substitution",
+    "event_id": "SVC-03",
+    "source_type": "service_alert",
+    "event_type": "route_energy_change",
+    "phase": "persistence",
+    "affected_buses": [
+      2
+    ],
+    "affected_chargers": [],
+    "effective_timestep": 11,
+    "expected_end_timestep": 14,
+    "uncertainty": true,
+    "material": true,
+    "updates": {
+      "delay_minutes_by_bus": {
+        "2": 15
+      },
+      "energy_multiplier_by_bus": {
+        "2": 1.12
+      },
+      "charger_power_kw": {},
+      "unavailable_chargers": []
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "svc_route2_substitution"
+    ]
+  },
+  {
+    "scenario_id": "svc_route2_substitution",
+    "event_id": "SVC-03",
+    "source_type": "service_alert",
+    "event_type": "route_energy_change",
+    "phase": "severity_change",
+    "affected_buses": [
+      2
+    ],
+    "affected_chargers": [],
+    "effective_timestep": 12,
+    "expected_end_timestep": 14,
+    "uncertainty": true,
+    "material": true,
+    "updates": {
+      "delay_minutes_by_bus": {
+        "2": 21
+      },
+      "energy_multiplier_by_bus": {
+        "2": 1.18
+      },
+      "charger_power_kw": {},
+      "unavailable_chargers": []
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "svc_route2_substitution"
+    ]
+  },
+  {
+    "scenario_id": "svc_route2_substitution",
+    "event_id": "SVC-03",
+    "source_type": "service_alert",
+    "event_type": "route_energy_change",
+    "phase": "recovery",
+    "affected_buses": [
+      2
+    ],
+    "affected_chargers": [],
+    "effective_timestep": 14,
+    "expected_end_timestep": null,
+    "uncertainty": false,
+    "material": true,
+    "updates": {
+      "delay_minutes_by_bus": {
+        "2": 0
+      },
+      "energy_multiplier_by_bus": {
+        "2": 1.0
+      },
+      "charger_power_kw": {},
+      "unavailable_chargers": []
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "svc_route2_substitution"
+    ]
+  },
+  {
+    "scenario_id": "svc_route2_substitution",
+    "event_id": "SVC-03",
+    "source_type": "service_alert",
+    "event_type": "route_energy_change",
+    "phase": "stable",
+    "affected_buses": [
+      2
+    ],
+    "affected_chargers": [],
+    "effective_timestep": 15,
+    "expected_end_timestep": null,
+    "uncertainty": false,
+    "material": false,
+    "updates": {
+      "delay_minutes_by_bus": {
+        "2": 0
+      },
+      "energy_multiplier_by_bus": {
+        "2": 1.0
+      },
+      "charger_power_kw": {},
+      "unavailable_chargers": []
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "svc_route2_substitution"
+    ]
+  },
+  {
+    "scenario_id": "chg_2_fault",
+    "event_id": "CHG-01",
+    "source_type": "ocpp",
+    "event_type": "charger_fault",
+    "phase": "onset",
+    "affected_buses": [],
+    "affected_chargers": [
+      2
+    ],
+    "effective_timestep": 10,
+    "expected_end_timestep": 14,
+    "uncertainty": true,
+    "material": true,
+    "updates": {
+      "delay_minutes_by_bus": {},
+      "energy_multiplier_by_bus": {},
+      "charger_power_kw": {},
+      "unavailable_chargers": [
+        2
+      ]
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "chg_2_fault"
+    ]
+  },
+  {
+    "scenario_id": "chg_2_fault",
+    "event_id": "CHG-01",
+    "source_type": "ocpp",
+    "event_type": "charger_fault",
+    "phase": "persistence",
+    "affected_buses": [],
+    "affected_chargers": [
+      2
+    ],
+    "effective_timestep": 11,
+    "expected_end_timestep": 14,
+    "uncertainty": true,
+    "material": true,
+    "updates": {
+      "delay_minutes_by_bus": {},
+      "energy_multiplier_by_bus": {},
+      "charger_power_kw": {},
+      "unavailable_chargers": [
+        2
+      ]
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "chg_2_fault"
+    ]
+  },
+  {
+    "scenario_id": "chg_2_fault",
+    "event_id": "CHG-01",
+    "source_type": "ocpp",
+    "event_type": "charger_fault",
+    "phase": "severity_change",
+    "affected_buses": [],
+    "affected_chargers": [
+      2
+    ],
+    "effective_timestep": 12,
+    "expected_end_timestep": 14,
+    "uncertainty": true,
+    "material": true,
+    "updates": {
+      "delay_minutes_by_bus": {},
+      "energy_multiplier_by_bus": {},
+      "charger_power_kw": {},
+      "unavailable_chargers": [
+        2
+      ]
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "chg_2_fault"
+    ]
+  },
+  {
+    "scenario_id": "chg_2_fault",
+    "event_id": "CHG-01",
+    "source_type": "ocpp",
+    "event_type": "charger_fault",
+    "phase": "recovery",
+    "affected_buses": [],
+    "affected_chargers": [
+      2
+    ],
+    "effective_timestep": 14,
+    "expected_end_timestep": null,
+    "uncertainty": false,
+    "material": true,
+    "updates": {
+      "delay_minutes_by_bus": {},
+      "energy_multiplier_by_bus": {},
+      "charger_power_kw": {
+        "2": 200.0
+      },
+      "unavailable_chargers": []
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "chg_2_fault"
+    ]
+  },
+  {
+    "scenario_id": "chg_2_fault",
+    "event_id": "CHG-01",
+    "source_type": "ocpp",
+    "event_type": "charger_fault",
+    "phase": "stable",
+    "affected_buses": [],
+    "affected_chargers": [
+      2
+    ],
+    "effective_timestep": 15,
+    "expected_end_timestep": null,
+    "uncertainty": false,
+    "material": false,
+    "updates": {
+      "delay_minutes_by_bus": {},
+      "energy_multiplier_by_bus": {},
+      "charger_power_kw": {
+        "2": 200.0
+      },
+      "unavailable_chargers": []
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "chg_2_fault"
+    ]
+  },
+  {
+    "scenario_id": "chg_5_derating",
+    "event_id": "CHG-02",
+    "source_type": "ocpp",
+    "event_type": "charger_derating",
+    "phase": "onset",
+    "affected_buses": [],
+    "affected_chargers": [
+      5
+    ],
+    "effective_timestep": 10,
+    "expected_end_timestep": 14,
+    "uncertainty": true,
+    "material": true,
+    "updates": {
+      "delay_minutes_by_bus": {},
+      "energy_multiplier_by_bus": {},
+      "charger_power_kw": {
+        "5": 75.0
+      },
+      "unavailable_chargers": []
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "chg_5_derating"
+    ]
+  },
+  {
+    "scenario_id": "chg_5_derating",
+    "event_id": "CHG-02",
+    "source_type": "ocpp",
+    "event_type": "charger_derating",
+    "phase": "persistence",
+    "affected_buses": [],
+    "affected_chargers": [
+      5
+    ],
+    "effective_timestep": 11,
+    "expected_end_timestep": 14,
+    "uncertainty": true,
+    "material": true,
+    "updates": {
+      "delay_minutes_by_bus": {},
+      "energy_multiplier_by_bus": {},
+      "charger_power_kw": {
+        "5": 75.0
+      },
+      "unavailable_chargers": []
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "chg_5_derating"
+    ]
+  },
+  {
+    "scenario_id": "chg_5_derating",
+    "event_id": "CHG-02",
+    "source_type": "ocpp",
+    "event_type": "charger_derating",
+    "phase": "severity_change",
+    "affected_buses": [],
+    "affected_chargers": [
+      5
+    ],
+    "effective_timestep": 12,
+    "expected_end_timestep": 14,
+    "uncertainty": true,
+    "material": true,
+    "updates": {
+      "delay_minutes_by_bus": {},
+      "energy_multiplier_by_bus": {},
+      "charger_power_kw": {
+        "5": 37.5
+      },
+      "unavailable_chargers": []
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "chg_5_derating"
+    ]
+  },
+  {
+    "scenario_id": "chg_5_derating",
+    "event_id": "CHG-02",
+    "source_type": "ocpp",
+    "event_type": "charger_derating",
+    "phase": "recovery",
+    "affected_buses": [],
+    "affected_chargers": [
+      5
+    ],
+    "effective_timestep": 14,
+    "expected_end_timestep": null,
+    "uncertainty": false,
+    "material": true,
+    "updates": {
+      "delay_minutes_by_bus": {},
+      "energy_multiplier_by_bus": {},
+      "charger_power_kw": {
+        "5": 200.0
+      },
+      "unavailable_chargers": []
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "chg_5_derating"
+    ]
+  },
+  {
+    "scenario_id": "chg_5_derating",
+    "event_id": "CHG-02",
+    "source_type": "ocpp",
+    "event_type": "charger_derating",
+    "phase": "stable",
+    "affected_buses": [],
+    "affected_chargers": [
+      5
+    ],
+    "effective_timestep": 15,
+    "expected_end_timestep": null,
+    "uncertainty": false,
+    "material": false,
+    "updates": {
+      "delay_minutes_by_bus": {},
+      "energy_multiplier_by_bus": {},
+      "charger_power_kw": {
+        "5": 200.0
+      },
+      "unavailable_chargers": []
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "chg_5_derating"
+    ]
+  },
+  {
+    "scenario_id": "chg_7_fault",
+    "event_id": "CHG-03",
+    "source_type": "ocpp",
+    "event_type": "charger_fault",
+    "phase": "onset",
+    "affected_buses": [],
+    "affected_chargers": [
+      7
+    ],
+    "effective_timestep": 10,
+    "expected_end_timestep": 14,
+    "uncertainty": true,
+    "material": true,
+    "updates": {
+      "delay_minutes_by_bus": {},
+      "energy_multiplier_by_bus": {},
+      "charger_power_kw": {},
+      "unavailable_chargers": [
+        7
+      ]
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "chg_7_fault"
+    ]
+  },
+  {
+    "scenario_id": "chg_7_fault",
+    "event_id": "CHG-03",
+    "source_type": "ocpp",
+    "event_type": "charger_fault",
+    "phase": "persistence",
+    "affected_buses": [],
+    "affected_chargers": [
+      7
+    ],
+    "effective_timestep": 11,
+    "expected_end_timestep": 14,
+    "uncertainty": true,
+    "material": true,
+    "updates": {
+      "delay_minutes_by_bus": {},
+      "energy_multiplier_by_bus": {},
+      "charger_power_kw": {},
+      "unavailable_chargers": [
+        7
+      ]
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "chg_7_fault"
+    ]
+  },
+  {
+    "scenario_id": "chg_7_fault",
+    "event_id": "CHG-03",
+    "source_type": "ocpp",
+    "event_type": "charger_fault",
+    "phase": "severity_change",
+    "affected_buses": [],
+    "affected_chargers": [
+      7
+    ],
+    "effective_timestep": 12,
+    "expected_end_timestep": 14,
+    "uncertainty": true,
+    "material": true,
+    "updates": {
+      "delay_minutes_by_bus": {},
+      "energy_multiplier_by_bus": {},
+      "charger_power_kw": {},
+      "unavailable_chargers": [
+        7
+      ]
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "chg_7_fault"
+    ]
+  },
+  {
+    "scenario_id": "chg_7_fault",
+    "event_id": "CHG-03",
+    "source_type": "ocpp",
+    "event_type": "charger_fault",
+    "phase": "recovery",
+    "affected_buses": [],
+    "affected_chargers": [
+      7
+    ],
+    "effective_timestep": 14,
+    "expected_end_timestep": null,
+    "uncertainty": false,
+    "material": true,
+    "updates": {
+      "delay_minutes_by_bus": {},
+      "energy_multiplier_by_bus": {},
+      "charger_power_kw": {
+        "7": 200.0
+      },
+      "unavailable_chargers": []
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "chg_7_fault"
+    ]
+  },
+  {
+    "scenario_id": "chg_7_fault",
+    "event_id": "CHG-03",
+    "source_type": "ocpp",
+    "event_type": "charger_fault",
+    "phase": "stable",
+    "affected_buses": [],
+    "affected_chargers": [
+      7
+    ],
+    "effective_timestep": 15,
+    "expected_end_timestep": null,
+    "uncertainty": false,
+    "material": false,
+    "updates": {
+      "delay_minutes_by_bus": {},
+      "energy_multiplier_by_bus": {},
+      "charger_power_kw": {
+        "7": 200.0
+      },
+      "unavailable_chargers": []
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "chg_7_fault"
+    ]
+  },
+  {
+    "scenario_id": "combined_bus3_charger3",
+    "event_id": "COM-01",
+    "source_type": "combined",
+    "event_type": "combined",
+    "phase": "onset",
+    "affected_buses": [
+      3
+    ],
+    "affected_chargers": [
+      3
+    ],
+    "effective_timestep": 10,
+    "expected_end_timestep": 14,
+    "uncertainty": true,
+    "material": true,
+    "updates": {
+      "delay_minutes_by_bus": {
+        "3": 30
+      },
+      "energy_multiplier_by_bus": {
+        "3": 1.12
+      },
+      "charger_power_kw": {},
+      "unavailable_chargers": [
+        3
+      ]
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "combined_bus3_charger3"
+    ]
+  },
+  {
+    "scenario_id": "combined_bus3_charger3",
+    "event_id": "COM-01",
+    "source_type": "combined",
+    "event_type": "combined",
+    "phase": "persistence",
+    "affected_buses": [
+      3
+    ],
+    "affected_chargers": [
+      3
+    ],
+    "effective_timestep": 11,
+    "expected_end_timestep": 14,
+    "uncertainty": true,
+    "material": true,
+    "updates": {
+      "delay_minutes_by_bus": {
+        "3": 30
+      },
+      "energy_multiplier_by_bus": {
+        "3": 1.12
+      },
+      "charger_power_kw": {},
+      "unavailable_chargers": [
+        3
+      ]
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "combined_bus3_charger3"
+    ]
+  },
+  {
+    "scenario_id": "combined_bus3_charger3",
+    "event_id": "COM-01",
+    "source_type": "combined",
+    "event_type": "combined",
+    "phase": "severity_change",
+    "affected_buses": [
+      3
+    ],
+    "affected_chargers": [
+      3
+    ],
+    "effective_timestep": 12,
+    "expected_end_timestep": 14,
+    "uncertainty": true,
+    "material": true,
+    "updates": {
+      "delay_minutes_by_bus": {
+        "3": 42
+      },
+      "energy_multiplier_by_bus": {
+        "3": 1.18
+      },
+      "charger_power_kw": {},
+      "unavailable_chargers": [
+        3
+      ]
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "combined_bus3_charger3"
+    ]
+  },
+  {
+    "scenario_id": "combined_bus3_charger3",
+    "event_id": "COM-01",
+    "source_type": "combined",
+    "event_type": "combined",
+    "phase": "recovery",
+    "affected_buses": [
+      3
+    ],
+    "affected_chargers": [
+      3
+    ],
+    "effective_timestep": 14,
+    "expected_end_timestep": null,
+    "uncertainty": false,
+    "material": true,
+    "updates": {
+      "delay_minutes_by_bus": {
+        "3": 0
+      },
+      "energy_multiplier_by_bus": {
+        "3": 1.0
+      },
+      "charger_power_kw": {
+        "3": 200.0
+      },
+      "unavailable_chargers": []
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "combined_bus3_charger3"
+    ]
+  },
+  {
+    "scenario_id": "combined_bus3_charger3",
+    "event_id": "COM-01",
+    "source_type": "combined",
+    "event_type": "combined",
+    "phase": "stable",
+    "affected_buses": [
+      3
+    ],
+    "affected_chargers": [
+      3
+    ],
+    "effective_timestep": 15,
+    "expected_end_timestep": null,
+    "uncertainty": false,
+    "material": false,
+    "updates": {
+      "delay_minutes_by_bus": {
+        "3": 0
+      },
+      "energy_multiplier_by_bus": {
+        "3": 1.0
+      },
+      "charger_power_kw": {
+        "3": 200.0
+      },
+      "unavailable_chargers": []
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "combined_bus3_charger3"
+    ]
+  },
+  {
+    "scenario_id": "combined_bus8_charger8",
+    "event_id": "COM-02",
+    "source_type": "combined",
+    "event_type": "combined",
+    "phase": "onset",
+    "affected_buses": [
+      8
+    ],
+    "affected_chargers": [
+      8
+    ],
+    "effective_timestep": 10,
+    "expected_end_timestep": 14,
+    "uncertainty": true,
+    "material": true,
+    "updates": {
+      "delay_minutes_by_bus": {
+        "8": 20
+      },
+      "energy_multiplier_by_bus": {},
+      "charger_power_kw": {
+        "8": 50.0
+      },
+      "unavailable_chargers": []
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "combined_bus8_charger8"
+    ]
+  },
+  {
+    "scenario_id": "combined_bus8_charger8",
+    "event_id": "COM-02",
+    "source_type": "combined",
+    "event_type": "combined",
+    "phase": "persistence",
+    "affected_buses": [
+      8
+    ],
+    "affected_chargers": [
+      8
+    ],
+    "effective_timestep": 11,
+    "expected_end_timestep": 14,
+    "uncertainty": true,
+    "material": true,
+    "updates": {
+      "delay_minutes_by_bus": {
+        "8": 20
+      },
+      "energy_multiplier_by_bus": {},
+      "charger_power_kw": {
+        "8": 50.0
+      },
+      "unavailable_chargers": []
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "combined_bus8_charger8"
+    ]
+  },
+  {
+    "scenario_id": "combined_bus8_charger8",
+    "event_id": "COM-02",
+    "source_type": "combined",
+    "event_type": "combined",
+    "phase": "severity_change",
+    "affected_buses": [
+      8
+    ],
+    "affected_chargers": [
+      8
+    ],
+    "effective_timestep": 12,
+    "expected_end_timestep": 14,
+    "uncertainty": true,
+    "material": true,
+    "updates": {
+      "delay_minutes_by_bus": {
+        "8": 28
+      },
+      "energy_multiplier_by_bus": {},
+      "charger_power_kw": {
+        "8": 25.0
+      },
+      "unavailable_chargers": []
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "combined_bus8_charger8"
+    ]
+  },
+  {
+    "scenario_id": "combined_bus8_charger8",
+    "event_id": "COM-02",
+    "source_type": "combined",
+    "event_type": "combined",
+    "phase": "recovery",
+    "affected_buses": [
+      8
+    ],
+    "affected_chargers": [
+      8
+    ],
+    "effective_timestep": 14,
+    "expected_end_timestep": null,
+    "uncertainty": false,
+    "material": true,
+    "updates": {
+      "delay_minutes_by_bus": {
+        "8": 0
+      },
+      "energy_multiplier_by_bus": {},
+      "charger_power_kw": {
+        "8": 200.0
+      },
+      "unavailable_chargers": []
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "combined_bus8_charger8"
+    ]
+  },
+  {
+    "scenario_id": "combined_bus8_charger8",
+    "event_id": "COM-02",
+    "source_type": "combined",
+    "event_type": "combined",
+    "phase": "stable",
+    "affected_buses": [
+      8
+    ],
+    "affected_chargers": [
+      8
+    ],
+    "effective_timestep": 15,
+    "expected_end_timestep": null,
+    "uncertainty": false,
+    "material": false,
+    "updates": {
+      "delay_minutes_by_bus": {
+        "8": 0
+      },
+      "energy_multiplier_by_bus": {},
+      "charger_power_kw": {
+        "8": 200.0
+      },
+      "unavailable_chargers": []
+    },
+    "evidence": [
+      "canonical_scenario_v2",
+      "combined_bus8_charger8"
+    ]
+  }
+]

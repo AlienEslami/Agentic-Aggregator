@@ -1,17 +1,24 @@
 from flask import Flask, jsonify, request
 import json
 import os
+import tempfile
 import threading
 import traceback
 import uuid
+from pathlib import Path
 
 import pandas as pd
 import pyomo.environ as pyo
 
+from agentic_workflow.telemetry import ResourceMeter
+
 
 app = Flask(__name__)
 
-JOBS_FILE = "/tmp/jobs_rt.json"
+JOBS_FILE = os.environ.get(
+    "RT_JOBS_FILE",
+    str(Path(tempfile.gettempdir()) / "jobs_rt.json"),
+)
 _jobs_lock = threading.Lock()
 
 
@@ -27,7 +34,9 @@ def save_job(job_id, data):
     with _jobs_lock:
         jobs = load_jobs()
         jobs[job_id] = data
-        with open(JOBS_FILE, "w") as f:
+        jobs_path = Path(JOBS_FILE)
+        jobs_path.parent.mkdir(parents=True, exist_ok=True)
+        with jobs_path.open("w", encoding="utf-8") as f:
             json.dump(jobs, f)
 
 
@@ -72,6 +81,7 @@ MOCK_RESULT = {
     "soc_violation_count": 0,
     "availability_conflicts": [],
     "solver_status": "mock",
+    "solver_name": None,
     "remaining_horizon_start": None,
     "remaining_horizon_end": None,
 }
@@ -119,19 +129,51 @@ def get_timestep_minutes(input_data, prices_df):
     if input_data.get("timestep_minutes") not in (None, ""):
         return float(input_data["timestep_minutes"])
     if not prices_df.empty:
+        if "timestep" in prices_df.columns:
+            explicit_steps = pd.to_numeric(prices_df["timestep"], errors="coerce").dropna()
+            if not explicit_steps.empty and explicit_steps.max() >= len(prices_df):
+                return 1440.0 / float(explicit_steps.max())
         return 1440.0 / float(len(prices_df))
     return 30.0
 
 
 def infer_full_horizon_steps(timestep_minutes, series_length):
     expected_day_steps = max(1, int(round(1440.0 / float(timestep_minutes))))
-    if series_length <= 0:
-        return expected_day_steps
-    if series_length == expected_day_steps:
-        return expected_day_steps
-    if expected_day_steps % series_length == 0:
-        return expected_day_steps
-    return series_length
+    return expected_day_steps
+
+
+def align_series_to_horizon(
+    values,
+    target_steps,
+    current_timestep,
+    series_name,
+    timesteps=None,
+):
+    """Align a full-day or remaining-horizon series to absolute day timesteps."""
+    numeric_values = pd.to_numeric(pd.Series(values), errors="coerce")
+    if timesteps is not None:
+        numeric_steps = pd.to_numeric(pd.Series(timesteps), errors="coerce")
+        aligned_rows = pd.DataFrame({"timestep": numeric_steps, "value": numeric_values}).dropna()
+        aligned_rows["timestep"] = aligned_rows["timestep"].astype(int)
+        aligned_rows = aligned_rows.loc[
+            aligned_rows["timestep"].between(1, target_steps)
+        ].drop_duplicates("timestep", keep="last")
+        if not aligned_rows.empty:
+            absolute = pd.Series(index=range(1, target_steps + 1), dtype=float)
+            absolute.loc[aligned_rows["timestep"].tolist()] = aligned_rows["value"].tolist()
+            absolute = absolute.ffill().bfill()
+            if absolute.notna().all():
+                return absolute.astype(float).tolist()
+
+    cleaned = numeric_values.dropna().astype(float).tolist()
+    if not cleaned:
+        raise ValueError(f"{series_name} cannot be empty")
+    if len(cleaned) == target_steps:
+        return cleaned
+    remaining_steps = target_steps - current_timestep + 1
+    if len(cleaned) == remaining_steps:
+        return [cleaned[0]] * (current_timestep - 1) + cleaned
+    return expand_series_to_horizon(cleaned, target_steps, series_name)
 
 
 def expand_series_to_horizon(values, target_steps, series_name):
@@ -305,10 +347,14 @@ def build_rt_context(data, payload_price_guidance, current_timestep, disturbance
             "time": "timestep",
         }
     )
-    spot_source = pd.to_numeric(prices_df["spot_market"], errors="coerce").dropna().tolist()
-    if not spot_source:
-        raise ValueError("prices input must include a valid spot_market series")
-    spot_full = expand_series_to_horizon(spot_source, full_horizon_steps, "spot_market")
+    price_timesteps = prices_df.get("timestep")
+    spot_full = align_series_to_horizon(
+        prices_df["spot_market"],
+        full_horizon_steps,
+        current_timestep,
+        "spot_market",
+        price_timesteps,
+    )
 
 
 
@@ -361,26 +407,36 @@ def build_rt_context(data, payload_price_guidance, current_timestep, disturbance
         prices_df.get("price_multiplier", pd.Series([1.0] * len(prices_df))),
         errors="coerce",
     ).fillna(1.0).tolist()
-    price_multiplier_full = expand_series_to_horizon(
+    price_multiplier_full = align_series_to_horizon(
         price_multiplier_vector,
         full_horizon_steps,
+        current_timestep,
         "price_multiplier",
+        price_timesteps,
     )
 
     explicit_buy = prices_df.get("buy_price_rt")
     explicit_sell = prices_df.get("sell_price_rt")
     has_explicit_prices = explicit_buy is not None and explicit_sell is not None
 
-    if has_explicit_prices and pd.to_numeric(explicit_buy, errors="coerce").notna().any():
-        buy_full = expand_series_to_horizon(
-            pd.to_numeric(explicit_buy, errors="coerce").fillna(method="ffill").fillna(method="bfill").tolist(),
+    if (
+        has_explicit_prices
+        and pd.to_numeric(explicit_buy, errors="coerce").notna().any()
+        and pd.to_numeric(explicit_sell, errors="coerce").notna().any()
+    ):
+        buy_full = align_series_to_horizon(
+            pd.to_numeric(explicit_buy, errors="coerce").ffill().bfill().tolist(),
             full_horizon_steps,
+            current_timestep,
             "buy_price_rt",
+            price_timesteps,
         )
-        sell_full = expand_series_to_horizon(
-            pd.to_numeric(explicit_sell, errors="coerce").fillna(method="ffill").fillna(method="bfill").tolist(),
+        sell_full = align_series_to_horizon(
+            pd.to_numeric(explicit_sell, errors="coerce").ffill().bfill().tolist(),
             full_horizon_steps,
+            current_timestep,
             "sell_price_rt",
+            price_timesteps,
         )
         buy_mult_full = [(buy_full[t] / spot_full[t]) if spot_full[t] else 0.0 for t in range(full_horizon_steps)]
         sell_mult_full = [(sell_full[t] / spot_full[t]) if spot_full[t] else 0.0 for t in range(full_horizon_steps)]
@@ -389,19 +445,29 @@ def build_rt_context(data, payload_price_guidance, current_timestep, disturbance
         buy_mults_raw = price_guidance.get("buy_multipliers", [1.05, 1.10, 1.05])
         sell_mults_raw = price_guidance.get("sell_multipliers", [0.80, 0.85, 0.80])
         raw_boundaries = price_guidance.get("period_boundaries")
-        default_boundaries = list(range(1, len(buy_mults_raw) + 1))
-        buy_mult_full, boundaries = build_multiplier_schedule(
-            buy_mults_raw,
-            raw_boundaries or default_boundaries,
-            full_horizon_steps,
-            "buy multipliers",
-        )
-        sell_mult_full, _ = build_multiplier_schedule(
-            sell_mults_raw,
-            raw_boundaries or default_boundaries,
-            full_horizon_steps,
-            "sell multipliers",
-        )
+        remaining_steps = full_horizon_steps - current_timestep + 1
+        if raw_boundaries is None and len(buy_mults_raw) == remaining_steps:
+            buy_mult_full = align_series_to_horizon(
+                buy_mults_raw, full_horizon_steps, current_timestep, "buy multipliers"
+            )
+            sell_mult_full = align_series_to_horizon(
+                sell_mults_raw, full_horizon_steps, current_timestep, "sell multipliers"
+            )
+            boundaries = list(range(current_timestep, full_horizon_steps + 1))
+        else:
+            default_boundaries = list(range(1, len(buy_mults_raw) + 1))
+            buy_mult_full, boundaries = build_multiplier_schedule(
+                buy_mults_raw,
+                raw_boundaries or default_boundaries,
+                full_horizon_steps,
+                "buy multipliers",
+            )
+            sell_mult_full, _ = build_multiplier_schedule(
+                sell_mults_raw,
+                raw_boundaries or default_boundaries,
+                full_horizon_steps,
+                "sell multipliers",
+            )
         sell_mult_full = [
             min(sell_mult_full[t], buy_mult_full[t] - 0.01) for t in range(full_horizon_steps)
         ]
@@ -413,30 +479,44 @@ def build_rt_context(data, payload_price_guidance, current_timestep, disturbance
     energy_disturbance = {}
     unavailable_buses = set()
     for disturbance in disturbances or []:
+        if parse_bool(disturbance.get("already_applied"), False):
+            continue
         family = str(
             disturbance.get("disturbance_type")
             or disturbance.get("family")
             or disturbance.get("scenario_family")
             or ""
         ).strip().lower()
-        target_bus = safe_int(disturbance.get("bus_id"), 0)
+        target_value = disturbance.get("bus_id")
+        if isinstance(target_value, (list, tuple, set)):
+            target_buses = {safe_int(value, 0) for value in target_value}
+        else:
+            target_buses = {safe_int(target_value, 0)}
+        target_buses.discard(0)
         if family in {"price", "price_deviation", "rt_price"}:
             multiplier = safe_float(
                 disturbance.get("multiplier"),
                 1.0 + (safe_float(disturbance.get("percent"), 0.0) / 100.0),
             )
-            price_disturbance["multiplier"] = multiplier
+            price_disturbance["multiplier"] = (
+                price_disturbance.get("multiplier", 1.0) * multiplier
+            )
         elif family in {"delay", "late", "early_return"}:
-            delay_disturbance[target_bus] = safe_int(disturbance.get("delay_minutes"), 0)
+            for target_bus in target_buses:
+                delay_disturbance[target_bus] = delay_disturbance.get(target_bus, 0) + safe_int(
+                    disturbance.get("delay_minutes"), 0
+                )
         elif family in {"energy", "energy_deviation"}:
             multiplier = safe_float(
                 disturbance.get("multiplier"),
                 1.0 + (safe_float(disturbance.get("percent"), 0.0) / 100.0),
             )
-            energy_disturbance[target_bus] = multiplier
+            for target_bus in target_buses:
+                energy_disturbance[target_bus] = (
+                    energy_disturbance.get(target_bus, 1.0) * multiplier
+                )
         elif family in {"availability", "breakdown", "unavailable"}:
-            if target_bus > 0:
-                unavailable_buses.add(target_bus)
+            unavailable_buses.update(target_buses)
 
     if "multiplier" in price_disturbance:
         factor = price_disturbance["multiplier"]
@@ -471,7 +551,7 @@ def build_rt_context(data, payload_price_guidance, current_timestep, disturbance
         start_raw = parse_time_to_step(row.get("time_begin"), timestep_minutes, full_horizon_steps, False)
         end_raw = parse_time_to_step(row.get("time_end"), timestep_minutes, full_horizon_steps, True)
         delay_minutes = safe_int(row.get("delay_minutes"), 0)
-        delay_minutes = safe_int(delay_disturbance.get(bus_id, delay_minutes), delay_minutes)
+        delay_minutes += safe_int(delay_disturbance.get(bus_id), 0)
         delay_steps = int(round(delay_minutes / timestep_minutes))
         start = min(full_horizon_steps, max(1, start_raw + delay_steps))
         end = min(full_horizon_steps, max(start + 1, end_raw + delay_steps))
@@ -497,7 +577,10 @@ def build_rt_context(data, payload_price_guidance, current_timestep, disturbance
         if remaining_energy_need is None or remaining_energy_need <= 0:
             remaining_energy_need = energy_per_step * remaining_active
 
-        if end < current_timestep:
+        # A trip whose end equals the current timestep has no remaining active
+        # interval in the rolling horizon. Keeping it would create empty Pyomo
+        # sums that collapse to the Python boolean ``True``.
+        if end <= current_timestep:
             continue
 
         active_now = start <= current_timestep < end
@@ -543,6 +626,73 @@ def build_rt_context(data, payload_price_guidance, current_timestep, disturbance
     }
 
 
+def _solver_value(root, *paths):
+    for path in paths:
+        value = root
+        try:
+            for component in path.split("."):
+                value = getattr(value, component)
+            if value is None:
+                continue
+            numeric = float(value)
+            if numeric != numeric or numeric in {float("inf"), float("-inf")}:
+                continue
+            return int(numeric) if numeric.is_integer() else numeric
+        except (AttributeError, TypeError, ValueError):
+            continue
+    return None
+
+
+def _extract_solver_telemetry(solved, model, measured):
+    lower_bound = _solver_value(solved.problem, "lower_bound")
+    upper_bound = _solver_value(solved.problem, "upper_bound")
+    relative_gap = None
+    if lower_bound is not None and upper_bound is not None:
+        relative_gap = abs(float(upper_bound) - float(lower_bound)) / max(
+            abs(float(upper_bound)), 1e-12
+        )
+    telemetry = dict(measured)
+    telemetry.update(
+        {
+            "reported_time_seconds": _solver_value(
+                solved.solver, "time", "wallclock_time"
+            ),
+            "reported_user_time_seconds": _solver_value(solved.solver, "user_time"),
+            "reported_system_time_seconds": _solver_value(solved.solver, "system_time"),
+            "branch_and_bound_nodes": _solver_value(
+                solved.solver,
+                "statistics.branch_and_bound.number_of_bounded_subproblems",
+                "statistics.branch_and_bound.number_of_created_subproblems",
+            ),
+            "iterations": _solver_value(
+                solved.solver,
+                "iterations",
+                "statistics.black_box.number_of_iterations",
+            ),
+            "lower_bound": lower_bound,
+            "upper_bound": upper_bound,
+            "relative_gap": round(relative_gap, 12) if relative_gap is not None else None,
+            "model_variables": sum(
+                1 for _ in model.component_data_objects(pyo.Var, active=True)
+            ),
+            "model_constraints": sum(
+                1 for _ in model.component_data_objects(pyo.Constraint, active=True)
+            ),
+            "model_binary_variables": sum(
+                1
+                for variable in model.component_data_objects(pyo.Var, active=True)
+                if variable.is_binary()
+            ),
+            "model_integer_variables": sum(
+                1
+                for variable in model.component_data_objects(pyo.Var, active=True)
+                if variable.is_integer()
+            ),
+        }
+    )
+    return telemetry
+
+
 def solve_rt_rescheduling(ctx):
     buses = ctx["buses"]
     chargers = ctx["chargers"]
@@ -553,7 +703,7 @@ def solve_rt_rescheduling(ctx):
     T = len(prices["spot"])
 
     if not trips:
-        raise ValueError("No remaining trips to optimize for the real-time horizon")
+        return None, {"solver_status": "skipped/no_remaining_trips"}
 
     K = [bus["bus_id"] for bus in buses]
     I = [trip["trip_id"] for trip in trips]
@@ -676,6 +826,8 @@ def solve_rt_rescheduling(ctx):
 
     for i in model.I:
         trip = trip_by_id[i]
+        if not active_trip_steps[i]:
+            continue
         total_served_energy = sum(
             model.trip_energy[i] * model.s[k, i, t]
             for k in model.K
@@ -739,43 +891,107 @@ def solve_rt_rescheduling(ctx):
         sense=pyo.minimize,
     )
 
-    solver = None
-    solver_name_used = None
-    for solver_name in ("gurobi", "appsi_highs", "highs", "cbc", "glpk"):
+    time_limit = float(os.environ.get("RT_SOLVER_TIME_LIMIT", "60"))
+    mip_gap = float(os.environ.get("RT_SOLVER_MIP_GAP", "0.02"))
+    solver_tee = parse_bool(os.environ.get("RT_SOLVER_TEE"), False)
+    configured_order = os.environ.get(
+        "RT_SOLVER_ORDER", "gurobi,appsi_highs,highs,cbc,glpk"
+    )
+    solver_names = [name.strip() for name in configured_order.split(",") if name.strip()]
+    solver_errors = []
+    solver_attempts = []
+    available_count = 0
+    for solver_name_used in solver_names:
         try:
-            candidate = pyo.SolverFactory(solver_name)
-            if candidate is not None and candidate.available(False):
-                solver = candidate
-                solver_name_used = solver_name
-                break
-        except Exception:
-            continue
-    if solver is None:
+            solver = pyo.SolverFactory(solver_name_used)
+            if solver is None or not solver.available(False):
+                continue
+            available_count += 1
+            try:
+                if solver_name_used == "gurobi":
+                    solver.options["TimeLimit"] = time_limit
+                    solver.options["MIPGap"] = mip_gap
+                elif solver_name_used in {"appsi_highs", "highs"}:
+                    solver.options["time_limit"] = time_limit
+                    solver.options["mip_rel_gap"] = mip_gap
+                elif solver_name_used == "cbc":
+                    solver.options["seconds"] = time_limit
+                    solver.options["ratio"] = mip_gap
+                elif solver_name_used == "glpk":
+                    solver.options["tmlim"] = time_limit
+            except Exception:
+                pass
+            try:
+                with ResourceMeter() as solver_meter:
+                    solved = solver.solve(model, tee=solver_tee)
+                measured = solver_meter.metrics or {}
+            except RuntimeError as exc:
+                measured = solver_meter.metrics or {}
+                solver_attempts.append(
+                    {
+                        "solver_name": solver_name_used,
+                        "outcome": "error",
+                        "error": f"{type(exc).__name__}: {exc}",
+                        **measured,
+                    }
+                )
+                message = str(exc).lower()
+                if "feasible solution was not found" in message or "no feasible solution" in message:
+                    return None, {
+                        "solver_status": "warning/no_feasible_incumbent",
+                        "solver_name": solver_name_used,
+                        "solver_telemetry": measured,
+                        "solver_attempts": solver_attempts,
+                    }
+                solver_errors.append(f"{solver_name_used}: {type(exc).__name__}: {exc}")
+                continue
+            except Exception as exc:
+                measured = solver_meter.metrics or {}
+                solver_attempts.append(
+                    {
+                        "solver_name": solver_name_used,
+                        "outcome": "error",
+                        "error": f"{type(exc).__name__}: {exc}",
+                        **measured,
+                    }
+                )
+                # An installed solver can still be unusable (for example, an
+                # expired or user-mismatched license). Continue to the next
+                # declared solver so reproducible open-source fallback works.
+                solver_errors.append(f"{solver_name_used}: {type(exc).__name__}: {exc}")
+                continue
+            term = str(solved.solver.termination_condition).lower()
+            status = str(solved.solver.status).lower()
+            solver_telemetry = _extract_solver_telemetry(solved, model, measured)
+            solver_attempts.append(
+                {
+                    "solver_name": solver_name_used,
+                    "outcome": f"{status}/{term}",
+                    **solver_telemetry,
+                }
+            )
+            has_incumbent = any(model.e[k, 1].value is not None for k in K)
+            if "optimal" in term or "feasible" in term or has_incumbent:
+                suffix = "/incumbent" if has_incumbent and "optimal" not in term and "feasible" not in term else ""
+                return model, {
+                    "solver_status": f"{status}/{term}{suffix}",
+                    "solver_name": solver_name_used,
+                    "solver_fallback_errors": solver_errors,
+                    "solver_telemetry": solver_telemetry,
+                    "solver_attempts": solver_attempts,
+                }
+            return None, {
+                "solver_status": f"{status}/{term}",
+                "solver_name": solver_name_used,
+                "solver_fallback_errors": solver_errors,
+                "solver_telemetry": solver_telemetry,
+                "solver_attempts": solver_attempts,
+            }
+        except Exception as exc:
+            solver_errors.append(f"{solver_name_used}: {type(exc).__name__}: {exc}")
+    if available_count == 0:
         raise RuntimeError("No supported MILP solver available for app_rt.py")
-
-    try:
-        if solver_name_used == "gurobi":
-            solver.options["TimeLimit"] = 60
-            solver.options["MIPGap"] = 0.02
-        elif solver_name_used in {"appsi_highs", "highs"}:
-            solver.options["time_limit"] = 60
-            solver.options["mip_rel_gap"] = 0.02
-        elif solver_name_used == "cbc":
-            solver.options["seconds"] = 60
-            solver.options["ratio"] = 0.02
-        elif solver_name_used == "glpk":
-            solver.options["tmlim"] = 60
-    except Exception:
-        pass
-
-    solved = solver.solve(model, tee=True)
-    term = str(solved.solver.termination_condition).lower()
-    status = str(solved.solver.status).lower()
-    has_incumbent = any(model.e[k, 1].value is not None for k in K)
-    if "optimal" in term or "feasible" in term or has_incumbent:
-        suffix = "/incumbent" if has_incumbent and "optimal" not in term and "feasible" not in term else ""
-        return model, {"solver_status": f"{status}/{term}{suffix}"}
-    return None, {"solver_status": f"{status}/{term}"}
+    raise RuntimeError("All available MILP solvers failed: " + " | ".join(solver_errors))
 
 
 def extract_time_series_results(model, ctx):
@@ -900,6 +1116,11 @@ def run_optimization(
 
         model, solve_meta = solve_rt_rescheduling(ctx)
         if model is None:
+            solver_status = solve_meta.get("solver_status")
+            if solver_status == "skipped/no_remaining_trips":
+                mock_reason = "No remaining service trips to reschedule"
+            else:
+                mock_reason = "RT fleet-rescheduling model infeasible"
             mock = dict(MOCK_RESULT)
             mock.update(
                 {
@@ -909,12 +1130,16 @@ def run_optimization(
                     "v2g_enabled": ctx["v2g_enabled"],
                     "price_guidance_used": price_guidance,
                     "disturbances_applied": disturbances,
-                    "mock_reason": "RT fleet-rescheduling model infeasible",
+                    "mock_reason": mock_reason,
                     "buy_multipliers": ctx["prices"]["buy_multipliers"],
                     "sell_multipliers": ctx["prices"]["sell_multipliers"],
                     "period_boundaries": ctx["prices"]["boundaries"],
                     "avg_grid_price": sum(ctx["prices"]["spot"]) / len(ctx["prices"]["spot"]),
-                    "solver_status": solve_meta.get("solver_status"),
+                    "solver_status": solver_status,
+                    "solver_name": solve_meta.get("solver_name"),
+                    "solver_fallback_errors": solve_meta.get("solver_fallback_errors", []),
+                    "solver_telemetry": solve_meta.get("solver_telemetry", {}),
+                    "solver_attempts": solve_meta.get("solver_attempts", []),
                     "remaining_horizon_start": ctx["current_timestep"],
                     "remaining_horizon_end": ctx["current_timestep"] + len(ctx["prices"]["spot"]) - 1,
                 }
@@ -988,6 +1213,10 @@ def run_optimization(
             ),
             "availability_conflicts": [],
             "solver_status": solve_meta.get("solver_status"),
+            "solver_name": solve_meta.get("solver_name"),
+            "solver_fallback_errors": solve_meta.get("solver_fallback_errors", []),
+            "solver_telemetry": solve_meta.get("solver_telemetry", {}),
+            "solver_attempts": solve_meta.get("solver_attempts", []),
             "remaining_horizon_start": ctx["current_timestep"],
             "remaining_horizon_end": ctx["current_timestep"] + T - 1,
         }

@@ -1,0 +1,15 @@
+{
+  "split_unit": "scenario lifecycle; variants from one physical event never cross splits",
+  "development": [
+    "v3_route4_detour",
+    "v3_charger2_isolation",
+    "v3_charger5_thermal",
+    "v3_bus3_charger3"
+  ],
+  "test": [
+    "v3_route6_closure",
+    "v3_bus2_energy_sensor",
+    "v3_charger7_relay",
+    "v3_bus8_charger8"
+  ]
+}

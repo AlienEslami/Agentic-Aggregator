@@ -42,7 +42,9 @@ Electric buses are becoming flexible energy assets, but their grid value depends
 
 `data/intraday_prices/` contains timestep-specific intraday price files used by the real-time workflow.
 
-`results/` is ignored by git and is used for regenerated benchmark files, JSON results, and local reproduction summaries.
+`results/` is used for regenerated benchmark files, JSON results, and local
+reproduction summaries. Large and raw generated artifacts are ignored by Git;
+the compact frozen Trigger v3 summaries and manifest are versioned for audit.
 
 `workflows/` contains n8n exports for the agentic orchestration layer. These files preserve the workflow structure and prompts, but users must remap credentials, Google document IDs, and HTTP endpoint URLs before running them.
 
@@ -57,6 +59,15 @@ pip install -r requirements.txt
 ```
 
 The model is a MILP. The code attempts to use the first available solver from Gurobi, HiGHS, CBC, or GLPK. Gurobi was used during development; `highspy` is included for HiGHS-based replication where supported.
+
+To enable Gurobi explicitly, install the optional binding and point it at a valid local license:
+
+```bash
+pip install -e ".[gurobi]"
+export GRB_LICENSE_FILE=/path/to/gurobi.lic
+```
+
+On Windows PowerShell, set the license with `$env:GRB_LICENSE_FILE = "C:\path\to\gurobi.lic"` before running the workflow. Optimization outputs record `solver_name` so the selected solver is auditable.
 
 ## One-Command Reproduction
 
@@ -120,6 +131,32 @@ python app_rt.py
 ```
 
 Both services default to port `5002` unless `PORT` is set. The `/optimize` endpoints expect structured JSON input arrays for buses, chargers, trips, prices, tariffs, and real-time state. The n8n workflows are the intended bridge from Google Sheets/Drive or workbook-derived data to those API payloads.
+
+## Running the real-time workflow without n8n
+
+The standalone `agentic_workflow` package reproduces the real-time orchestration
+locally from Excel workbooks and ZIP archives. It supports the original OpenAI
+agents, a deterministic test backend, direct optimizer integration, optional
+HTTP compatibility, checkpoints, and auditable Excel outputs.
+
+See [`docs/PYTHON_WORKFLOW.md`](docs/PYTHON_WORKFLOW.md) for installation,
+commands, input mapping, scenarios, and validation details.
+
+The focused reviewer-response implementation is documented in
+[`docs/REVISION_EXPERIMENTS.md`](docs/REVISION_EXPERIMENTS.md). It adds
+standards-inspired service/charger notices, manual/rule/LLM information paths,
+same-optimizer deterministic and agentic configurations, role-level ablations,
+raw structured-output/retry logging, charger fault/derating updates, and a
+controlled 192-decision uncertainty/chat benchmark with clean notices, single
+messages, fragmented driver chats, and noisy/conflicting chats under
+`inputs/revision/`. It includes frozen scenario-level development/test splits,
+ranges, provisional values, corrections, conditional warnings, irrelevant
+messages, and a deterministic uncertainty-to-optimizer policy. Isolated oracle,
+numerical-only, stateful rule-text, and Agent-trigger-only configurations keep
+pricing, evaluation, and optimization fixed for the causal Trigger comparison.
+The earlier 120-decision v2 notice set is retained for sensitivity analysis.
+The frozen held-out Trigger v3 results and their interpretation limits are in
+[`docs/TRIGGER_V3_RESULTS.md`](docs/TRIGGER_V3_RESULTS.md).
 
 ## Workflow Replication
 

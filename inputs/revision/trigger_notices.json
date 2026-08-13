@@ -1,0 +1,4442 @@
+[
+  {
+    "notice_id": "SVC-01-onset-explicit",
+    "scenario_id": "svc_route4_detour",
+    "event_id": "SVC-01",
+    "source_type": "service_alert",
+    "wording_variant": "explicit",
+    "report_timestep": 10,
+    "text": "Route block 4, served by bus 4, is detoured. Cycle time will increase 25 minutes and route energy consumption is expected to increase 10 percent.",
+    "canonical": {
+      "event_id": "SVC-01",
+      "source_type": "service_alert",
+      "event_type": "service_delay",
+      "phase": "onset",
+      "affected_buses": [
+        4
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 10,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "4": 25
+        },
+        "energy_multiplier_by_bus": {
+          "4": 1.1
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route4_detour"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-01-onset-indirect",
+    "scenario_id": "svc_route4_detour",
+    "event_id": "SVC-01",
+    "source_type": "service_alert",
+    "wording_variant": "indirect",
+    "report_timestep": 10,
+    "text": "Water-main work diverts route 4; bus 4 should allow roughly 25 extra minutes and about 10% more traction energy.",
+    "canonical": {
+      "event_id": "SVC-01",
+      "source_type": "service_alert",
+      "event_type": "service_delay",
+      "phase": "onset",
+      "affected_buses": [
+        4
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 10,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "4": 25
+        },
+        "energy_multiplier_by_bus": {
+          "4": 1.1
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route4_detour"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-01-onset-operational",
+    "scenario_id": "svc_route4_detour",
+    "event_id": "SVC-01",
+    "source_type": "service_alert",
+    "wording_variant": "operational",
+    "report_timestep": 10,
+    "text": "Ops ticket SVC-01: water-main diversion on block 4. Unit 4 planning allowance is +25 min and 1.10x traction energy; clearance time pending.",
+    "canonical": {
+      "event_id": "SVC-01",
+      "source_type": "service_alert",
+      "event_type": "service_delay",
+      "phase": "onset",
+      "affected_buses": [
+        4
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 10,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "4": 25
+        },
+        "energy_multiplier_by_bus": {
+          "4": 1.1
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route4_detour"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-01-persistence-explicit",
+    "scenario_id": "svc_route4_detour",
+    "event_id": "SVC-01",
+    "source_type": "service_alert",
+    "wording_variant": "explicit",
+    "report_timestep": 11,
+    "text": "The condition continues unchanged. Route block 4, served by bus 4, is detoured. Cycle time will increase 25 minutes and route energy consumption is expected to increase 10 percent.",
+    "canonical": {
+      "event_id": "SVC-01",
+      "source_type": "service_alert",
+      "event_type": "service_delay",
+      "phase": "persistence",
+      "affected_buses": [
+        4
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 11,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "4": 25
+        },
+        "energy_multiplier_by_bus": {
+          "4": 1.1
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route4_detour"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-01-persistence-indirect",
+    "scenario_id": "svc_route4_detour",
+    "event_id": "SVC-01",
+    "source_type": "service_alert",
+    "wording_variant": "indirect",
+    "report_timestep": 11,
+    "text": "The condition continues unchanged. Water-main work diverts route 4; bus 4 should allow roughly 25 extra minutes and about 10% more traction energy.",
+    "canonical": {
+      "event_id": "SVC-01",
+      "source_type": "service_alert",
+      "event_type": "service_delay",
+      "phase": "persistence",
+      "affected_buses": [
+        4
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 11,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "4": 25
+        },
+        "energy_multiplier_by_bus": {
+          "4": 1.1
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route4_detour"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-01-persistence-operational",
+    "scenario_id": "svc_route4_detour",
+    "event_id": "SVC-01",
+    "source_type": "service_alert",
+    "wording_variant": "operational",
+    "report_timestep": 11,
+    "text": "SVC-01 field follow-up: no change from the last dispatch instruction; the same restrictions and planning assumptions remain in force.",
+    "canonical": {
+      "event_id": "SVC-01",
+      "source_type": "service_alert",
+      "event_type": "service_delay",
+      "phase": "persistence",
+      "affected_buses": [
+        4
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 11,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "4": 25
+        },
+        "energy_multiplier_by_bus": {
+          "4": 1.1
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route4_detour"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-01-severity_change-explicit",
+    "scenario_id": "svc_route4_detour",
+    "event_id": "SVC-01",
+    "source_type": "service_alert",
+    "wording_variant": "explicit",
+    "report_timestep": 12,
+    "text": "The condition has worsened and requires re-evaluation. Bus 4 is now delayed 35 minutes. Bus 4 energy consumption now increases 15 percent.",
+    "canonical": {
+      "event_id": "SVC-01",
+      "source_type": "service_alert",
+      "event_type": "service_delay",
+      "phase": "severity_change",
+      "affected_buses": [
+        4
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 12,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "4": 35
+        },
+        "energy_multiplier_by_bus": {
+          "4": 1.15
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route4_detour"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-01-severity_change-indirect",
+    "scenario_id": "svc_route4_detour",
+    "event_id": "SVC-01",
+    "source_type": "service_alert",
+    "wording_variant": "indirect",
+    "report_timestep": 12,
+    "text": "The condition has worsened and requires re-evaluation. Bus 4 is now delayed 35 minutes. Bus 4 energy consumption now increases 15 percent.",
+    "canonical": {
+      "event_id": "SVC-01",
+      "source_type": "service_alert",
+      "event_type": "service_delay",
+      "phase": "severity_change",
+      "affected_buses": [
+        4
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 12,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "4": 35
+        },
+        "energy_multiplier_by_bus": {
+          "4": 1.15
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route4_detour"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-01-severity_change-operational",
+    "scenario_id": "svc_route4_detour",
+    "event_id": "SVC-01",
+    "source_type": "service_alert",
+    "wording_variant": "operational",
+    "report_timestep": 12,
+    "text": "SVC-01 dispatch correction: replace the earlier timing allowance with 35 min; use 1.15x traction energy for that block. Earlier values are superseded.",
+    "canonical": {
+      "event_id": "SVC-01",
+      "source_type": "service_alert",
+      "event_type": "service_delay",
+      "phase": "severity_change",
+      "affected_buses": [
+        4
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 12,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "4": 35
+        },
+        "energy_multiplier_by_bus": {
+          "4": 1.15
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route4_detour"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-01-recovery-explicit",
+    "scenario_id": "svc_route4_detour",
+    "event_id": "SVC-01",
+    "source_type": "service_alert",
+    "wording_variant": "explicit",
+    "report_timestep": 14,
+    "text": "Normal service is restored for buses 4.",
+    "canonical": {
+      "event_id": "SVC-01",
+      "source_type": "service_alert",
+      "event_type": "service_delay",
+      "phase": "recovery",
+      "affected_buses": [
+        4
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 14,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "4": 0
+        },
+        "energy_multiplier_by_bus": {
+          "4": 1.0
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route4_detour"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-01-recovery-indirect",
+    "scenario_id": "svc_route4_detour",
+    "event_id": "SVC-01",
+    "source_type": "service_alert",
+    "wording_variant": "indirect",
+    "report_timestep": 14,
+    "text": "Normal service is restored for buses 4.",
+    "canonical": {
+      "event_id": "SVC-01",
+      "source_type": "service_alert",
+      "event_type": "service_delay",
+      "phase": "recovery",
+      "affected_buses": [
+        4
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 14,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "4": 0
+        },
+        "energy_multiplier_by_bus": {
+          "4": 1.0
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route4_detour"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-01-recovery-operational",
+    "scenario_id": "svc_route4_detour",
+    "event_id": "SVC-01",
+    "source_type": "service_alert",
+    "wording_variant": "operational",
+    "report_timestep": 14,
+    "text": "SVC-01 close-out: the field restriction is cleared at the current report time. Return the affected block and charging unit, where applicable, to normal planning assumptions.",
+    "canonical": {
+      "event_id": "SVC-01",
+      "source_type": "service_alert",
+      "event_type": "service_delay",
+      "phase": "recovery",
+      "affected_buses": [
+        4
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 14,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "4": 0
+        },
+        "energy_multiplier_by_bus": {
+          "4": 1.0
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route4_detour"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-01-stable-explicit",
+    "scenario_id": "svc_route4_detour",
+    "event_id": "SVC-01",
+    "source_type": "service_alert",
+    "wording_variant": "explicit",
+    "report_timestep": 15,
+    "text": "Informational: the recovered state is stable and has no new operational impact.",
+    "canonical": {
+      "event_id": "SVC-01",
+      "source_type": "service_alert",
+      "event_type": "service_delay",
+      "phase": "stable",
+      "affected_buses": [
+        4
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 15,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": false,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "4": 0
+        },
+        "energy_multiplier_by_bus": {
+          "4": 1.0
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route4_detour"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-01-stable-indirect",
+    "scenario_id": "svc_route4_detour",
+    "event_id": "SVC-01",
+    "source_type": "service_alert",
+    "wording_variant": "indirect",
+    "report_timestep": 15,
+    "text": "Informational: the recovered state is stable and has no new operational impact.",
+    "canonical": {
+      "event_id": "SVC-01",
+      "source_type": "service_alert",
+      "event_type": "service_delay",
+      "phase": "stable",
+      "affected_buses": [
+        4
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 15,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": false,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "4": 0
+        },
+        "energy_multiplier_by_bus": {
+          "4": 1.0
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route4_detour"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-01-stable-operational",
+    "scenario_id": "svc_route4_detour",
+    "event_id": "SVC-01",
+    "source_type": "service_alert",
+    "wording_variant": "operational",
+    "report_timestep": 15,
+    "text": "SVC-01 monitoring note: close-out remains valid; no new dispatch or charging restriction.",
+    "canonical": {
+      "event_id": "SVC-01",
+      "source_type": "service_alert",
+      "event_type": "service_delay",
+      "phase": "stable",
+      "affected_buses": [
+        4
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 15,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": false,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "4": 0
+        },
+        "energy_multiplier_by_bus": {
+          "4": 1.0
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route4_detour"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-02-onset-explicit",
+    "scenario_id": "svc_route6_closure",
+    "event_id": "SVC-02",
+    "source_type": "service_alert",
+    "wording_variant": "explicit",
+    "report_timestep": 10,
+    "text": "Route block 6, bus 6, is partially closed. Service delay is 20 minutes and energy consumption increases 8 percent.",
+    "canonical": {
+      "event_id": "SVC-02",
+      "source_type": "service_alert",
+      "event_type": "service_delay",
+      "phase": "onset",
+      "affected_buses": [
+        6
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 10,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "6": 20
+        },
+        "energy_multiplier_by_bus": {
+          "6": 1.08
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route6_closure"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-02-onset-indirect",
+    "scenario_id": "svc_route6_closure",
+    "event_id": "SVC-02",
+    "source_type": "service_alert",
+    "wording_variant": "indirect",
+    "report_timestep": 10,
+    "text": "Construction narrows route 6. Bus 6 may need approximately 20 minutes longer and around 8% additional energy.",
+    "canonical": {
+      "event_id": "SVC-02",
+      "source_type": "service_alert",
+      "event_type": "service_delay",
+      "phase": "onset",
+      "affected_buses": [
+        6
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 10,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "6": 20
+        },
+        "energy_multiplier_by_bus": {
+          "6": 1.08
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route6_closure"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-02-onset-operational",
+    "scenario_id": "svc_route6_closure",
+    "event_id": "SVC-02",
+    "source_type": "service_alert",
+    "wording_variant": "operational",
+    "report_timestep": 10,
+    "text": "Dispatch SVC-02: construction restriction on block 6. Carry +20 min for unit 6 and plan at 1.08x normal traction use; end time not confirmed.",
+    "canonical": {
+      "event_id": "SVC-02",
+      "source_type": "service_alert",
+      "event_type": "service_delay",
+      "phase": "onset",
+      "affected_buses": [
+        6
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 10,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "6": 20
+        },
+        "energy_multiplier_by_bus": {
+          "6": 1.08
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route6_closure"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-02-persistence-explicit",
+    "scenario_id": "svc_route6_closure",
+    "event_id": "SVC-02",
+    "source_type": "service_alert",
+    "wording_variant": "explicit",
+    "report_timestep": 11,
+    "text": "The condition continues unchanged. Route block 6, bus 6, is partially closed. Service delay is 20 minutes and energy consumption increases 8 percent.",
+    "canonical": {
+      "event_id": "SVC-02",
+      "source_type": "service_alert",
+      "event_type": "service_delay",
+      "phase": "persistence",
+      "affected_buses": [
+        6
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 11,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "6": 20
+        },
+        "energy_multiplier_by_bus": {
+          "6": 1.08
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route6_closure"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-02-persistence-indirect",
+    "scenario_id": "svc_route6_closure",
+    "event_id": "SVC-02",
+    "source_type": "service_alert",
+    "wording_variant": "indirect",
+    "report_timestep": 11,
+    "text": "The condition continues unchanged. Construction narrows route 6. Bus 6 may need approximately 20 minutes longer and around 8% additional energy.",
+    "canonical": {
+      "event_id": "SVC-02",
+      "source_type": "service_alert",
+      "event_type": "service_delay",
+      "phase": "persistence",
+      "affected_buses": [
+        6
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 11,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "6": 20
+        },
+        "energy_multiplier_by_bus": {
+          "6": 1.08
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route6_closure"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-02-persistence-operational",
+    "scenario_id": "svc_route6_closure",
+    "event_id": "SVC-02",
+    "source_type": "service_alert",
+    "wording_variant": "operational",
+    "report_timestep": 11,
+    "text": "SVC-02 field follow-up: no change from the last dispatch instruction; the same restrictions and planning assumptions remain in force.",
+    "canonical": {
+      "event_id": "SVC-02",
+      "source_type": "service_alert",
+      "event_type": "service_delay",
+      "phase": "persistence",
+      "affected_buses": [
+        6
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 11,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "6": 20
+        },
+        "energy_multiplier_by_bus": {
+          "6": 1.08
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route6_closure"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-02-severity_change-explicit",
+    "scenario_id": "svc_route6_closure",
+    "event_id": "SVC-02",
+    "source_type": "service_alert",
+    "wording_variant": "explicit",
+    "report_timestep": 12,
+    "text": "The condition has worsened and requires re-evaluation. Bus 6 is now delayed 28 minutes. Bus 6 energy consumption now increases 12 percent.",
+    "canonical": {
+      "event_id": "SVC-02",
+      "source_type": "service_alert",
+      "event_type": "service_delay",
+      "phase": "severity_change",
+      "affected_buses": [
+        6
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 12,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "6": 28
+        },
+        "energy_multiplier_by_bus": {
+          "6": 1.12
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route6_closure"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-02-severity_change-indirect",
+    "scenario_id": "svc_route6_closure",
+    "event_id": "SVC-02",
+    "source_type": "service_alert",
+    "wording_variant": "indirect",
+    "report_timestep": 12,
+    "text": "The condition has worsened and requires re-evaluation. Bus 6 is now delayed 28 minutes. Bus 6 energy consumption now increases 12 percent.",
+    "canonical": {
+      "event_id": "SVC-02",
+      "source_type": "service_alert",
+      "event_type": "service_delay",
+      "phase": "severity_change",
+      "affected_buses": [
+        6
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 12,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "6": 28
+        },
+        "energy_multiplier_by_bus": {
+          "6": 1.12
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route6_closure"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-02-severity_change-operational",
+    "scenario_id": "svc_route6_closure",
+    "event_id": "SVC-02",
+    "source_type": "service_alert",
+    "wording_variant": "operational",
+    "report_timestep": 12,
+    "text": "SVC-02 dispatch correction: replace the earlier timing allowance with 28 min; use 1.12x traction energy for that block. Earlier values are superseded.",
+    "canonical": {
+      "event_id": "SVC-02",
+      "source_type": "service_alert",
+      "event_type": "service_delay",
+      "phase": "severity_change",
+      "affected_buses": [
+        6
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 12,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "6": 28
+        },
+        "energy_multiplier_by_bus": {
+          "6": 1.12
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route6_closure"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-02-recovery-explicit",
+    "scenario_id": "svc_route6_closure",
+    "event_id": "SVC-02",
+    "source_type": "service_alert",
+    "wording_variant": "explicit",
+    "report_timestep": 14,
+    "text": "Normal service is restored for buses 6.",
+    "canonical": {
+      "event_id": "SVC-02",
+      "source_type": "service_alert",
+      "event_type": "service_delay",
+      "phase": "recovery",
+      "affected_buses": [
+        6
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 14,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "6": 0
+        },
+        "energy_multiplier_by_bus": {
+          "6": 1.0
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route6_closure"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-02-recovery-indirect",
+    "scenario_id": "svc_route6_closure",
+    "event_id": "SVC-02",
+    "source_type": "service_alert",
+    "wording_variant": "indirect",
+    "report_timestep": 14,
+    "text": "Normal service is restored for buses 6.",
+    "canonical": {
+      "event_id": "SVC-02",
+      "source_type": "service_alert",
+      "event_type": "service_delay",
+      "phase": "recovery",
+      "affected_buses": [
+        6
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 14,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "6": 0
+        },
+        "energy_multiplier_by_bus": {
+          "6": 1.0
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route6_closure"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-02-recovery-operational",
+    "scenario_id": "svc_route6_closure",
+    "event_id": "SVC-02",
+    "source_type": "service_alert",
+    "wording_variant": "operational",
+    "report_timestep": 14,
+    "text": "SVC-02 close-out: the field restriction is cleared at the current report time. Return the affected block and charging unit, where applicable, to normal planning assumptions.",
+    "canonical": {
+      "event_id": "SVC-02",
+      "source_type": "service_alert",
+      "event_type": "service_delay",
+      "phase": "recovery",
+      "affected_buses": [
+        6
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 14,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "6": 0
+        },
+        "energy_multiplier_by_bus": {
+          "6": 1.0
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route6_closure"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-02-stable-explicit",
+    "scenario_id": "svc_route6_closure",
+    "event_id": "SVC-02",
+    "source_type": "service_alert",
+    "wording_variant": "explicit",
+    "report_timestep": 15,
+    "text": "Informational: the recovered state is stable and has no new operational impact.",
+    "canonical": {
+      "event_id": "SVC-02",
+      "source_type": "service_alert",
+      "event_type": "service_delay",
+      "phase": "stable",
+      "affected_buses": [
+        6
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 15,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": false,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "6": 0
+        },
+        "energy_multiplier_by_bus": {
+          "6": 1.0
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route6_closure"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-02-stable-indirect",
+    "scenario_id": "svc_route6_closure",
+    "event_id": "SVC-02",
+    "source_type": "service_alert",
+    "wording_variant": "indirect",
+    "report_timestep": 15,
+    "text": "Informational: the recovered state is stable and has no new operational impact.",
+    "canonical": {
+      "event_id": "SVC-02",
+      "source_type": "service_alert",
+      "event_type": "service_delay",
+      "phase": "stable",
+      "affected_buses": [
+        6
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 15,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": false,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "6": 0
+        },
+        "energy_multiplier_by_bus": {
+          "6": 1.0
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route6_closure"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-02-stable-operational",
+    "scenario_id": "svc_route6_closure",
+    "event_id": "SVC-02",
+    "source_type": "service_alert",
+    "wording_variant": "operational",
+    "report_timestep": 15,
+    "text": "SVC-02 monitoring note: close-out remains valid; no new dispatch or charging restriction.",
+    "canonical": {
+      "event_id": "SVC-02",
+      "source_type": "service_alert",
+      "event_type": "service_delay",
+      "phase": "stable",
+      "affected_buses": [
+        6
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 15,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": false,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "6": 0
+        },
+        "energy_multiplier_by_bus": {
+          "6": 1.0
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route6_closure"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-03-onset-explicit",
+    "scenario_id": "svc_route2_substitution",
+    "event_id": "SVC-03",
+    "source_type": "service_alert",
+    "wording_variant": "explicit",
+    "report_timestep": 10,
+    "text": "Bus 2 has a route substitution. Delay is 15 minutes and energy consumption increases 12 percent.",
+    "canonical": {
+      "event_id": "SVC-03",
+      "source_type": "service_alert",
+      "event_type": "route_energy_change",
+      "phase": "onset",
+      "affected_buses": [
+        2
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 10,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "2": 15
+        },
+        "energy_multiplier_by_bus": {
+          "2": 1.12
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route2_substitution"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-03-onset-indirect",
+    "scenario_id": "svc_route2_substitution",
+    "event_id": "SVC-03",
+    "source_type": "service_alert",
+    "wording_variant": "indirect",
+    "report_timestep": 10,
+    "text": "A substitute alignment applies to bus 2; allow about 15 extra minutes and roughly 12% more route energy.",
+    "canonical": {
+      "event_id": "SVC-03",
+      "source_type": "service_alert",
+      "event_type": "route_energy_change",
+      "phase": "onset",
+      "affected_buses": [
+        2
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 10,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "2": 15
+        },
+        "energy_multiplier_by_bus": {
+          "2": 1.12
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route2_substitution"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-03-onset-operational",
+    "scenario_id": "svc_route2_substitution",
+    "event_id": "SVC-03",
+    "source_type": "service_alert",
+    "wording_variant": "operational",
+    "report_timestep": 10,
+    "text": "Control note SVC-03: substitute alignment assigned to unit 2. Use a +15 min cycle allowance and 1.12x route energy until released.",
+    "canonical": {
+      "event_id": "SVC-03",
+      "source_type": "service_alert",
+      "event_type": "route_energy_change",
+      "phase": "onset",
+      "affected_buses": [
+        2
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 10,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "2": 15
+        },
+        "energy_multiplier_by_bus": {
+          "2": 1.12
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route2_substitution"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-03-persistence-explicit",
+    "scenario_id": "svc_route2_substitution",
+    "event_id": "SVC-03",
+    "source_type": "service_alert",
+    "wording_variant": "explicit",
+    "report_timestep": 11,
+    "text": "The condition continues unchanged. Bus 2 has a route substitution. Delay is 15 minutes and energy consumption increases 12 percent.",
+    "canonical": {
+      "event_id": "SVC-03",
+      "source_type": "service_alert",
+      "event_type": "route_energy_change",
+      "phase": "persistence",
+      "affected_buses": [
+        2
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 11,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "2": 15
+        },
+        "energy_multiplier_by_bus": {
+          "2": 1.12
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route2_substitution"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-03-persistence-indirect",
+    "scenario_id": "svc_route2_substitution",
+    "event_id": "SVC-03",
+    "source_type": "service_alert",
+    "wording_variant": "indirect",
+    "report_timestep": 11,
+    "text": "The condition continues unchanged. A substitute alignment applies to bus 2; allow about 15 extra minutes and roughly 12% more route energy.",
+    "canonical": {
+      "event_id": "SVC-03",
+      "source_type": "service_alert",
+      "event_type": "route_energy_change",
+      "phase": "persistence",
+      "affected_buses": [
+        2
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 11,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "2": 15
+        },
+        "energy_multiplier_by_bus": {
+          "2": 1.12
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route2_substitution"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-03-persistence-operational",
+    "scenario_id": "svc_route2_substitution",
+    "event_id": "SVC-03",
+    "source_type": "service_alert",
+    "wording_variant": "operational",
+    "report_timestep": 11,
+    "text": "SVC-03 field follow-up: no change from the last dispatch instruction; the same restrictions and planning assumptions remain in force.",
+    "canonical": {
+      "event_id": "SVC-03",
+      "source_type": "service_alert",
+      "event_type": "route_energy_change",
+      "phase": "persistence",
+      "affected_buses": [
+        2
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 11,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "2": 15
+        },
+        "energy_multiplier_by_bus": {
+          "2": 1.12
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route2_substitution"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-03-severity_change-explicit",
+    "scenario_id": "svc_route2_substitution",
+    "event_id": "SVC-03",
+    "source_type": "service_alert",
+    "wording_variant": "explicit",
+    "report_timestep": 12,
+    "text": "The condition has worsened and requires re-evaluation. Bus 2 is now delayed 21 minutes. Bus 2 energy consumption now increases 18 percent.",
+    "canonical": {
+      "event_id": "SVC-03",
+      "source_type": "service_alert",
+      "event_type": "route_energy_change",
+      "phase": "severity_change",
+      "affected_buses": [
+        2
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 12,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "2": 21
+        },
+        "energy_multiplier_by_bus": {
+          "2": 1.18
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route2_substitution"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-03-severity_change-indirect",
+    "scenario_id": "svc_route2_substitution",
+    "event_id": "SVC-03",
+    "source_type": "service_alert",
+    "wording_variant": "indirect",
+    "report_timestep": 12,
+    "text": "The condition has worsened and requires re-evaluation. Bus 2 is now delayed 21 minutes. Bus 2 energy consumption now increases 18 percent.",
+    "canonical": {
+      "event_id": "SVC-03",
+      "source_type": "service_alert",
+      "event_type": "route_energy_change",
+      "phase": "severity_change",
+      "affected_buses": [
+        2
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 12,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "2": 21
+        },
+        "energy_multiplier_by_bus": {
+          "2": 1.18
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route2_substitution"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-03-severity_change-operational",
+    "scenario_id": "svc_route2_substitution",
+    "event_id": "SVC-03",
+    "source_type": "service_alert",
+    "wording_variant": "operational",
+    "report_timestep": 12,
+    "text": "SVC-03 dispatch correction: replace the earlier timing allowance with 21 min; use 1.18x traction energy for that block. Earlier values are superseded.",
+    "canonical": {
+      "event_id": "SVC-03",
+      "source_type": "service_alert",
+      "event_type": "route_energy_change",
+      "phase": "severity_change",
+      "affected_buses": [
+        2
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 12,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "2": 21
+        },
+        "energy_multiplier_by_bus": {
+          "2": 1.18
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route2_substitution"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-03-recovery-explicit",
+    "scenario_id": "svc_route2_substitution",
+    "event_id": "SVC-03",
+    "source_type": "service_alert",
+    "wording_variant": "explicit",
+    "report_timestep": 14,
+    "text": "Normal service is restored for buses 2.",
+    "canonical": {
+      "event_id": "SVC-03",
+      "source_type": "service_alert",
+      "event_type": "route_energy_change",
+      "phase": "recovery",
+      "affected_buses": [
+        2
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 14,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "2": 0
+        },
+        "energy_multiplier_by_bus": {
+          "2": 1.0
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route2_substitution"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-03-recovery-indirect",
+    "scenario_id": "svc_route2_substitution",
+    "event_id": "SVC-03",
+    "source_type": "service_alert",
+    "wording_variant": "indirect",
+    "report_timestep": 14,
+    "text": "Normal service is restored for buses 2.",
+    "canonical": {
+      "event_id": "SVC-03",
+      "source_type": "service_alert",
+      "event_type": "route_energy_change",
+      "phase": "recovery",
+      "affected_buses": [
+        2
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 14,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "2": 0
+        },
+        "energy_multiplier_by_bus": {
+          "2": 1.0
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route2_substitution"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-03-recovery-operational",
+    "scenario_id": "svc_route2_substitution",
+    "event_id": "SVC-03",
+    "source_type": "service_alert",
+    "wording_variant": "operational",
+    "report_timestep": 14,
+    "text": "SVC-03 close-out: the field restriction is cleared at the current report time. Return the affected block and charging unit, where applicable, to normal planning assumptions.",
+    "canonical": {
+      "event_id": "SVC-03",
+      "source_type": "service_alert",
+      "event_type": "route_energy_change",
+      "phase": "recovery",
+      "affected_buses": [
+        2
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 14,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "2": 0
+        },
+        "energy_multiplier_by_bus": {
+          "2": 1.0
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route2_substitution"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-03-stable-explicit",
+    "scenario_id": "svc_route2_substitution",
+    "event_id": "SVC-03",
+    "source_type": "service_alert",
+    "wording_variant": "explicit",
+    "report_timestep": 15,
+    "text": "Informational: the recovered state is stable and has no new operational impact.",
+    "canonical": {
+      "event_id": "SVC-03",
+      "source_type": "service_alert",
+      "event_type": "route_energy_change",
+      "phase": "stable",
+      "affected_buses": [
+        2
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 15,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": false,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "2": 0
+        },
+        "energy_multiplier_by_bus": {
+          "2": 1.0
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route2_substitution"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-03-stable-indirect",
+    "scenario_id": "svc_route2_substitution",
+    "event_id": "SVC-03",
+    "source_type": "service_alert",
+    "wording_variant": "indirect",
+    "report_timestep": 15,
+    "text": "Informational: the recovered state is stable and has no new operational impact.",
+    "canonical": {
+      "event_id": "SVC-03",
+      "source_type": "service_alert",
+      "event_type": "route_energy_change",
+      "phase": "stable",
+      "affected_buses": [
+        2
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 15,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": false,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "2": 0
+        },
+        "energy_multiplier_by_bus": {
+          "2": 1.0
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route2_substitution"
+      ]
+    }
+  },
+  {
+    "notice_id": "SVC-03-stable-operational",
+    "scenario_id": "svc_route2_substitution",
+    "event_id": "SVC-03",
+    "source_type": "service_alert",
+    "wording_variant": "operational",
+    "report_timestep": 15,
+    "text": "SVC-03 monitoring note: close-out remains valid; no new dispatch or charging restriction.",
+    "canonical": {
+      "event_id": "SVC-03",
+      "source_type": "service_alert",
+      "event_type": "route_energy_change",
+      "phase": "stable",
+      "affected_buses": [
+        2
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 15,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": false,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "2": 0
+        },
+        "energy_multiplier_by_bus": {
+          "2": 1.0
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "svc_route2_substitution"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-01-onset-explicit",
+    "scenario_id": "chg_2_fault",
+    "event_id": "CHG-01",
+    "source_type": "ocpp",
+    "wording_variant": "explicit",
+    "report_timestep": 10,
+    "text": "Charger 2 is faulted and unavailable. Technician timing is not confirmed.",
+    "canonical": {
+      "event_id": "CHG-01",
+      "source_type": "ocpp",
+      "event_type": "charger_fault",
+      "phase": "onset",
+      "affected_buses": [],
+      "affected_chargers": [
+        2
+      ],
+      "effective_timestep": 10,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": [
+          2
+        ]
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_2_fault"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-01-onset-indirect",
+    "scenario_id": "chg_2_fault",
+    "event_id": "CHG-01",
+    "source_type": "ocpp",
+    "wording_variant": "indirect",
+    "report_timestep": 10,
+    "text": "OCPP status for charger 2 is Faulted; do not assign charging until maintenance clears it.",
+    "canonical": {
+      "event_id": "CHG-01",
+      "source_type": "ocpp",
+      "event_type": "charger_fault",
+      "phase": "onset",
+      "affected_buses": [],
+      "affected_chargers": [
+        2
+      ],
+      "effective_timestep": 10,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": [
+          2
+        ]
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_2_fault"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-01-onset-operational",
+    "scenario_id": "chg_2_fault",
+    "event_id": "CHG-01",
+    "source_type": "ocpp",
+    "wording_variant": "operational",
+    "report_timestep": 10,
+    "text": "Maintenance CHG-01: EVSE-02 locked out after an isolation alarm. ETA pending; exclude this unit from allocation.",
+    "canonical": {
+      "event_id": "CHG-01",
+      "source_type": "ocpp",
+      "event_type": "charger_fault",
+      "phase": "onset",
+      "affected_buses": [],
+      "affected_chargers": [
+        2
+      ],
+      "effective_timestep": 10,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": [
+          2
+        ]
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_2_fault"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-01-persistence-explicit",
+    "scenario_id": "chg_2_fault",
+    "event_id": "CHG-01",
+    "source_type": "ocpp",
+    "wording_variant": "explicit",
+    "report_timestep": 11,
+    "text": "The condition continues unchanged. Charger 2 is faulted and unavailable. Technician timing is not confirmed.",
+    "canonical": {
+      "event_id": "CHG-01",
+      "source_type": "ocpp",
+      "event_type": "charger_fault",
+      "phase": "persistence",
+      "affected_buses": [],
+      "affected_chargers": [
+        2
+      ],
+      "effective_timestep": 11,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": [
+          2
+        ]
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_2_fault"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-01-persistence-indirect",
+    "scenario_id": "chg_2_fault",
+    "event_id": "CHG-01",
+    "source_type": "ocpp",
+    "wording_variant": "indirect",
+    "report_timestep": 11,
+    "text": "The condition continues unchanged. OCPP status for charger 2 is Faulted; do not assign charging until maintenance clears it.",
+    "canonical": {
+      "event_id": "CHG-01",
+      "source_type": "ocpp",
+      "event_type": "charger_fault",
+      "phase": "persistence",
+      "affected_buses": [],
+      "affected_chargers": [
+        2
+      ],
+      "effective_timestep": 11,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": [
+          2
+        ]
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_2_fault"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-01-persistence-operational",
+    "scenario_id": "chg_2_fault",
+    "event_id": "CHG-01",
+    "source_type": "ocpp",
+    "wording_variant": "operational",
+    "report_timestep": 11,
+    "text": "CHG-01 field follow-up: no change from the last dispatch instruction; the same restrictions and planning assumptions remain in force.",
+    "canonical": {
+      "event_id": "CHG-01",
+      "source_type": "ocpp",
+      "event_type": "charger_fault",
+      "phase": "persistence",
+      "affected_buses": [],
+      "affected_chargers": [
+        2
+      ],
+      "effective_timestep": 11,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": [
+          2
+        ]
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_2_fault"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-01-severity_change-explicit",
+    "scenario_id": "chg_2_fault",
+    "event_id": "CHG-01",
+    "source_type": "ocpp",
+    "wording_variant": "explicit",
+    "report_timestep": 12,
+    "text": "The condition has worsened and requires re-evaluation. Charger 2 is now fully unavailable.",
+    "canonical": {
+      "event_id": "CHG-01",
+      "source_type": "ocpp",
+      "event_type": "charger_fault",
+      "phase": "severity_change",
+      "affected_buses": [],
+      "affected_chargers": [
+        2
+      ],
+      "effective_timestep": 12,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": [
+          2
+        ]
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_2_fault"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-01-severity_change-indirect",
+    "scenario_id": "chg_2_fault",
+    "event_id": "CHG-01",
+    "source_type": "ocpp",
+    "wording_variant": "indirect",
+    "report_timestep": 12,
+    "text": "The condition has worsened and requires re-evaluation. Charger 2 is now fully unavailable.",
+    "canonical": {
+      "event_id": "CHG-01",
+      "source_type": "ocpp",
+      "event_type": "charger_fault",
+      "phase": "severity_change",
+      "affected_buses": [],
+      "affected_chargers": [
+        2
+      ],
+      "effective_timestep": 12,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": [
+          2
+        ]
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_2_fault"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-01-severity_change-operational",
+    "scenario_id": "chg_2_fault",
+    "event_id": "CHG-01",
+    "source_type": "ocpp",
+    "wording_variant": "operational",
+    "report_timestep": 12,
+    "text": "CHG-01 dispatch correction: the same charging unit is now confirmed fully unavailable. Earlier values are superseded.",
+    "canonical": {
+      "event_id": "CHG-01",
+      "source_type": "ocpp",
+      "event_type": "charger_fault",
+      "phase": "severity_change",
+      "affected_buses": [],
+      "affected_chargers": [
+        2
+      ],
+      "effective_timestep": 12,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": [
+          2
+        ]
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_2_fault"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-01-recovery-explicit",
+    "scenario_id": "chg_2_fault",
+    "event_id": "CHG-01",
+    "source_type": "ocpp",
+    "wording_variant": "explicit",
+    "report_timestep": 14,
+    "text": "Normal service is restored for chargers 2.",
+    "canonical": {
+      "event_id": "CHG-01",
+      "source_type": "ocpp",
+      "event_type": "charger_fault",
+      "phase": "recovery",
+      "affected_buses": [],
+      "affected_chargers": [
+        2
+      ],
+      "effective_timestep": 14,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "2": 200.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_2_fault"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-01-recovery-indirect",
+    "scenario_id": "chg_2_fault",
+    "event_id": "CHG-01",
+    "source_type": "ocpp",
+    "wording_variant": "indirect",
+    "report_timestep": 14,
+    "text": "Normal service is restored for chargers 2.",
+    "canonical": {
+      "event_id": "CHG-01",
+      "source_type": "ocpp",
+      "event_type": "charger_fault",
+      "phase": "recovery",
+      "affected_buses": [],
+      "affected_chargers": [
+        2
+      ],
+      "effective_timestep": 14,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "2": 200.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_2_fault"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-01-recovery-operational",
+    "scenario_id": "chg_2_fault",
+    "event_id": "CHG-01",
+    "source_type": "ocpp",
+    "wording_variant": "operational",
+    "report_timestep": 14,
+    "text": "CHG-01 close-out: the field restriction is cleared at the current report time. Return the affected block and charging unit, where applicable, to normal planning assumptions.",
+    "canonical": {
+      "event_id": "CHG-01",
+      "source_type": "ocpp",
+      "event_type": "charger_fault",
+      "phase": "recovery",
+      "affected_buses": [],
+      "affected_chargers": [
+        2
+      ],
+      "effective_timestep": 14,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "2": 200.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_2_fault"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-01-stable-explicit",
+    "scenario_id": "chg_2_fault",
+    "event_id": "CHG-01",
+    "source_type": "ocpp",
+    "wording_variant": "explicit",
+    "report_timestep": 15,
+    "text": "Informational: the recovered state is stable and has no new operational impact.",
+    "canonical": {
+      "event_id": "CHG-01",
+      "source_type": "ocpp",
+      "event_type": "charger_fault",
+      "phase": "stable",
+      "affected_buses": [],
+      "affected_chargers": [
+        2
+      ],
+      "effective_timestep": 15,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": false,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "2": 200.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_2_fault"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-01-stable-indirect",
+    "scenario_id": "chg_2_fault",
+    "event_id": "CHG-01",
+    "source_type": "ocpp",
+    "wording_variant": "indirect",
+    "report_timestep": 15,
+    "text": "Informational: the recovered state is stable and has no new operational impact.",
+    "canonical": {
+      "event_id": "CHG-01",
+      "source_type": "ocpp",
+      "event_type": "charger_fault",
+      "phase": "stable",
+      "affected_buses": [],
+      "affected_chargers": [
+        2
+      ],
+      "effective_timestep": 15,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": false,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "2": 200.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_2_fault"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-01-stable-operational",
+    "scenario_id": "chg_2_fault",
+    "event_id": "CHG-01",
+    "source_type": "ocpp",
+    "wording_variant": "operational",
+    "report_timestep": 15,
+    "text": "CHG-01 monitoring note: close-out remains valid; no new dispatch or charging restriction.",
+    "canonical": {
+      "event_id": "CHG-01",
+      "source_type": "ocpp",
+      "event_type": "charger_fault",
+      "phase": "stable",
+      "affected_buses": [],
+      "affected_chargers": [
+        2
+      ],
+      "effective_timestep": 15,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": false,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "2": 200.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_2_fault"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-02-onset-explicit",
+    "scenario_id": "chg_5_derating",
+    "event_id": "CHG-02",
+    "source_type": "ocpp",
+    "wording_variant": "explicit",
+    "report_timestep": 10,
+    "text": "Charger 5 remains in service but is derated to 75 kW. Repair timing is uncertain.",
+    "canonical": {
+      "event_id": "CHG-02",
+      "source_type": "ocpp",
+      "event_type": "charger_derating",
+      "phase": "onset",
+      "affected_buses": [],
+      "affected_chargers": [
+        5
+      ],
+      "effective_timestep": 10,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "5": 75.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_5_derating"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-02-onset-indirect",
+    "scenario_id": "chg_5_derating",
+    "event_id": "CHG-02",
+    "source_type": "ocpp",
+    "wording_variant": "indirect",
+    "report_timestep": 10,
+    "text": "Thermal alarms limit charger 5; cap the connector at 75 kW pending inspection.",
+    "canonical": {
+      "event_id": "CHG-02",
+      "source_type": "ocpp",
+      "event_type": "charger_derating",
+      "phase": "onset",
+      "affected_buses": [],
+      "affected_chargers": [
+        5
+      ],
+      "effective_timestep": 10,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "5": 75.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_5_derating"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-02-onset-operational",
+    "scenario_id": "chg_5_derating",
+    "event_id": "CHG-02",
+    "source_type": "ocpp",
+    "wording_variant": "operational",
+    "report_timestep": 10,
+    "text": "Maintenance CHG-02: thermal protection remains active on EVSE-05. Temporary output ceiling 75 kW; inspection window uncertain.",
+    "canonical": {
+      "event_id": "CHG-02",
+      "source_type": "ocpp",
+      "event_type": "charger_derating",
+      "phase": "onset",
+      "affected_buses": [],
+      "affected_chargers": [
+        5
+      ],
+      "effective_timestep": 10,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "5": 75.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_5_derating"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-02-persistence-explicit",
+    "scenario_id": "chg_5_derating",
+    "event_id": "CHG-02",
+    "source_type": "ocpp",
+    "wording_variant": "explicit",
+    "report_timestep": 11,
+    "text": "The condition continues unchanged. Charger 5 remains in service but is derated to 75 kW. Repair timing is uncertain.",
+    "canonical": {
+      "event_id": "CHG-02",
+      "source_type": "ocpp",
+      "event_type": "charger_derating",
+      "phase": "persistence",
+      "affected_buses": [],
+      "affected_chargers": [
+        5
+      ],
+      "effective_timestep": 11,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "5": 75.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_5_derating"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-02-persistence-indirect",
+    "scenario_id": "chg_5_derating",
+    "event_id": "CHG-02",
+    "source_type": "ocpp",
+    "wording_variant": "indirect",
+    "report_timestep": 11,
+    "text": "The condition continues unchanged. Thermal alarms limit charger 5; cap the connector at 75 kW pending inspection.",
+    "canonical": {
+      "event_id": "CHG-02",
+      "source_type": "ocpp",
+      "event_type": "charger_derating",
+      "phase": "persistence",
+      "affected_buses": [],
+      "affected_chargers": [
+        5
+      ],
+      "effective_timestep": 11,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "5": 75.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_5_derating"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-02-persistence-operational",
+    "scenario_id": "chg_5_derating",
+    "event_id": "CHG-02",
+    "source_type": "ocpp",
+    "wording_variant": "operational",
+    "report_timestep": 11,
+    "text": "CHG-02 field follow-up: no change from the last dispatch instruction; the same restrictions and planning assumptions remain in force.",
+    "canonical": {
+      "event_id": "CHG-02",
+      "source_type": "ocpp",
+      "event_type": "charger_derating",
+      "phase": "persistence",
+      "affected_buses": [],
+      "affected_chargers": [
+        5
+      ],
+      "effective_timestep": 11,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "5": 75.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_5_derating"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-02-severity_change-explicit",
+    "scenario_id": "chg_5_derating",
+    "event_id": "CHG-02",
+    "source_type": "ocpp",
+    "wording_variant": "explicit",
+    "report_timestep": 12,
+    "text": "The condition has worsened and requires re-evaluation. Charger 5 is now derated to 37.5 kW.",
+    "canonical": {
+      "event_id": "CHG-02",
+      "source_type": "ocpp",
+      "event_type": "charger_derating",
+      "phase": "severity_change",
+      "affected_buses": [],
+      "affected_chargers": [
+        5
+      ],
+      "effective_timestep": 12,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "5": 37.5
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_5_derating"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-02-severity_change-indirect",
+    "scenario_id": "chg_5_derating",
+    "event_id": "CHG-02",
+    "source_type": "ocpp",
+    "wording_variant": "indirect",
+    "report_timestep": 12,
+    "text": "The condition has worsened and requires re-evaluation. Charger 5 is now derated to 37.5 kW.",
+    "canonical": {
+      "event_id": "CHG-02",
+      "source_type": "ocpp",
+      "event_type": "charger_derating",
+      "phase": "severity_change",
+      "affected_buses": [],
+      "affected_chargers": [
+        5
+      ],
+      "effective_timestep": 12,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "5": 37.5
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_5_derating"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-02-severity_change-operational",
+    "scenario_id": "chg_5_derating",
+    "event_id": "CHG-02",
+    "source_type": "ocpp",
+    "wording_variant": "operational",
+    "report_timestep": 12,
+    "text": "CHG-02 dispatch correction: lower the same connector ceiling to 37.5 kW. Earlier values are superseded.",
+    "canonical": {
+      "event_id": "CHG-02",
+      "source_type": "ocpp",
+      "event_type": "charger_derating",
+      "phase": "severity_change",
+      "affected_buses": [],
+      "affected_chargers": [
+        5
+      ],
+      "effective_timestep": 12,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "5": 37.5
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_5_derating"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-02-recovery-explicit",
+    "scenario_id": "chg_5_derating",
+    "event_id": "CHG-02",
+    "source_type": "ocpp",
+    "wording_variant": "explicit",
+    "report_timestep": 14,
+    "text": "Normal service is restored for chargers 5.",
+    "canonical": {
+      "event_id": "CHG-02",
+      "source_type": "ocpp",
+      "event_type": "charger_derating",
+      "phase": "recovery",
+      "affected_buses": [],
+      "affected_chargers": [
+        5
+      ],
+      "effective_timestep": 14,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "5": 200.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_5_derating"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-02-recovery-indirect",
+    "scenario_id": "chg_5_derating",
+    "event_id": "CHG-02",
+    "source_type": "ocpp",
+    "wording_variant": "indirect",
+    "report_timestep": 14,
+    "text": "Normal service is restored for chargers 5.",
+    "canonical": {
+      "event_id": "CHG-02",
+      "source_type": "ocpp",
+      "event_type": "charger_derating",
+      "phase": "recovery",
+      "affected_buses": [],
+      "affected_chargers": [
+        5
+      ],
+      "effective_timestep": 14,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "5": 200.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_5_derating"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-02-recovery-operational",
+    "scenario_id": "chg_5_derating",
+    "event_id": "CHG-02",
+    "source_type": "ocpp",
+    "wording_variant": "operational",
+    "report_timestep": 14,
+    "text": "CHG-02 close-out: the field restriction is cleared at the current report time. Return the affected block and charging unit, where applicable, to normal planning assumptions.",
+    "canonical": {
+      "event_id": "CHG-02",
+      "source_type": "ocpp",
+      "event_type": "charger_derating",
+      "phase": "recovery",
+      "affected_buses": [],
+      "affected_chargers": [
+        5
+      ],
+      "effective_timestep": 14,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "5": 200.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_5_derating"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-02-stable-explicit",
+    "scenario_id": "chg_5_derating",
+    "event_id": "CHG-02",
+    "source_type": "ocpp",
+    "wording_variant": "explicit",
+    "report_timestep": 15,
+    "text": "Informational: the recovered state is stable and has no new operational impact.",
+    "canonical": {
+      "event_id": "CHG-02",
+      "source_type": "ocpp",
+      "event_type": "charger_derating",
+      "phase": "stable",
+      "affected_buses": [],
+      "affected_chargers": [
+        5
+      ],
+      "effective_timestep": 15,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": false,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "5": 200.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_5_derating"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-02-stable-indirect",
+    "scenario_id": "chg_5_derating",
+    "event_id": "CHG-02",
+    "source_type": "ocpp",
+    "wording_variant": "indirect",
+    "report_timestep": 15,
+    "text": "Informational: the recovered state is stable and has no new operational impact.",
+    "canonical": {
+      "event_id": "CHG-02",
+      "source_type": "ocpp",
+      "event_type": "charger_derating",
+      "phase": "stable",
+      "affected_buses": [],
+      "affected_chargers": [
+        5
+      ],
+      "effective_timestep": 15,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": false,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "5": 200.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_5_derating"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-02-stable-operational",
+    "scenario_id": "chg_5_derating",
+    "event_id": "CHG-02",
+    "source_type": "ocpp",
+    "wording_variant": "operational",
+    "report_timestep": 15,
+    "text": "CHG-02 monitoring note: close-out remains valid; no new dispatch or charging restriction.",
+    "canonical": {
+      "event_id": "CHG-02",
+      "source_type": "ocpp",
+      "event_type": "charger_derating",
+      "phase": "stable",
+      "affected_buses": [],
+      "affected_chargers": [
+        5
+      ],
+      "effective_timestep": 15,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": false,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "5": 200.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_5_derating"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-03-onset-explicit",
+    "scenario_id": "chg_7_fault",
+    "event_id": "CHG-03",
+    "source_type": "ocpp",
+    "wording_variant": "explicit",
+    "report_timestep": 10,
+    "text": "Charger 7 is offline and unavailable because of an isolation fault.",
+    "canonical": {
+      "event_id": "CHG-03",
+      "source_type": "ocpp",
+      "event_type": "charger_fault",
+      "phase": "onset",
+      "affected_buses": [],
+      "affected_chargers": [
+        7
+      ],
+      "effective_timestep": 10,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": [
+          7
+        ]
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_7_fault"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-03-onset-indirect",
+    "scenario_id": "chg_7_fault",
+    "event_id": "CHG-03",
+    "source_type": "ocpp",
+    "wording_variant": "indirect",
+    "report_timestep": 10,
+    "text": "The protection relay has removed charger 7 from service; assignments must avoid it.",
+    "canonical": {
+      "event_id": "CHG-03",
+      "source_type": "ocpp",
+      "event_type": "charger_fault",
+      "phase": "onset",
+      "affected_buses": [],
+      "affected_chargers": [
+        7
+      ],
+      "effective_timestep": 10,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": [
+          7
+        ]
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_7_fault"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-03-onset-operational",
+    "scenario_id": "chg_7_fault",
+    "event_id": "CHG-03",
+    "source_type": "ocpp",
+    "wording_variant": "operational",
+    "report_timestep": 10,
+    "text": "Maintenance CHG-03: protection relay removed EVSE-07 from service. Keep the unit out of charger assignments pending clearance.",
+    "canonical": {
+      "event_id": "CHG-03",
+      "source_type": "ocpp",
+      "event_type": "charger_fault",
+      "phase": "onset",
+      "affected_buses": [],
+      "affected_chargers": [
+        7
+      ],
+      "effective_timestep": 10,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": [
+          7
+        ]
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_7_fault"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-03-persistence-explicit",
+    "scenario_id": "chg_7_fault",
+    "event_id": "CHG-03",
+    "source_type": "ocpp",
+    "wording_variant": "explicit",
+    "report_timestep": 11,
+    "text": "The condition continues unchanged. Charger 7 is offline and unavailable because of an isolation fault.",
+    "canonical": {
+      "event_id": "CHG-03",
+      "source_type": "ocpp",
+      "event_type": "charger_fault",
+      "phase": "persistence",
+      "affected_buses": [],
+      "affected_chargers": [
+        7
+      ],
+      "effective_timestep": 11,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": [
+          7
+        ]
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_7_fault"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-03-persistence-indirect",
+    "scenario_id": "chg_7_fault",
+    "event_id": "CHG-03",
+    "source_type": "ocpp",
+    "wording_variant": "indirect",
+    "report_timestep": 11,
+    "text": "The condition continues unchanged. The protection relay has removed charger 7 from service; assignments must avoid it.",
+    "canonical": {
+      "event_id": "CHG-03",
+      "source_type": "ocpp",
+      "event_type": "charger_fault",
+      "phase": "persistence",
+      "affected_buses": [],
+      "affected_chargers": [
+        7
+      ],
+      "effective_timestep": 11,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": [
+          7
+        ]
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_7_fault"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-03-persistence-operational",
+    "scenario_id": "chg_7_fault",
+    "event_id": "CHG-03",
+    "source_type": "ocpp",
+    "wording_variant": "operational",
+    "report_timestep": 11,
+    "text": "CHG-03 field follow-up: no change from the last dispatch instruction; the same restrictions and planning assumptions remain in force.",
+    "canonical": {
+      "event_id": "CHG-03",
+      "source_type": "ocpp",
+      "event_type": "charger_fault",
+      "phase": "persistence",
+      "affected_buses": [],
+      "affected_chargers": [
+        7
+      ],
+      "effective_timestep": 11,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": [
+          7
+        ]
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_7_fault"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-03-severity_change-explicit",
+    "scenario_id": "chg_7_fault",
+    "event_id": "CHG-03",
+    "source_type": "ocpp",
+    "wording_variant": "explicit",
+    "report_timestep": 12,
+    "text": "The condition has worsened and requires re-evaluation. Charger 7 is now fully unavailable.",
+    "canonical": {
+      "event_id": "CHG-03",
+      "source_type": "ocpp",
+      "event_type": "charger_fault",
+      "phase": "severity_change",
+      "affected_buses": [],
+      "affected_chargers": [
+        7
+      ],
+      "effective_timestep": 12,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": [
+          7
+        ]
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_7_fault"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-03-severity_change-indirect",
+    "scenario_id": "chg_7_fault",
+    "event_id": "CHG-03",
+    "source_type": "ocpp",
+    "wording_variant": "indirect",
+    "report_timestep": 12,
+    "text": "The condition has worsened and requires re-evaluation. Charger 7 is now fully unavailable.",
+    "canonical": {
+      "event_id": "CHG-03",
+      "source_type": "ocpp",
+      "event_type": "charger_fault",
+      "phase": "severity_change",
+      "affected_buses": [],
+      "affected_chargers": [
+        7
+      ],
+      "effective_timestep": 12,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": [
+          7
+        ]
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_7_fault"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-03-severity_change-operational",
+    "scenario_id": "chg_7_fault",
+    "event_id": "CHG-03",
+    "source_type": "ocpp",
+    "wording_variant": "operational",
+    "report_timestep": 12,
+    "text": "CHG-03 dispatch correction: the same charging unit is now confirmed fully unavailable. Earlier values are superseded.",
+    "canonical": {
+      "event_id": "CHG-03",
+      "source_type": "ocpp",
+      "event_type": "charger_fault",
+      "phase": "severity_change",
+      "affected_buses": [],
+      "affected_chargers": [
+        7
+      ],
+      "effective_timestep": 12,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": [
+          7
+        ]
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_7_fault"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-03-recovery-explicit",
+    "scenario_id": "chg_7_fault",
+    "event_id": "CHG-03",
+    "source_type": "ocpp",
+    "wording_variant": "explicit",
+    "report_timestep": 14,
+    "text": "Normal service is restored for chargers 7.",
+    "canonical": {
+      "event_id": "CHG-03",
+      "source_type": "ocpp",
+      "event_type": "charger_fault",
+      "phase": "recovery",
+      "affected_buses": [],
+      "affected_chargers": [
+        7
+      ],
+      "effective_timestep": 14,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "7": 200.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_7_fault"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-03-recovery-indirect",
+    "scenario_id": "chg_7_fault",
+    "event_id": "CHG-03",
+    "source_type": "ocpp",
+    "wording_variant": "indirect",
+    "report_timestep": 14,
+    "text": "Normal service is restored for chargers 7.",
+    "canonical": {
+      "event_id": "CHG-03",
+      "source_type": "ocpp",
+      "event_type": "charger_fault",
+      "phase": "recovery",
+      "affected_buses": [],
+      "affected_chargers": [
+        7
+      ],
+      "effective_timestep": 14,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "7": 200.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_7_fault"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-03-recovery-operational",
+    "scenario_id": "chg_7_fault",
+    "event_id": "CHG-03",
+    "source_type": "ocpp",
+    "wording_variant": "operational",
+    "report_timestep": 14,
+    "text": "CHG-03 close-out: the field restriction is cleared at the current report time. Return the affected block and charging unit, where applicable, to normal planning assumptions.",
+    "canonical": {
+      "event_id": "CHG-03",
+      "source_type": "ocpp",
+      "event_type": "charger_fault",
+      "phase": "recovery",
+      "affected_buses": [],
+      "affected_chargers": [
+        7
+      ],
+      "effective_timestep": 14,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "7": 200.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_7_fault"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-03-stable-explicit",
+    "scenario_id": "chg_7_fault",
+    "event_id": "CHG-03",
+    "source_type": "ocpp",
+    "wording_variant": "explicit",
+    "report_timestep": 15,
+    "text": "Informational: the recovered state is stable and has no new operational impact.",
+    "canonical": {
+      "event_id": "CHG-03",
+      "source_type": "ocpp",
+      "event_type": "charger_fault",
+      "phase": "stable",
+      "affected_buses": [],
+      "affected_chargers": [
+        7
+      ],
+      "effective_timestep": 15,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": false,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "7": 200.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_7_fault"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-03-stable-indirect",
+    "scenario_id": "chg_7_fault",
+    "event_id": "CHG-03",
+    "source_type": "ocpp",
+    "wording_variant": "indirect",
+    "report_timestep": 15,
+    "text": "Informational: the recovered state is stable and has no new operational impact.",
+    "canonical": {
+      "event_id": "CHG-03",
+      "source_type": "ocpp",
+      "event_type": "charger_fault",
+      "phase": "stable",
+      "affected_buses": [],
+      "affected_chargers": [
+        7
+      ],
+      "effective_timestep": 15,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": false,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "7": 200.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_7_fault"
+      ]
+    }
+  },
+  {
+    "notice_id": "CHG-03-stable-operational",
+    "scenario_id": "chg_7_fault",
+    "event_id": "CHG-03",
+    "source_type": "ocpp",
+    "wording_variant": "operational",
+    "report_timestep": 15,
+    "text": "CHG-03 monitoring note: close-out remains valid; no new dispatch or charging restriction.",
+    "canonical": {
+      "event_id": "CHG-03",
+      "source_type": "ocpp",
+      "event_type": "charger_fault",
+      "phase": "stable",
+      "affected_buses": [],
+      "affected_chargers": [
+        7
+      ],
+      "effective_timestep": 15,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": false,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "7": 200.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "chg_7_fault"
+      ]
+    }
+  },
+  {
+    "notice_id": "COM-01-onset-explicit",
+    "scenario_id": "combined_bus3_charger3",
+    "event_id": "COM-01",
+    "source_type": "combined",
+    "wording_variant": "explicit",
+    "report_timestep": 10,
+    "text": "Bus 3 is delayed 30 minutes with energy consumption up 12 percent, while charger 3 is faulted and unavailable.",
+    "canonical": {
+      "event_id": "COM-01",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "onset",
+      "affected_buses": [
+        3
+      ],
+      "affected_chargers": [
+        3
+      ],
+      "effective_timestep": 10,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "3": 30
+        },
+        "energy_multiplier_by_bus": {
+          "3": 1.12
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": [
+          3
+        ]
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "combined_bus3_charger3"
+      ]
+    }
+  },
+  {
+    "notice_id": "COM-01-onset-indirect",
+    "scenario_id": "combined_bus3_charger3",
+    "event_id": "COM-01",
+    "source_type": "combined",
+    "wording_variant": "indirect",
+    "report_timestep": 10,
+    "text": "A detour affects bus 3 (about 30 extra minutes and 12% more energy); charger 3 is also out of service.",
+    "canonical": {
+      "event_id": "COM-01",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "onset",
+      "affected_buses": [
+        3
+      ],
+      "affected_chargers": [
+        3
+      ],
+      "effective_timestep": 10,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "3": 30
+        },
+        "energy_multiplier_by_bus": {
+          "3": 1.12
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": [
+          3
+        ]
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "combined_bus3_charger3"
+      ]
+    }
+  },
+  {
+    "notice_id": "COM-01-onset-operational",
+    "scenario_id": "combined_bus3_charger3",
+    "event_id": "COM-01",
+    "source_type": "combined",
+    "wording_variant": "operational",
+    "report_timestep": 10,
+    "text": "Joint ticket COM-01: unit 3 is on a diversion (+30 min, 1.12x traction use); EVSE-03 is locked out under the same incident.",
+    "canonical": {
+      "event_id": "COM-01",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "onset",
+      "affected_buses": [
+        3
+      ],
+      "affected_chargers": [
+        3
+      ],
+      "effective_timestep": 10,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "3": 30
+        },
+        "energy_multiplier_by_bus": {
+          "3": 1.12
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": [
+          3
+        ]
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "combined_bus3_charger3"
+      ]
+    }
+  },
+  {
+    "notice_id": "COM-01-persistence-explicit",
+    "scenario_id": "combined_bus3_charger3",
+    "event_id": "COM-01",
+    "source_type": "combined",
+    "wording_variant": "explicit",
+    "report_timestep": 11,
+    "text": "The condition continues unchanged. Bus 3 is delayed 30 minutes with energy consumption up 12 percent, while charger 3 is faulted and unavailable.",
+    "canonical": {
+      "event_id": "COM-01",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "persistence",
+      "affected_buses": [
+        3
+      ],
+      "affected_chargers": [
+        3
+      ],
+      "effective_timestep": 11,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "3": 30
+        },
+        "energy_multiplier_by_bus": {
+          "3": 1.12
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": [
+          3
+        ]
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "combined_bus3_charger3"
+      ]
+    }
+  },
+  {
+    "notice_id": "COM-01-persistence-indirect",
+    "scenario_id": "combined_bus3_charger3",
+    "event_id": "COM-01",
+    "source_type": "combined",
+    "wording_variant": "indirect",
+    "report_timestep": 11,
+    "text": "The condition continues unchanged. A detour affects bus 3 (about 30 extra minutes and 12% more energy); charger 3 is also out of service.",
+    "canonical": {
+      "event_id": "COM-01",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "persistence",
+      "affected_buses": [
+        3
+      ],
+      "affected_chargers": [
+        3
+      ],
+      "effective_timestep": 11,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "3": 30
+        },
+        "energy_multiplier_by_bus": {
+          "3": 1.12
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": [
+          3
+        ]
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "combined_bus3_charger3"
+      ]
+    }
+  },
+  {
+    "notice_id": "COM-01-persistence-operational",
+    "scenario_id": "combined_bus3_charger3",
+    "event_id": "COM-01",
+    "source_type": "combined",
+    "wording_variant": "operational",
+    "report_timestep": 11,
+    "text": "COM-01 field follow-up: no change from the last dispatch instruction; the same restrictions and planning assumptions remain in force.",
+    "canonical": {
+      "event_id": "COM-01",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "persistence",
+      "affected_buses": [
+        3
+      ],
+      "affected_chargers": [
+        3
+      ],
+      "effective_timestep": 11,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "3": 30
+        },
+        "energy_multiplier_by_bus": {
+          "3": 1.12
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": [
+          3
+        ]
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "combined_bus3_charger3"
+      ]
+    }
+  },
+  {
+    "notice_id": "COM-01-severity_change-explicit",
+    "scenario_id": "combined_bus3_charger3",
+    "event_id": "COM-01",
+    "source_type": "combined",
+    "wording_variant": "explicit",
+    "report_timestep": 12,
+    "text": "The condition has worsened and requires re-evaluation. Bus 3 is now delayed 42 minutes. Bus 3 energy consumption now increases 18 percent. Charger 3 is now fully unavailable.",
+    "canonical": {
+      "event_id": "COM-01",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "severity_change",
+      "affected_buses": [
+        3
+      ],
+      "affected_chargers": [
+        3
+      ],
+      "effective_timestep": 12,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "3": 42
+        },
+        "energy_multiplier_by_bus": {
+          "3": 1.18
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": [
+          3
+        ]
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "combined_bus3_charger3"
+      ]
+    }
+  },
+  {
+    "notice_id": "COM-01-severity_change-indirect",
+    "scenario_id": "combined_bus3_charger3",
+    "event_id": "COM-01",
+    "source_type": "combined",
+    "wording_variant": "indirect",
+    "report_timestep": 12,
+    "text": "The condition has worsened and requires re-evaluation. Bus 3 is now delayed 42 minutes. Bus 3 energy consumption now increases 18 percent. Charger 3 is now fully unavailable.",
+    "canonical": {
+      "event_id": "COM-01",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "severity_change",
+      "affected_buses": [
+        3
+      ],
+      "affected_chargers": [
+        3
+      ],
+      "effective_timestep": 12,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "3": 42
+        },
+        "energy_multiplier_by_bus": {
+          "3": 1.18
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": [
+          3
+        ]
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "combined_bus3_charger3"
+      ]
+    }
+  },
+  {
+    "notice_id": "COM-01-severity_change-operational",
+    "scenario_id": "combined_bus3_charger3",
+    "event_id": "COM-01",
+    "source_type": "combined",
+    "wording_variant": "operational",
+    "report_timestep": 12,
+    "text": "COM-01 dispatch correction: replace the earlier timing allowance with 42 min; use 1.18x traction energy for that block; the same charging unit is now confirmed fully unavailable. Earlier values are superseded.",
+    "canonical": {
+      "event_id": "COM-01",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "severity_change",
+      "affected_buses": [
+        3
+      ],
+      "affected_chargers": [
+        3
+      ],
+      "effective_timestep": 12,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "3": 42
+        },
+        "energy_multiplier_by_bus": {
+          "3": 1.18
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": [
+          3
+        ]
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "combined_bus3_charger3"
+      ]
+    }
+  },
+  {
+    "notice_id": "COM-01-recovery-explicit",
+    "scenario_id": "combined_bus3_charger3",
+    "event_id": "COM-01",
+    "source_type": "combined",
+    "wording_variant": "explicit",
+    "report_timestep": 14,
+    "text": "Normal service is restored for buses 3 and chargers 3.",
+    "canonical": {
+      "event_id": "COM-01",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "recovery",
+      "affected_buses": [
+        3
+      ],
+      "affected_chargers": [
+        3
+      ],
+      "effective_timestep": 14,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "3": 0
+        },
+        "energy_multiplier_by_bus": {
+          "3": 1.0
+        },
+        "charger_power_kw": {
+          "3": 200.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "combined_bus3_charger3"
+      ]
+    }
+  },
+  {
+    "notice_id": "COM-01-recovery-indirect",
+    "scenario_id": "combined_bus3_charger3",
+    "event_id": "COM-01",
+    "source_type": "combined",
+    "wording_variant": "indirect",
+    "report_timestep": 14,
+    "text": "Normal service is restored for buses 3 and chargers 3.",
+    "canonical": {
+      "event_id": "COM-01",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "recovery",
+      "affected_buses": [
+        3
+      ],
+      "affected_chargers": [
+        3
+      ],
+      "effective_timestep": 14,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "3": 0
+        },
+        "energy_multiplier_by_bus": {
+          "3": 1.0
+        },
+        "charger_power_kw": {
+          "3": 200.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "combined_bus3_charger3"
+      ]
+    }
+  },
+  {
+    "notice_id": "COM-01-recovery-operational",
+    "scenario_id": "combined_bus3_charger3",
+    "event_id": "COM-01",
+    "source_type": "combined",
+    "wording_variant": "operational",
+    "report_timestep": 14,
+    "text": "COM-01 close-out: the field restriction is cleared at the current report time. Return the affected block and charging unit, where applicable, to normal planning assumptions.",
+    "canonical": {
+      "event_id": "COM-01",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "recovery",
+      "affected_buses": [
+        3
+      ],
+      "affected_chargers": [
+        3
+      ],
+      "effective_timestep": 14,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "3": 0
+        },
+        "energy_multiplier_by_bus": {
+          "3": 1.0
+        },
+        "charger_power_kw": {
+          "3": 200.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "combined_bus3_charger3"
+      ]
+    }
+  },
+  {
+    "notice_id": "COM-01-stable-explicit",
+    "scenario_id": "combined_bus3_charger3",
+    "event_id": "COM-01",
+    "source_type": "combined",
+    "wording_variant": "explicit",
+    "report_timestep": 15,
+    "text": "Informational: the recovered state is stable and has no new operational impact.",
+    "canonical": {
+      "event_id": "COM-01",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "stable",
+      "affected_buses": [
+        3
+      ],
+      "affected_chargers": [
+        3
+      ],
+      "effective_timestep": 15,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": false,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "3": 0
+        },
+        "energy_multiplier_by_bus": {
+          "3": 1.0
+        },
+        "charger_power_kw": {
+          "3": 200.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "combined_bus3_charger3"
+      ]
+    }
+  },
+  {
+    "notice_id": "COM-01-stable-indirect",
+    "scenario_id": "combined_bus3_charger3",
+    "event_id": "COM-01",
+    "source_type": "combined",
+    "wording_variant": "indirect",
+    "report_timestep": 15,
+    "text": "Informational: the recovered state is stable and has no new operational impact.",
+    "canonical": {
+      "event_id": "COM-01",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "stable",
+      "affected_buses": [
+        3
+      ],
+      "affected_chargers": [
+        3
+      ],
+      "effective_timestep": 15,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": false,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "3": 0
+        },
+        "energy_multiplier_by_bus": {
+          "3": 1.0
+        },
+        "charger_power_kw": {
+          "3": 200.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "combined_bus3_charger3"
+      ]
+    }
+  },
+  {
+    "notice_id": "COM-01-stable-operational",
+    "scenario_id": "combined_bus3_charger3",
+    "event_id": "COM-01",
+    "source_type": "combined",
+    "wording_variant": "operational",
+    "report_timestep": 15,
+    "text": "COM-01 monitoring note: close-out remains valid; no new dispatch or charging restriction.",
+    "canonical": {
+      "event_id": "COM-01",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "stable",
+      "affected_buses": [
+        3
+      ],
+      "affected_chargers": [
+        3
+      ],
+      "effective_timestep": 15,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": false,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "3": 0
+        },
+        "energy_multiplier_by_bus": {
+          "3": 1.0
+        },
+        "charger_power_kw": {
+          "3": 200.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "combined_bus3_charger3"
+      ]
+    }
+  },
+  {
+    "notice_id": "COM-02-onset-explicit",
+    "scenario_id": "combined_bus8_charger8",
+    "event_id": "COM-02",
+    "source_type": "combined",
+    "wording_variant": "explicit",
+    "report_timestep": 10,
+    "text": "Bus 8 is delayed 20 minutes and charger 8 is derated to 50 kW.",
+    "canonical": {
+      "event_id": "COM-02",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "onset",
+      "affected_buses": [
+        8
+      ],
+      "affected_chargers": [
+        8
+      ],
+      "effective_timestep": 10,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "8": 20
+        },
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "8": 50.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "combined_bus8_charger8"
+      ]
+    }
+  },
+  {
+    "notice_id": "COM-02-onset-indirect",
+    "scenario_id": "combined_bus8_charger8",
+    "event_id": "COM-02",
+    "source_type": "combined",
+    "wording_variant": "indirect",
+    "report_timestep": 10,
+    "text": "Allow roughly 20 extra minutes for bus 8; thermal limits cap charger 8 at 50 kW.",
+    "canonical": {
+      "event_id": "COM-02",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "onset",
+      "affected_buses": [
+        8
+      ],
+      "affected_chargers": [
+        8
+      ],
+      "effective_timestep": 10,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "8": 20
+        },
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "8": 50.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "combined_bus8_charger8"
+      ]
+    }
+  },
+  {
+    "notice_id": "COM-02-onset-operational",
+    "scenario_id": "combined_bus8_charger8",
+    "event_id": "COM-02",
+    "source_type": "combined",
+    "wording_variant": "operational",
+    "report_timestep": 10,
+    "text": "Joint ticket COM-02: carry +20 min for unit 8. Thermal protection limits EVSE-08 to 50 kW until field release.",
+    "canonical": {
+      "event_id": "COM-02",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "onset",
+      "affected_buses": [
+        8
+      ],
+      "affected_chargers": [
+        8
+      ],
+      "effective_timestep": 10,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "8": 20
+        },
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "8": 50.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "combined_bus8_charger8"
+      ]
+    }
+  },
+  {
+    "notice_id": "COM-02-persistence-explicit",
+    "scenario_id": "combined_bus8_charger8",
+    "event_id": "COM-02",
+    "source_type": "combined",
+    "wording_variant": "explicit",
+    "report_timestep": 11,
+    "text": "The condition continues unchanged. Bus 8 is delayed 20 minutes and charger 8 is derated to 50 kW.",
+    "canonical": {
+      "event_id": "COM-02",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "persistence",
+      "affected_buses": [
+        8
+      ],
+      "affected_chargers": [
+        8
+      ],
+      "effective_timestep": 11,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "8": 20
+        },
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "8": 50.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "combined_bus8_charger8"
+      ]
+    }
+  },
+  {
+    "notice_id": "COM-02-persistence-indirect",
+    "scenario_id": "combined_bus8_charger8",
+    "event_id": "COM-02",
+    "source_type": "combined",
+    "wording_variant": "indirect",
+    "report_timestep": 11,
+    "text": "The condition continues unchanged. Allow roughly 20 extra minutes for bus 8; thermal limits cap charger 8 at 50 kW.",
+    "canonical": {
+      "event_id": "COM-02",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "persistence",
+      "affected_buses": [
+        8
+      ],
+      "affected_chargers": [
+        8
+      ],
+      "effective_timestep": 11,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "8": 20
+        },
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "8": 50.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "combined_bus8_charger8"
+      ]
+    }
+  },
+  {
+    "notice_id": "COM-02-persistence-operational",
+    "scenario_id": "combined_bus8_charger8",
+    "event_id": "COM-02",
+    "source_type": "combined",
+    "wording_variant": "operational",
+    "report_timestep": 11,
+    "text": "COM-02 field follow-up: no change from the last dispatch instruction; the same restrictions and planning assumptions remain in force.",
+    "canonical": {
+      "event_id": "COM-02",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "persistence",
+      "affected_buses": [
+        8
+      ],
+      "affected_chargers": [
+        8
+      ],
+      "effective_timestep": 11,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "8": 20
+        },
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "8": 50.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "combined_bus8_charger8"
+      ]
+    }
+  },
+  {
+    "notice_id": "COM-02-severity_change-explicit",
+    "scenario_id": "combined_bus8_charger8",
+    "event_id": "COM-02",
+    "source_type": "combined",
+    "wording_variant": "explicit",
+    "report_timestep": 12,
+    "text": "The condition has worsened and requires re-evaluation. Bus 8 is now delayed 28 minutes. Charger 8 is now derated to 25 kW.",
+    "canonical": {
+      "event_id": "COM-02",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "severity_change",
+      "affected_buses": [
+        8
+      ],
+      "affected_chargers": [
+        8
+      ],
+      "effective_timestep": 12,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "8": 28
+        },
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "8": 25.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "combined_bus8_charger8"
+      ]
+    }
+  },
+  {
+    "notice_id": "COM-02-severity_change-indirect",
+    "scenario_id": "combined_bus8_charger8",
+    "event_id": "COM-02",
+    "source_type": "combined",
+    "wording_variant": "indirect",
+    "report_timestep": 12,
+    "text": "The condition has worsened and requires re-evaluation. Bus 8 is now delayed 28 minutes. Charger 8 is now derated to 25 kW.",
+    "canonical": {
+      "event_id": "COM-02",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "severity_change",
+      "affected_buses": [
+        8
+      ],
+      "affected_chargers": [
+        8
+      ],
+      "effective_timestep": 12,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "8": 28
+        },
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "8": 25.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "combined_bus8_charger8"
+      ]
+    }
+  },
+  {
+    "notice_id": "COM-02-severity_change-operational",
+    "scenario_id": "combined_bus8_charger8",
+    "event_id": "COM-02",
+    "source_type": "combined",
+    "wording_variant": "operational",
+    "report_timestep": 12,
+    "text": "COM-02 dispatch correction: replace the earlier timing allowance with 28 min; lower the same connector ceiling to 25 kW. Earlier values are superseded.",
+    "canonical": {
+      "event_id": "COM-02",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "severity_change",
+      "affected_buses": [
+        8
+      ],
+      "affected_chargers": [
+        8
+      ],
+      "effective_timestep": 12,
+      "expected_end_timestep": 14,
+      "uncertainty": true,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "8": 28
+        },
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "8": 25.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "combined_bus8_charger8"
+      ]
+    }
+  },
+  {
+    "notice_id": "COM-02-recovery-explicit",
+    "scenario_id": "combined_bus8_charger8",
+    "event_id": "COM-02",
+    "source_type": "combined",
+    "wording_variant": "explicit",
+    "report_timestep": 14,
+    "text": "Normal service is restored for buses 8 and chargers 8.",
+    "canonical": {
+      "event_id": "COM-02",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "recovery",
+      "affected_buses": [
+        8
+      ],
+      "affected_chargers": [
+        8
+      ],
+      "effective_timestep": 14,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "8": 0
+        },
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "8": 200.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "combined_bus8_charger8"
+      ]
+    }
+  },
+  {
+    "notice_id": "COM-02-recovery-indirect",
+    "scenario_id": "combined_bus8_charger8",
+    "event_id": "COM-02",
+    "source_type": "combined",
+    "wording_variant": "indirect",
+    "report_timestep": 14,
+    "text": "Normal service is restored for buses 8 and chargers 8.",
+    "canonical": {
+      "event_id": "COM-02",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "recovery",
+      "affected_buses": [
+        8
+      ],
+      "affected_chargers": [
+        8
+      ],
+      "effective_timestep": 14,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "8": 0
+        },
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "8": 200.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "combined_bus8_charger8"
+      ]
+    }
+  },
+  {
+    "notice_id": "COM-02-recovery-operational",
+    "scenario_id": "combined_bus8_charger8",
+    "event_id": "COM-02",
+    "source_type": "combined",
+    "wording_variant": "operational",
+    "report_timestep": 14,
+    "text": "COM-02 close-out: the field restriction is cleared at the current report time. Return the affected block and charging unit, where applicable, to normal planning assumptions.",
+    "canonical": {
+      "event_id": "COM-02",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "recovery",
+      "affected_buses": [
+        8
+      ],
+      "affected_chargers": [
+        8
+      ],
+      "effective_timestep": 14,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "8": 0
+        },
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "8": 200.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "combined_bus8_charger8"
+      ]
+    }
+  },
+  {
+    "notice_id": "COM-02-stable-explicit",
+    "scenario_id": "combined_bus8_charger8",
+    "event_id": "COM-02",
+    "source_type": "combined",
+    "wording_variant": "explicit",
+    "report_timestep": 15,
+    "text": "Informational: the recovered state is stable and has no new operational impact.",
+    "canonical": {
+      "event_id": "COM-02",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "stable",
+      "affected_buses": [
+        8
+      ],
+      "affected_chargers": [
+        8
+      ],
+      "effective_timestep": 15,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": false,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "8": 0
+        },
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "8": 200.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "combined_bus8_charger8"
+      ]
+    }
+  },
+  {
+    "notice_id": "COM-02-stable-indirect",
+    "scenario_id": "combined_bus8_charger8",
+    "event_id": "COM-02",
+    "source_type": "combined",
+    "wording_variant": "indirect",
+    "report_timestep": 15,
+    "text": "Informational: the recovered state is stable and has no new operational impact.",
+    "canonical": {
+      "event_id": "COM-02",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "stable",
+      "affected_buses": [
+        8
+      ],
+      "affected_chargers": [
+        8
+      ],
+      "effective_timestep": 15,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": false,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "8": 0
+        },
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "8": 200.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "combined_bus8_charger8"
+      ]
+    }
+  },
+  {
+    "notice_id": "COM-02-stable-operational",
+    "scenario_id": "combined_bus8_charger8",
+    "event_id": "COM-02",
+    "source_type": "combined",
+    "wording_variant": "operational",
+    "report_timestep": 15,
+    "text": "COM-02 monitoring note: close-out remains valid; no new dispatch or charging restriction.",
+    "canonical": {
+      "event_id": "COM-02",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "stable",
+      "affected_buses": [
+        8
+      ],
+      "affected_chargers": [
+        8
+      ],
+      "effective_timestep": 15,
+      "expected_end_timestep": null,
+      "uncertainty": false,
+      "material": false,
+      "updates": {
+        "delay_minutes_by_bus": {
+          "8": 0
+        },
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "8": 200.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "canonical_scenario_v2",
+        "combined_bus8_charger8"
+      ]
+    }
+  }
+]

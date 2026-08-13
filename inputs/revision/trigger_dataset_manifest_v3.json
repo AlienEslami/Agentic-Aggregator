@@ -1,0 +1,45 @@
+{
+  "dataset_version": "trigger_uncertainty_chat_v3",
+  "generation": "deterministic synthetic conversations; no personal data or real driver messages",
+  "scenario_count": 8,
+  "lifecycle_phases": [
+    "warning",
+    "onset",
+    "persistence",
+    "severity_change",
+    "recovery",
+    "stable"
+  ],
+  "wording_variants": [
+    "clean",
+    "single_message",
+    "driver_chat",
+    "uncertain_chat"
+  ],
+  "decision_count": 192,
+  "development_decisions": 96,
+  "test_decisions": 96,
+  "split_policy": "scenario-clustered 50/50 split; test scenarios frozen before evaluation",
+  "freeze_sequence": "uncertainty policy and stateful rule grammar fixed before held-out Agent evaluation",
+  "uncertainty_policy": {
+    "delay_minutes": "conservative upper bound",
+    "energy_multiplier": "conservative upper bound",
+    "charger_power_kw": "conservative lower bound",
+    "charger_fault": "unavailable only after confirmation",
+    "wait_or_request_confirmation": "no optimizer update"
+  },
+  "method_input_excludes": [
+    "canonical",
+    "scenario_id",
+    "wording_variant",
+    "benchmark_split",
+    "uncertainty_case"
+  ],
+  "sha256": {
+    "trigger_scenarios_v3.json": "5d507ff3b06061f5fcf6065d54698ffc16e8ddbc8ef6a9a4616534848bd08b7a",
+    "trigger_notices_v3.json": "d4b51157c4b8625e71395b5bfb8294323d8a828ebc93c346654359f53ad62a5f",
+    "trigger_notices_v3.csv": "82f227d3785e6be13a140ee26145d6b0b0957de3cc12567dac1e5b86fc8fd12b",
+    "trigger_split_v3.json": "0349d87657c98b119752a8385e2a1ce8d2ec467e7e5edb41647e690f750cd8c5",
+    "uncertainty_chat_mapping_v3.md": "df1aeb51726c01a158896917b380822ea1021feed73b03dc5da1120afc290d00"
+  }
+}

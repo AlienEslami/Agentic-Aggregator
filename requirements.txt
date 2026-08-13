@@ -3,3 +3,7 @@ pyomo
 pandas
 openpyxl
 highspy
+httpx
+numpy
+openai
+pydantic
