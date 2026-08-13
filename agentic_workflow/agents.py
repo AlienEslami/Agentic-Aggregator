@@ -306,6 +306,124 @@ class OpenAIAgentBackend(AgentBackend):
         )
 
 
+class EvidenceGatedAgentBackend(AgentBackend):
+    """Call an LLM Trigger only when new causal evidence is available.
+
+    The gate is deterministic: new public notice text or a changed observable
+    physical-event telemetry state opens it. Pricing and evaluation calls are
+    delegated unchanged after an optimization is triggered.
+    """
+
+    def __init__(self, backend: AgentBackend):
+        self.backend = backend
+        self._last_evidence_signature: str | None = None
+        self._last_raw_trigger: TriggerDecision | None = None
+        self._last_trigger_guard_applied = False
+        self._last_trigger_was_gated = False
+
+    @property
+    def last_raw_trigger(self) -> TriggerDecision | None:
+        if self._last_trigger_was_gated:
+            return self._last_raw_trigger
+        delegated = getattr(self.backend, "last_raw_trigger", None)
+        return delegated if delegated is not None else self._last_raw_trigger
+
+    @property
+    def last_trigger_guard_applied(self) -> bool:
+        if self._last_trigger_was_gated:
+            return self._last_trigger_guard_applied
+        return bool(
+            getattr(
+                self.backend,
+                "last_trigger_guard_applied",
+                self._last_trigger_guard_applied,
+            )
+        )
+
+    @property
+    def call_records(self) -> list[dict[str, Any]]:
+        return getattr(self.backend, "call_records", [])
+
+    @classmethod
+    def _evidence_payload(cls, context: dict[str, Any]) -> dict[str, Any]:
+        telemetry = context.get("numerical_event_telemetry") or {}
+        return {
+            "telemetry": {
+                "return_delay_minutes_by_bus": telemetry.get(
+                    "return_delay_minutes_by_bus", {}
+                ),
+                "charger_power_kw": telemetry.get("charger_power_kw", {}),
+                "unavailable_chargers": telemetry.get("unavailable_chargers", []),
+                "effective_timestep": telemetry.get("effective_timestep"),
+                "expected_end_timestep": telemetry.get("expected_end_timestep"),
+            },
+        }
+
+    @staticmethod
+    def _has_material_evidence(payload: dict[str, Any]) -> bool:
+        telemetry = payload["telemetry"]
+        telemetry_active = bool(
+            telemetry["return_delay_minutes_by_bus"]
+            or telemetry["charger_power_kw"]
+            or telemetry["unavailable_chargers"]
+            or telemetry["effective_timestep"] is not None
+            or telemetry["expected_end_timestep"] is not None
+        )
+        return telemetry_active
+
+    def trigger(self, context: dict[str, Any]) -> TriggerDecision:
+        public_notices = context.get("operational_notices") or []
+        evidence = self._evidence_payload(context)
+        signature = json.dumps(evidence, sort_keys=True, default=str, separators=(",", ":"))
+        changed = self._last_evidence_signature is not None and (
+            signature != self._last_evidence_signature
+        )
+        first_material_evidence = (
+            self._last_evidence_signature is None
+            and self._has_material_evidence(evidence)
+        )
+        should_call = bool(public_notices) or changed or first_material_evidence
+        self._last_evidence_signature = signature
+        if should_call:
+            self._last_trigger_was_gated = False
+            self._last_raw_trigger = None
+            self._last_trigger_guard_applied = False
+            return self.backend.trigger(context)
+
+        decision = TriggerDecision(
+            action="skip",
+            reasoning=(
+                "Evidence gate: no new public notice or changed causal numerical "
+                "event evidence is available."
+            ),
+            confidence=1.0,
+            trigger_type="none",
+            flagged_buses=[],
+        )
+        self._last_raw_trigger = decision
+        self._last_trigger_guard_applied = False
+        self._last_trigger_was_gated = True
+        return decision
+
+    def price(self, context, trigger, *, rerun_count, previous, feedback):
+        return self.backend.price(
+            context,
+            trigger,
+            rerun_count=rerun_count,
+            previous=previous,
+            feedback=feedback,
+        )
+
+    def evaluate(self, context, trigger, pricing, result, *, rerun_count):
+        return self.backend.evaluate(
+            context,
+            trigger,
+            pricing,
+            result,
+            rerun_count=rerun_count,
+        )
+
+
 class RuleBasedAgentBackend(AgentBackend):
     """Deterministic substitute used for tests and API-key-free local runs."""
 
@@ -930,11 +1048,13 @@ def create_experiment_backend(configuration: str, legacy_backend: str, model: st
     if configuration == "full_deterministic":
         return rule
     if configuration == "agent_trigger_only":
-        trigger_llm = OpenAIAgentBackend(
-            model=model, allow_deterministic_trigger_fallback=False
+        trigger_llm = EvidenceGatedAgentBackend(
+            OpenAIAgentBackend(
+                model=model, allow_deterministic_trigger_fallback=False
+            )
         )
         return CompositeAgentBackend(trigger_llm, rule, rule)
-    llm = OpenAIAgentBackend(model=model)
+    llm = EvidenceGatedAgentBackend(OpenAIAgentBackend(model=model))
     if configuration == "full_agentic":
         return llm
     if configuration == "rule_parser_trigger_substitution":

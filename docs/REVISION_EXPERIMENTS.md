@@ -200,6 +200,76 @@ python scripts/run_closed_loop_trigger_comparison.py `
 `--resume` reuses completed deterministic workbooks. Generated workbooks and
 comparison files remain under ignored `results/`; they are not committed.
 
+### Repeated matrix and safety-first analysis
+
+The full prespecified matrix runner covers all three advance-warning cases in
+both selfish and altruistic modes. By default it indexes or reuses the three
+deterministic comparators without contacting an external model provider:
+
+```powershell
+python scripts/run_advance_warning_matrix.py
+```
+
+The primary stochastic design uses ten independent `agent_trigger_only`
+repetitions per case-mode cell. The Agent receives only synthetic public
+notice/chat text, operational numerical context, and observational event memory;
+it never receives canonical hidden truth. A deterministic evidence gate invokes
+the LLM Trigger only when a new public message arrives or causal numerical-event
+evidence changes; quiet timesteps are logged as skips without spending tokens.
+External calls require both an API key and an explicit transfer-authorization flag:
+
+```powershell
+python scripts/run_advance_warning_matrix.py `
+  --include-agent `
+  --agent-repetitions 10 `
+  --allow-external-llm
+```
+
+The role-level ablation is secondary and defaults to five repetitions per
+case-mode-configuration cell. It compares `full_agentic` with the frozen-rule
+Trigger substitution, mathematical-pricing substitution, and evaluator removal:
+
+```powershell
+python scripts/run_advance_warning_matrix.py `
+  --include-agent `
+  --include-role-ablations `
+  --agent-repetitions 10 `
+  --ablation-repetitions 5 `
+  --allow-external-llm
+```
+
+Complete workbooks are reused unless `--force` is supplied. Repeated workbooks
+remain under ignored `results/`; only CSV/JSON indexes and summaries should be
+copied into paper artifacts after the matrix is complete.
+
+Create paper-ready paired summaries with:
+
+```powershell
+python scripts/analyze_advance_warning_matrix.py
+```
+
+The analysis produces run-level, method-summary, primary-contrast, and
+role-ablation CSV files plus a JSON protocol summary. A run is safety-feasible
+only if it completes, has no reserve-violation timesteps, has no material reserve
+shortfall, and maintains the 20% minimum and terminal SOC thresholds. Economic
+effects are reported only for pairs in which both methods are safety-feasible.
+In selfish mode, a positive paired effect means greater aggregator revenue; in
+altruistic mode, it means lower PTO cost. This prevents an unsafe schedule from
+appearing superior merely because it bought less energy or earned more revenue.
+Primary Agent contrasts use repeated paired differences against the fixed
+deterministic baseline in each case-mode cell. Because all role-ablation methods
+contain stochastic LLM components, their secondary contrasts use independent-
+sample differences in means rather than pairing arbitrary repetition numbers.
+
+The primary interpretations are deliberately separate:
+
+- Agent versus rule-text isolates the benefit of contextual language
+  interpretation over a frozen, stateful parser.
+- Agent versus numerical isolates the benefit of advance unstructured
+  information over a causal event trigger that must wait for sensors.
+- Agent versus oracle measures remaining headroom relative to perfectly
+  structured advance information; it is not presented as a deployable baseline.
+
 For the causal Trigger comparison, use `oracle_event_trigger`,
 `numerical_event_trigger`, `rule_text_event_trigger`, and `agent_trigger_only`.
 Pricing, evaluator, solver, workbooks, tariffs, and seeds stay fixed. The offline

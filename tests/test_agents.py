@@ -3,12 +3,15 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 from agentic_workflow.agents import (
+    AgentBackend,
+    EvidenceGatedAgentBackend,
     NoticeOnlyAgentBackend,
     NumericalOnlyAgentBackend,
     OpenAIAgentBackend,
     RuleBasedAgentBackend,
     normalize_trigger_decision,
 )
+from agentic_workflow.models import EvaluationDecision, NULL_FEEDBACK, PricingDecision
 from agentic_workflow.models import (
     NoticeInterpretation,
     NoticeUncertaintyAssessment,
@@ -91,6 +94,75 @@ def test_agent_only_guard_does_not_substitute_numerical_baseline() -> None:
         decision, _context(), allow_numerical_fallback=False
     )
     assert guarded.action == "skip"
+
+
+class _CountingBackend(AgentBackend):
+    def __init__(self) -> None:
+        self.trigger_calls = 0
+
+    def trigger(self, context):
+        self.trigger_calls += 1
+        return TriggerDecision(
+            action="skip",
+            reasoning="counted",
+            confidence=1.0,
+            trigger_type="none",
+            flagged_buses=[],
+        )
+
+    def price(self, context, trigger, *, rerun_count, previous, feedback):
+        return PricingDecision(
+            reasoning="unused",
+            buy_multipliers=[1.1],
+            sell_multipliers=[0.8],
+            confidence=1.0,
+        )
+
+    def evaluate(self, context, trigger, pricing, result, *, rerun_count):
+        return EvaluationDecision(
+            accept=True,
+            reasoning="unused",
+            confidence=1.0,
+            feedback=NULL_FEEDBACK,
+        )
+
+
+def test_evidence_gate_calls_trigger_only_for_new_text_or_changed_telemetry():
+    counted = _CountingBackend()
+    backend = EvidenceGatedAgentBackend(counted)
+    context = _context()
+    context["trigger_flags"]["price_deviation_significant"] = False
+    context["operational_notices"] = []
+    context["numerical_event_telemetry"] = {
+        "return_delay_minutes_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": [],
+        "effective_timestep": None,
+        "expected_end_timestep": None,
+    }
+
+    assert backend.trigger(context).action == "skip"
+    assert counted.trigger_calls == 0
+    assert backend.trigger(context).action == "skip"
+    assert counted.trigger_calls == 0
+
+    context["operational_notices"] = [{"text": "Driver reports a possible delay."}]
+    backend.trigger(context)
+    assert counted.trigger_calls == 1
+
+    context["operational_notices"] = []
+    backend.trigger(context)
+    assert counted.trigger_calls == 1
+
+    context["numerical_event_telemetry"]["unavailable_chargers"] = [2]
+    backend.trigger(context)
+    assert counted.trigger_calls == 2
+    backend.trigger(context)
+    assert counted.trigger_calls == 2
+
+    context["numerical_event_telemetry"]["unavailable_chargers"] = []
+    backend.trigger(context)
+    assert counted.trigger_calls == 3
 
 
 def test_trigger_comparison_channels_are_isolated() -> None:

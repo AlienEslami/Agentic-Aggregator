@@ -68,6 +68,8 @@ def main() -> None:
         ROOT / "scripts" / "compare_trigger_evaluations.py",
         ROOT / "scripts" / "build_closed_loop_notice_cases.py",
         ROOT / "scripts" / "run_closed_loop_trigger_comparison.py",
+        ROOT / "scripts" / "run_advance_warning_matrix.py",
+        ROOT / "scripts" / "analyze_advance_warning_matrix.py",
         ROOT / "app.py",
         ROOT / "app_rt.py",
     ]
