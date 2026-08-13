@@ -405,3 +405,51 @@ def test_active_notice_updates_persist_for_independent_reoptimization_until_reco
     effective_recovery = runner._effective_notice_interpretation(recovering_trigger)
     assert effective_recovery.updates.unavailable_chargers == []
     assert effective_recovery.updates.charger_power_kw == {2: 200.0}
+
+
+def test_future_charger_window_and_return_delay_change_only_stated_inputs():
+    chargers = pd.DataFrame(
+        {
+            "charger_id": [1, 2],
+            "max_power_kw": [200.0, 200.0],
+        }
+    )
+    trips = pd.DataFrame(
+        {
+            "trip_id": [1],
+            "bus_id": [6],
+            "time_begin": ["06:30"],
+            "time_end": ["21:30"],
+        }
+    )
+    energy = pd.DataFrame({"bus_id": [6], "energy_kwhkm": [1.0]})
+    interpretation = NoticeInterpretation(
+        event_id="FUTURE",
+        source_type="combined",
+        event_type="combined",
+        phase="onset",
+        affected_buses=[6],
+        affected_chargers=[2],
+        effective_timestep=8,
+        expected_end_timestep=10,
+        updates=NoticeParameterUpdates(
+            return_delay_minutes_by_bus={6: 90},
+            unavailable_chargers=[2],
+        ),
+    )
+
+    revised_chargers, revised_trips, _ = apply_notice_updates(
+        interpretation,
+        chargers=chargers,
+        trips=trips,
+        energy_consumption=energy,
+    )
+
+    schedule = revised_chargers.loc[
+        revised_chargers["charger_id"] == 2, "power_schedule_kw"
+    ].iloc[0]
+    assert schedule[6] == 200.0
+    assert schedule[7:10] == [0.0, 0.0, 0.0]
+    assert schedule[10] == 200.0
+    assert revised_trips.loc[0, "time_begin"] == "06:30"
+    assert revised_trips.loc[0, "time_end"] == "23:00"

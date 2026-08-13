@@ -41,6 +41,7 @@ class WorkflowConfig:
     disturbance_workbook: Path
     output_workbook: Path
     notices_file: Path | None = None
+    physical_events_file: Path | None = None
     notice_scenario_ids: tuple[str, ...] = ()
     notice_variant: str = "explicit"
     spot_prices_workbook: Path | None = None
@@ -51,6 +52,7 @@ class WorkflowConfig:
     agent_backend: AgentBackendName = "auto"
     experiment_configuration: ExperimentConfiguration = "legacy"
     notice_path: NoticePathName = "none"
+    realize_notice_truth: bool = False
     optimizer_backend: OptimizerBackendName = "direct"
     optimizer_url: str = "http://127.0.0.1:5002"
     model: str = DEFAULT_MODEL
@@ -74,6 +76,8 @@ class WorkflowConfig:
             missing.append(f"spot_prices_workbook={self.spot_prices_workbook}")
         if self.notices_file is not None and not self.notices_file.exists():
             missing.append(f"notices_file={self.notices_file}")
+        if self.physical_events_file is not None and not self.physical_events_file.exists():
+            missing.append(f"physical_events_file={self.physical_events_file}")
         if missing:
             raise FileNotFoundError("Missing workflow inputs: " + ", ".join(missing))
         if self.mode not in {"selfish", "altruistic"}:

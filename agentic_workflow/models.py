@@ -13,6 +13,7 @@ class NoticeParameterUpdates(StrictModel):
     """Optimizer-facing updates extracted from one operational notice."""
 
     delay_minutes_by_bus: dict[int, int] = Field(default_factory=dict)
+    return_delay_minutes_by_bus: dict[int, int] = Field(default_factory=dict)
     energy_multiplier_by_bus: dict[int, float] = Field(default_factory=dict)
     charger_power_kw: dict[int, float] = Field(default_factory=dict)
     unavailable_chargers: list[int] = Field(default_factory=list)
@@ -23,6 +24,7 @@ class UncertainParameterEstimate(StrictModel):
 
     parameter: Literal[
         "delay_minutes",
+        "return_delay_minutes",
         "energy_multiplier",
         "charger_power_kw",
         "charger_unavailability_probability",
@@ -136,6 +138,7 @@ class StructuredNoticeParameterUpdates(StrictModel):
     """Strict-output representation that avoids arbitrary JSON object keys."""
 
     delay_minutes_by_bus: list[IntegerAssetUpdate] = Field(default_factory=list)
+    return_delay_minutes_by_bus: list[IntegerAssetUpdate] = Field(default_factory=list)
     energy_multiplier_by_bus: list[NumericAssetUpdate] = Field(default_factory=list)
     charger_power_kw: list[NumericAssetUpdate] = Field(default_factory=list)
     unavailable_chargers: list[int] = Field(default_factory=list)
@@ -143,6 +146,10 @@ class StructuredNoticeParameterUpdates(StrictModel):
     def to_domain(self) -> NoticeParameterUpdates:
         return NoticeParameterUpdates(
             delay_minutes_by_bus={item.asset_id: item.value for item in self.delay_minutes_by_bus},
+            return_delay_minutes_by_bus={
+                item.asset_id: item.value
+                for item in self.return_delay_minutes_by_bus
+            },
             energy_multiplier_by_bus={
                 item.asset_id: item.value for item in self.energy_multiplier_by_bus
             },

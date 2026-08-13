@@ -59,9 +59,31 @@ class WorkflowState:
     active_observed_notice_interpretations: dict[str, dict[str, Any]] = field(
         default_factory=dict
     )
+    active_physical_notice_interpretations: dict[str, dict[str, Any]] = field(
+        default_factory=dict
+    )
+    realized_energy_by_bus: dict[int, float] = field(default_factory=dict)
+    buy_multiplier_schedule: dict[int, float] = field(default_factory=dict)
+    sell_multiplier_schedule: dict[int, float] = field(default_factory=dict)
+    settlement: list[dict[str, Any]] = field(default_factory=list)
     agent_calls: list[dict[str, Any]] = field(default_factory=list)
     resource_usage: list[dict[str, Any]] = field(default_factory=list)
     run_summary: dict[str, Any] = field(default_factory=dict)
+
+    def initialize_tariff_schedule(
+        self, buy_multipliers: list[float], sell_multipliers: list[float]
+    ) -> None:
+        if not buy_multipliers or not sell_multipliers:
+            raise ValueError("Day-ahead tariff multipliers must not be empty")
+        for timestep in range(1, 49):
+            buy_index = min(len(buy_multipliers) - 1, timestep - 1)
+            sell_index = min(len(sell_multipliers) - 1, timestep - 1)
+            self.buy_multiplier_schedule[timestep] = float(
+                buy_multipliers[buy_index]
+            )
+            self.sell_multiplier_schedule[timestep] = float(
+                sell_multipliers[sell_index]
+            )
 
     def update_forecasts(
         self,
@@ -150,6 +172,16 @@ class WorkflowState:
             self.realtime_plan.at[index, "trigger_type"] = trigger.trigger_type if is_first else None
             self.realtime_plan.at[index, "buy_multipliers"] = _json(pricing.buy_multipliers) if is_first else None
             self.realtime_plan.at[index, "sell_multipliers"] = _json(pricing.sell_multipliers) if is_first else None
+            if offset < len(pricing.buy_multipliers):
+                self.realtime_plan.at[index, "buy_multiplier"] = pricing.buy_multipliers[offset]
+                self.buy_multiplier_schedule[timestep + offset] = float(
+                    pricing.buy_multipliers[offset]
+                )
+            if offset < len(pricing.sell_multipliers):
+                self.realtime_plan.at[index, "sell_multiplier"] = pricing.sell_multipliers[offset]
+                self.sell_multiplier_schedule[timestep + offset] = float(
+                    pricing.sell_multipliers[offset]
+                )
             self.realtime_plan.at[index, "intraday_prices"] = _json(intraday_prices) if is_first else None
 
     def append_log(
@@ -278,6 +310,9 @@ class WorkflowState:
             pd.DataFrame(self.attempts).to_excel(writer, sheet_name="optimization_attempts", index=False)
             agent_calls_frame.to_excel(writer, sheet_name="agent_calls", index=False)
             pd.DataFrame(self.resource_usage).to_excel(writer, sheet_name="resource_usage", index=False)
+            pd.DataFrame(self.settlement).to_excel(
+                writer, sheet_name="ex_post_settlement", index=False
+            )
             pd.DataFrame([self.run_summary]).to_excel(writer, sheet_name="run_summary", index=False)
             pd.DataFrame(config_rows).to_excel(writer, sheet_name="run_config", index=False)
         jsonl_path = path.with_suffix(".agent_calls.jsonl")

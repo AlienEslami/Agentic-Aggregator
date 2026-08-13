@@ -36,6 +36,7 @@ Every method uses the same mapping from uncertain communication to deterministic
 optimizer inputs:
 
 - delay range: upper bound;
+- return-delay range: upper bound while preserving the scheduled departure;
 - energy multiplier range: upper bound;
 - charger-power range: lower bound;
 - suspected charger fault: request confirmation and do not change inputs;
@@ -143,6 +144,62 @@ python -m agentic_workflow `
   --output results/revision/v3_route6_rule_text.xlsx
 ```
 
+### Common physical truth and causal settlement
+
+Closed-loop runs add `--realize-notice-truth` and a separate
+`--physical-events-file`. The latter advances a hidden physical-event state
+used only by the environment. Canonical notice fields are used only by the
+oracle and are never added to the public Trigger payload. Each evaluated
+method still constructs its own optimizer assumption from its allowed input:
+numerical telemetry, stateful text parsing, or Agent interpretation.
+
+At observation timestep `t`, the workflow first settles the plan for the
+completed interval before any decision at `t` can modify the future schedule.
+The simulator carries physical bus energy forward cumulatively. Extra traction
+consumption and charging curtailed by a failed or derated charger therefore
+remain visible in later SOC and reserve-shortfall metrics. The workbook records
+realized PTO cost, aggregator revenue, grid cost, buy/sell energy, curtailment,
+minimum and terminal SOC, reserve shortfall, planner/truth mismatch, optimizer
+calls, solver resources, LLM tokens, and approximate API cost.
+
+The frozen v3 notice timing remains unchanged for confirmatory interpretation
+accuracy. The separate `advance_warning_notices_v1.json` set contains three
+paired operational stress cases: a late-return driver report before departure,
+a charger-bank lockout before the morning charging peak, and a combined evening
+late-return/charger event before the afternoon price trough. A separate
+`advance_warning_physical_events_v1.json` fixes physical onset, recovery, and
+first sensor detection. These cases are not a second held-out accuracy test.
+The earlier energy-consumption case is retained only as a sensor-readable
+control, not as a primary unstructured-information claim. Rebuild the primary
+cases with:
+
+```powershell
+python scripts/build_closed_loop_notice_cases.py
+```
+
+Run the deterministic comparison first:
+
+```powershell
+python scripts/run_closed_loop_trigger_comparison.py `
+  --case aw_charger_bank_shutdown `
+  --variant uncertain_chat `
+  --mode selfish
+```
+
+After setting `OPENAI_API_KEY`, add the frozen low-cost Agent Trigger:
+
+```powershell
+python scripts/run_closed_loop_trigger_comparison.py `
+  --case aw_charger_bank_shutdown `
+  --variant uncertain_chat `
+  --mode selfish `
+  --include-agent `
+  --resume
+```
+
+`--resume` reuses completed deterministic workbooks. Generated workbooks and
+comparison files remain under ignored `results/`; they are not committed.
+
 For the causal Trigger comparison, use `oracle_event_trigger`,
 `numerical_event_trigger`, `rule_text_event_trigger`, and `agent_trigger_only`.
 Pricing, evaluator, solver, workbooks, tariffs, and seeds stay fixed. The offline
@@ -151,6 +208,16 @@ then measure whether earlier/correcter interpretation changes revenue or PTO
 cost. The numerical method receives only observable physical consequences, never
 canonical notice fields. Do not claim an economic comparison until the same
 physical event-realization layer is active for every method.
+
+The execution paths are isolated in code. Oracle and stateful-rule methods act
+only on a newly supplied lifecycle interpretation; they do not fall back to a
+generic deviation trigger between messages. The numerical method removes notice
+text, interpretations, and event memory and uses a stateful event estimator over
+causal charger/return telemetry available only at the declared sensor-detection
+timestep. The
+Agent receives public text plus numerical state, but its skip decision is not
+silently replaced by the numerical baseline. Structural guards still enforce
+warning/persistence/recovery semantics and all raw/guarded decisions are logged.
 
 The initial low-cost configuration uses `gpt-5.6-luna` with low reasoning effort
 and frozen approximate rates of $0.20/M input tokens and $1.20/M output tokens.
@@ -178,8 +245,9 @@ share physical truth.
 
 ## Remaining empirical work
 
-The same physical-event realization and ex-post settlement layer must be enabled
-for all four Trigger methods before economic superiority is claimed. The 8/16/32
-scaling study also still requires physically coherent 16- and 32-bus workbooks
-and a declared replication rule for trips, charger ratios, depot power, and
-terminal SOC. A second depot must be a distinct input instance.
+The deterministic oracle/rule/numerical matrix has been validated in both modes;
+generated results remain ignored. Run repeated nondeterministic Agent Trigger
+trials before making an Agent-over-rule economic-superiority claim.
+The 8/16/32 scaling study also still requires physically coherent 16- and
+32-bus workbooks and a declared replication rule for trips, charger ratios,
+depot power, and terminal SOC. A second depot must be a distinct input instance.

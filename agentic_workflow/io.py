@@ -219,7 +219,15 @@ def initialize_realtime_plan(reference: DayAheadReference) -> pd.DataFrame:
     frame = frame[plan_columns].copy()
     for column in ["w_buy", "w_sell", *dynamic_bus_columns]:
         frame[column] = pd.to_numeric(frame[column], errors="coerce").astype(float)
-    for column in ["buy_multipliers", "sell_multipliers", "intraday_prices", "reoptimized", "trigger_type"]:
+    for column in [
+        "buy_multipliers",
+        "sell_multipliers",
+        "buy_multiplier",
+        "sell_multiplier",
+        "intraday_prices",
+        "reoptimized",
+        "trigger_type",
+    ]:
         frame[column] = None
     return frame.sort_values("timestep").reset_index(drop=True)
 

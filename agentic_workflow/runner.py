@@ -35,6 +35,15 @@ from .notices import (
     resolve_notice_coreferences,
 )
 from .optimizer import OptimizerBackend, create_optimizer_backend
+from .physical_events import (
+    PhysicalEventSeries,
+    advance_realized_energy,
+    advance_physical_notice_truth,
+    apply_realized_energy_to_observation,
+    interpretation_active_at,
+    realize_notice_consequences,
+    settle_realized_step,
+)
 from .state import WorkflowState
 from .telemetry import ResourceMeter, summarize_agent_calls, system_profile
 
@@ -74,10 +83,15 @@ class WorkflowRunner:
                 raise ValueError(f"Missing {label} workbooks for timesteps: {missing}")
         self.scenarios = load_disturbances(config.disturbance_workbook, config.scenario_ids)
         self.notices = NoticeSeries(config.notices_file)
+        self.physical_events = PhysicalEventSeries(config.physical_events_file)
         self.state = WorkflowState(
             realtime_plan=initialize_realtime_plan(self.day_ahead),
             forecast_prices=forecast_prices.copy(),
             forecast_energy=forecast_energy.copy(),
+        )
+        self.state.initialize_tariff_schedule(
+            list(self.day_ahead.summary.get("buy_multipliers") or []),
+            list(self.day_ahead.summary.get("sell_multipliers") or []),
         )
         self.agents = agents or create_experiment_backend(
             config.experiment_configuration, config.agent_backend, config.model
@@ -360,13 +374,64 @@ class WorkflowRunner:
                 trips=workbook["Trips"],
                 realtime_plan=self.state.realtime_plan,
                 )
+                notice_records = self.notices.at(
+                timestep,
+                scenario_ids=self.config.notice_scenario_ids,
+                wording_variant=self.config.notice_variant,
+                )
+                planner_assumption = merge_interpretations(
+                    NoticeInterpretation.model_validate(value)
+                    for _, value in sorted(
+                        self.state.active_notice_interpretations.items()
+                    )
+                )
+                planner_assumption_now = interpretation_active_at(
+                    planner_assumption, timestep
+                )
+                physical_truth = None
+                observable_truth = None
+                observation_disturbance = disturbance
+                if self.config.realize_notice_truth:
+                    if self.config.physical_events_file is not None:
+                        physical_truth = self.physical_events.truth_at(
+                            timestep,
+                            scenario_ids=self.config.notice_scenario_ids,
+                        )
+                        observable_truth = self.physical_events.truth_at(
+                            timestep,
+                            scenario_ids=self.config.notice_scenario_ids,
+                            observable=True,
+                        )
+                    else:
+                        physical_truth = advance_physical_notice_truth(
+                            notice_records,
+                            self.state.active_physical_notice_interpretations,
+                        )
+                        observable_truth = physical_truth
+                    observation_disturbance = realize_notice_consequences(
+                        disturbance, observable_truth, planner_assumption_now
+                    )
                 observation = build_observation(
                 timestep=timestep,
                 realtime_plan=self.state.realtime_plan,
-                disturbance=disturbance,
+                disturbance=observation_disturbance,
                 workbook_state=workbook.get("Realtime state"),
                 state_source=self.config.state_source,
                 )
+                if self.config.realize_notice_truth:
+                    realized_energy = advance_realized_energy(
+                        timestep=timestep,
+                        realtime_plan=self.state.realtime_plan,
+                        disturbance=observation_disturbance,
+                        chargers=workbook["Chargers"],
+                        trips=disturbance.trips,
+                        energy_consumption=disturbance.energy_consumption,
+                        physical_truth=physical_truth,
+                        realized_energy_by_bus=self.state.realized_energy_by_bus,
+                    )
+                    observation = apply_realized_energy_to_observation(
+                        observation, realized_energy
+                    )
                 context = build_context(
                 mode=self.config.mode,
                 timestep=timestep,
@@ -375,16 +440,34 @@ class WorkflowRunner:
                 day_ahead=self.day_ahead,
                 forecast_prices=self.state.forecast_prices,
                 forecast_energy=self.state.forecast_energy,
-                disturbance=disturbance,
+                disturbance=observation_disturbance,
                 price_history=self.state.price_history,
                 context_history=self.state.context_history,
                 )
-                notice_records = self.notices.at(
-                timestep,
-                scenario_ids=self.config.notice_scenario_ids,
-                wording_variant=self.config.notice_variant,
-                )
                 context["operational_notices"] = [record.public_dict() for record in notice_records]
+                context["numerical_event_telemetry"] = (
+                    {
+                        "return_delay_minutes_by_bus": dict(
+                            observable_truth.updates.return_delay_minutes_by_bus
+                        ),
+                        "charger_power_kw": dict(
+                            observable_truth.updates.charger_power_kw
+                        ),
+                        "unavailable_chargers": list(
+                            observable_truth.updates.unavailable_chargers
+                        ),
+                        "effective_timestep": observable_truth.effective_timestep,
+                        "expected_end_timestep": observable_truth.expected_end_timestep,
+                    }
+                    if observable_truth is not None
+                    else {
+                        "return_delay_minutes_by_bus": {},
+                        "charger_power_kw": {},
+                        "unavailable_chargers": [],
+                        "effective_timestep": None,
+                        "expected_end_timestep": None,
+                    }
+                )
                 context["active_operational_events"] = [
                     value
                     for _, value in sorted(
@@ -434,6 +517,24 @@ class WorkflowRunner:
                 evaluation: EvaluationDecision | None = None
                 result: dict[str, Any] | None = None
                 rerun_count = 0
+                # The observation at timestep t settles the interval planned at
+                # t - 1.  Capture settlement before a decision at t can mutate
+                # the plan or the planner's active event assumptions.
+                current_price = context["intraday_prices"]["current_price"]
+                self.state.settlement.append(
+                    settle_realized_step(
+                        timestep=timestep,
+                        realtime_plan=self.state.realtime_plan,
+                        observation=observation,
+                        spot_price=current_price,
+                        buy_multiplier=self.state.buy_multiplier_schedule[timestep],
+                        sell_multiplier=self.state.sell_multiplier_schedule[timestep],
+                        chargers=workbook["Chargers"],
+                        trips=disturbance.trips,
+                        physical_truth=physical_truth,
+                        planner_assumption=planner_assumption_now,
+                    )
+                )
                 if trigger.action == "optimize":
                     self.state.update_forecasts(
                     timestep=timestep,
@@ -463,7 +564,6 @@ class WorkflowRunner:
                         context["history_entry"]["reoptimized"] = True
                         if trigger.notice_interpretation is not None:
                             self._account_for_notice(trigger.notice_interpretation)
-                current_price = context["intraday_prices"]["current_price"]
                 if current_price is not None:
                     self.state.price_history[timestep] = float(current_price)
                 context["workflow_latency_seconds"] = round(
@@ -510,6 +610,7 @@ class WorkflowRunner:
             run_resources = run_meter.stop()
             usage_summary = summarize_agent_calls(self.state.agent_calls)
             profile = system_profile()
+            settlement = self.state.settlement
             self.state.run_summary = {
                 "status": run_status,
                 "start_timestep": self.config.start_timestep,
@@ -523,6 +624,76 @@ class WorkflowRunner:
                     row.get("action") == "optimize" for row in self.state.logs
                 ),
                 "skip_decisions": sum(row.get("action") == "skip" for row in self.state.logs),
+                "realized_pto_cost": sum(
+                    float(row.get("realized_pto_cost") or 0) for row in settlement
+                ),
+                "realized_aggregator_revenue": sum(
+                    float(row.get("realized_aggregator_revenue") or 0)
+                    for row in settlement
+                ),
+                "realized_grid_net_cost": sum(
+                    float(row.get("realized_grid_net_cost") or 0)
+                    for row in settlement
+                ),
+                "realized_buy_kwh": sum(
+                    float(row.get("realized_buy_kwh") or 0) for row in settlement
+                ),
+                "realized_sell_kwh": sum(
+                    float(row.get("realized_sell_kwh") or 0) for row in settlement
+                ),
+                "curtailed_energy_kwh": sum(
+                    float(row.get("curtailed_buy_kwh") or 0)
+                    + float(row.get("curtailed_sell_kwh") or 0)
+                    for row in settlement
+                ),
+                "event_model_mismatch_timesteps": sum(
+                    bool(row.get("event_model_mismatch")) for row in settlement
+                ),
+                "delay_parameter_absolute_error_minutes": sum(
+                    float(row.get("delay_parameter_absolute_error_minutes") or 0)
+                    for row in settlement
+                ),
+                "return_delay_parameter_absolute_error_minutes": sum(
+                    float(
+                        row.get(
+                            "return_delay_parameter_absolute_error_minutes"
+                        )
+                        or 0
+                    )
+                    for row in settlement
+                ),
+                "charger_power_absolute_error_kw": sum(
+                    float(row.get("charger_power_absolute_error_kw") or 0)
+                    for row in settlement
+                ),
+                "charger_availability_mismatch_count": sum(
+                    int(row.get("charger_availability_mismatch_count") or 0)
+                    for row in settlement
+                ),
+                "minimum_observed_soc_fraction": min(
+                    (
+                        float(row["minimum_observed_soc_fraction"])
+                        for row in settlement
+                        if row.get("minimum_observed_soc_fraction") is not None
+                    ),
+                    default=None,
+                ),
+                "maximum_reserve_shortfall_kwh": max(
+                    (
+                        float(row.get("reserve_shortfall_kwh") or 0)
+                        for row in settlement
+                    ),
+                    default=0.0,
+                ),
+                "reserve_violation_timesteps": sum(
+                    float(row.get("reserve_shortfall_kwh") or 0) > 1e-6
+                    for row in settlement
+                ),
+                "terminal_minimum_soc_fraction": (
+                    settlement[-1].get("minimum_observed_soc_fraction")
+                    if settlement
+                    else None
+                ),
                 **usage_summary,
                 **{f"run_{key}": value for key, value in run_resources.items()},
                 **profile,

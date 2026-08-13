@@ -394,11 +394,24 @@ def build_rt_context(data, payload_price_guidance, current_timestep, disturbance
     chargers = []
     for row in chargers_df.to_dict(orient="records"):
         charger_kw = safe_float(row.get("max_power_kw", row.get("charger_kw")))
+        raw_schedule = row.get("power_schedule_kw")
+        if isinstance(raw_schedule, str):
+            try:
+                raw_schedule = json.loads(raw_schedule)
+            except json.JSONDecodeError:
+                raw_schedule = None
+        if not isinstance(raw_schedule, (list, tuple)) or len(raw_schedule) != full_horizon_steps:
+            raw_schedule = [charger_kw] * full_horizon_steps
+        power_schedule = [max(0.0, safe_float(value, charger_kw)) for value in raw_schedule]
         chargers.append(
             {
                 "charger_id": safe_int(row.get("charger_id")),
                 "charger_kw": charger_kw,
                 "alpha": charger_kw * timestep_hours,
+                "alpha_by_step": [
+                    value * timestep_hours
+                    for value in power_schedule[current_timestep - 1 :]
+                ],
             }
         )
 
@@ -734,7 +747,11 @@ def solve_rt_rescheduling(ctx):
     model.spot = pyo.Param(model.T, initialize=lambda m, t: prices["spot"][t - 1])
     model.c_bat = pyo.Param(model.K, initialize=lambda m, k: bus_by_id[k]["bus_kwh"])
     model.e0 = pyo.Param(model.K, initialize=lambda m, k: bus_by_id[k]["initial_soc_rt"] * bus_by_id[k]["bus_kwh"])
-    model.alpha = pyo.Param(model.N, initialize=lambda m, n: charger_by_id[n]["alpha"])
+    model.alpha = pyo.Param(
+        model.N,
+        model.T,
+        initialize=lambda m, n, t: charger_by_id[n]["alpha_by_step"][t - 1],
+    )
     model.trip_energy = pyo.Param(model.I, initialize=lambda m, i: trip_by_id[i]["energy_per_step"])
     model.start_rt = pyo.Param(model.I, initialize=lambda m, i: trip_by_id[i]["start_rt"])
     model.end_rt = pyo.Param(model.I, initialize=lambda m, i: trip_by_id[i]["end_rt"])
@@ -759,7 +776,6 @@ def solve_rt_rescheduling(ctx):
     switch_penalty = 25.0
     soc_shortfall_penalty = 8e3
     same_bus_break_penalty = 2e4
-    site_cap = sum(charger["alpha"] for charger in chargers)
     e_min_fraction = 0.2
     e_max_fraction = 1.0
     e_end_fraction = 0.2
@@ -795,8 +811,9 @@ def solve_rt_rescheduling(ctx):
             model.constraints.add(sum(model.x[k, n, t] + model.y[k, n, t] for k in model.K) <= 1)
 
     for t in model.T:
-        total_charge = sum(model.alpha[n] * model.x[k, n, t] for k in model.K for n in model.N)
-        total_discharge = sum(model.alpha[n] * model.y[k, n, t] for k in model.K for n in model.N)
+        total_charge = sum(model.alpha[n, t] * model.x[k, n, t] for k in model.K for n in model.N)
+        total_discharge = sum(model.alpha[n, t] * model.y[k, n, t] for k in model.K for n in model.N)
+        site_cap = sum(model.alpha[n, t] for n in model.N)
         model.constraints.add(model.w_buy[t] == total_charge)
         model.constraints.add(model.w_sell[t] == total_discharge)
         model.constraints.add(total_charge <= site_cap)
@@ -808,8 +825,8 @@ def solve_rt_rescheduling(ctx):
         cap = bus_by_id[k]["bus_kwh"]
         for t in model.T:
             trip_draw = sum(model.trip_energy[i] * model.s[k, i, t] for i in model.I)
-            charge_in = sum(model.alpha[n] * ch_eff * model.x[k, n, t] for n in model.N)
-            discharge_out = sum(model.alpha[n] * dch_eff * model.y[k, n, t] for n in model.N)
+            charge_in = sum(model.alpha[n, t] * ch_eff * model.x[k, n, t] for n in model.N)
+            discharge_out = sum(model.alpha[n, t] * dch_eff * model.y[k, n, t] for n in model.N)
             if t == 1:
                 model.constraints.add(
                     model.e[k, t] == model.e0[k] + charge_in - discharge_out - trip_draw

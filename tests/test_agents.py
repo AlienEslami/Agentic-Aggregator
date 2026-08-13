@@ -3,6 +3,8 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 from agentic_workflow.agents import (
+    NoticeOnlyAgentBackend,
+    NumericalOnlyAgentBackend,
     OpenAIAgentBackend,
     RuleBasedAgentBackend,
     normalize_trigger_decision,
@@ -75,6 +77,41 @@ def test_trigger_guard_repairs_inconsistent_llm_skip():
     assert repaired.action == "optimize"
     assert repaired.trigger_type == "price"
     assert "safety guard" in repaired.reasoning
+
+
+def test_agent_only_guard_does_not_substitute_numerical_baseline() -> None:
+    decision = TriggerDecision(
+        action="skip",
+        reasoning="Agent judged the evidence insufficient.",
+        confidence=0.6,
+        trigger_type="none",
+        flagged_buses=[],
+    )
+    guarded = normalize_trigger_decision(
+        decision, _context(), allow_numerical_fallback=False
+    )
+    assert guarded.action == "skip"
+
+
+def test_trigger_comparison_channels_are_isolated() -> None:
+    context = _context()
+    assert NoticeOnlyAgentBackend().trigger(context).action == "skip"
+
+    context["trigger_flags"]["price_deviation_significant"] = False
+    context["notice_interpretation"] = NoticeInterpretation(
+        event_id="OPS-TEST",
+        source_type="driver_chat",
+        event_type="route_energy_change",
+        phase="onset",
+        affected_buses=[2],
+        effective_timestep=5,
+        uncertainty_details=NoticeUncertaintyAssessment(
+            confidence_level=0.9,
+            recommended_action="optimize",
+        ),
+    ).model_dump()
+    assert NoticeOnlyAgentBackend().trigger(context).action == "optimize"
+    assert NumericalOnlyAgentBackend().trigger(context).action == "skip"
 
 
 def test_trigger_guard_normalizes_non_actionable_skip():

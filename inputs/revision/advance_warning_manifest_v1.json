@@ -1,0 +1,42 @@
+{
+  "version": "advance_warning_benchmark_v1",
+  "notice_file": "inputs/revision/advance_warning_notices_v1.json",
+  "physical_event_file": "inputs/revision/advance_warning_physical_events_v1.json",
+  "notice_sha256": "931a1311149260167962644bbf1f4e80c93782b1cb032e85a5afcd6b6f4b047b",
+  "physical_event_sha256": "860baa275ce6aba79dca69c7be838acbf22286672f10a7b5f944748a225c206e",
+  "cases": [
+    {
+      "scenario_id": "aw_route6_late_return",
+      "advance_report_timestep": 6,
+      "physical_onset_timestep": 44,
+      "sensor_detection_timestep": 44,
+      "economic_opportunity": "pre-charge Bus 6 before departure instead of discovering the late return after cheap charging has passed"
+    },
+    {
+      "scenario_id": "aw_charger_bank_shutdown",
+      "advance_report_timestep": 5,
+      "physical_onset_timestep": 8,
+      "sensor_detection_timestep": 8,
+      "economic_opportunity": "move charging into available pre-isolation intervals and avoid curtailed energy"
+    },
+    {
+      "scenario_id": "aw_combined_evening",
+      "advance_report_timestep": 30,
+      "physical_onset_timestep": 41,
+      "sensor_detection_timestep": 41,
+      "economic_opportunity": "prepare at the afternoon price trough and reassign evening V2G before both constraints become measurable"
+    }
+  ],
+  "comparison": [
+    "agent",
+    "rule_text",
+    "numerical",
+    "oracle"
+  ],
+  "information_protocol": {
+    "agent_and_rule_text": "identical public chat text",
+    "numerical": "no chat; causal telemetry only from sensor_detection_timestep",
+    "oracle": "canonical structured interpretation at the public report time",
+    "all_methods": "identical hidden physical-event file and causal ex-post settlement"
+  }
+}

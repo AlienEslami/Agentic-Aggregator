@@ -281,6 +281,7 @@ def test_runner_replaces_branching_merging_and_persistence(tmp_path):
     assert "agent_calls" in sheet_names
     assert "resource_usage" in sheet_names
     assert "run_summary" in sheet_names
+    assert "ex_post_settlement" in sheet_names
     agent_calls = pd.read_excel(output, sheet_name="agent_calls")
     assert "input_tokens" in agent_calls.columns
     assert "approximate_cost_usd" in agent_calls.columns
@@ -291,6 +292,11 @@ def test_runner_replaces_branching_merging_and_persistence(tmp_path):
     assert summary["timesteps_completed"] == 2
     assert summary["optimizer_calls"] == 1
     assert summary["llm_total_tokens"] == 0
+    # The optimization at timestep 2 changes only future intervals.  It must
+    # not retroactively change the just-observed timestep-1 settlement.
+    assert summary["realized_pto_cost"] == 0
+    settlement = pd.read_excel(output, sheet_name="ex_post_settlement")
+    assert settlement["planned_buy_kwh"].tolist() == [0, 0]
 
 
 def test_optimizer_never_accepts_an_all_mock_rerun_sequence(tmp_path):

@@ -19,6 +19,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--spot-prices", type=Path, dest="spot_prices_workbook")
     parser.add_argument("--output", required=True, type=Path, dest="output_workbook")
     parser.add_argument("--notices-file", type=Path)
+    parser.add_argument("--physical-events-file", type=Path)
     parser.add_argument(
         "--notice-scenario",
         action="append",
@@ -62,6 +63,14 @@ def build_parser() -> argparse.ArgumentParser:
         default="none",
         help="Operational-notice formalization path; configurations set a default when omitted.",
     )
+    parser.add_argument(
+        "--realize-notice-truth",
+        action="store_true",
+        help=(
+            "Experiment-only: apply hidden canonical notice truth to numerical "
+            "consequences and ex-post settlement without exposing it to triggers."
+        ),
+    )
     parser.add_argument("--optimizer-backend", choices=("direct", "http"), default="direct")
     parser.add_argument("--optimizer-url", default="http://127.0.0.1:5002")
     parser.add_argument("--model", default=DEFAULT_MODEL)
@@ -82,6 +91,7 @@ def main(argv: list[str] | None = None) -> int:
         spot_prices_workbook=args.spot_prices_workbook,
         output_workbook=args.output_workbook,
         notices_file=args.notices_file,
+        physical_events_file=args.physical_events_file,
         notice_scenario_ids=tuple(args.notice_scenario_ids or []),
         notice_variant=args.notice_variant,
         mode=args.mode,
@@ -91,6 +101,7 @@ def main(argv: list[str] | None = None) -> int:
         agent_backend=args.agent_backend,
         experiment_configuration=args.experiment_configuration,
         notice_path=args.notice_path,
+        realize_notice_truth=args.realize_notice_truth,
         optimizer_backend=args.optimizer_backend,
         optimizer_url=args.optimizer_url,
         model=args.model,

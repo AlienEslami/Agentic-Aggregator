@@ -5,6 +5,7 @@ from typing import Literal
 
 UncertainParameterName = Literal[
     "delay_minutes",
+    "return_delay_minutes",
     "energy_multiplier",
     "charger_power_kw",
     "charger_unavailability_probability",
@@ -32,7 +33,7 @@ def select_operational_value(
         raise ValueError("lower_bound must not exceed upper_bound")
     if recommendation != "optimize":
         return None, "no_update_pending_confirmation"
-    if parameter in {"delay_minutes", "energy_multiplier"}:
+    if parameter in {"delay_minutes", "return_delay_minutes", "energy_multiplier"}:
         return upper_bound, "conservative_upper"
     if parameter == "charger_power_kw":
         return lower_bound, "conservative_lower"

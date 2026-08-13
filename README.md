@@ -158,6 +158,17 @@ The earlier 120-decision v2 notice set is retained for sensitivity analysis.
 The frozen held-out Trigger v3 results and their interpretation limits are in
 [`docs/TRIGGER_V3_RESULTS.md`](docs/TRIGGER_V3_RESULTS.md).
 
+Paired operational comparisons use a hidden common physical-event layer and
+causal ex-post settlement. The three decision-sensitive cases are (i) an
+advance driver report of a late return, (ii) an advance maintenance chat for a
+charger-bank isolation, and (iii) a fragmented combined late-return/charger
+restriction with a later correction. Report time, physical onset, and first
+sensor-detection time are separate. Future charger restrictions apply only to
+their stated windows and late returns extend only trip return times. The cases are rebuilt
+with `python scripts/build_closed_loop_notice_cases.py` and compared with
+`python scripts/run_closed_loop_trigger_comparison.py`. Generated Excel
+workbooks stay in ignored `results/` and are not committed.
+
 ## Workflow Replication
 
 Import these n8n workflows:

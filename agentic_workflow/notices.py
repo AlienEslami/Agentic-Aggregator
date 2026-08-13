@@ -36,6 +36,16 @@ _DELAY_RANGE_RE = re.compile(
     r"(\d+(?:\.\d+)?)\s*(?:minutes?|mins?|min)\b",
     re.IGNORECASE,
 )
+_RETURN_DELAY_RE = re.compile(
+    r"(?:return|back|pull[ -]?in|arrival)[^\d]{0,40}(\d+(?:\.\d+)?)\s*"
+    r"(?:-|â€“|–|to)\s*(\d+(?:\.\d+)?)\s*(?:minutes?|mins?|min)\s*(?:late|later)?",
+    re.IGNORECASE,
+)
+_TIME_WINDOW_RE = re.compile(
+    r"\b(?:window\s+|from\s+)?([01]?\d|2[0-3]):([0-5]\d)\s*"
+    r"(?:-|â€“|–|to|through|until)\s*((?:[01]?\d|2[0-3]):[0-5]\d|24:00)\b",
+    re.IGNORECASE,
+)
 _POWER_RE = re.compile(r"\b(\d+(?:\.\d+)?)\s*kW\b", re.IGNORECASE)
 _POWER_RANGE_RE = re.compile(
     r"(?:power|ceiling|output)[^\d]{0,32}(\d+(?:\.\d+)?)\s*(?:-|–|to)\s*"
@@ -167,6 +177,22 @@ def _ints(match: re.Match[str] | None) -> list[int]:
     return sorted({int(item) for item in re.findall(r"\d+", match.group(1))})
 
 
+def _timestep_window(text: str) -> tuple[int, int] | None:
+    """Parse a half-hour operational window into inclusive day timesteps."""
+
+    match = _TIME_WINDOW_RE.search(text)
+    if not match:
+        return None
+    start_minutes = int(match.group(1)) * 60 + int(match.group(2))
+    end_hour, end_minute = (int(part) for part in match.group(3).split(":", 1))
+    end_minutes = end_hour * 60 + end_minute
+    if end_minutes <= start_minutes:
+        return None
+    start = max(1, min(48, start_minutes // 30 + 1))
+    end = max(start, min(48, end_minutes // 30))
+    return start, end
+
+
 def _phase(text: str) -> str:
     lowered = text.lower()
     if any(word in lowered for word in ("conditional warning", "warning was raised")):
@@ -268,11 +294,15 @@ def _uncertainty_details(
             )
 
     delay_bounds = _range(_DELAY_RANGE_RE.search(text))
+    return_delay_bounds = _range(_RETURN_DELAY_RE.search(text))
     energy_percent_bounds = _range(_ENERGY_PERCENT_RANGE_RE.search(text))
     energy_factor_bounds = _range(_ENERGY_FACTOR_RANGE_RE.search(text))
     power_bounds = _range(_POWER_RANGE_RE.search(text))
     unavailable_bounds = _range(_UNAVAILABILITY_RANGE_RE.search(text))
     add_estimates("delay_minutes", bus_ids, delay_bounds, "minutes")
+    add_estimates(
+        "return_delay_minutes", bus_ids, return_delay_bounds, "minutes"
+    )
     if energy_percent_bounds is not None:
         energy_percent_bounds = (
             1 + energy_percent_bounds[0] / 100,
@@ -348,6 +378,7 @@ def frozen_rule_parse(record: NoticeRecord, bus_route_map: dict[int, int] | None
         for item in uncertainty_details.estimates
     }
     delay_range = _range(_DELAY_RANGE_RE.search(text))
+    return_delay_range = _range(_RETURN_DELAY_RE.search(text))
     delay_match = _DELAY_RE.search(text)
     delay_minutes = 0
     if delay_range is not None:
@@ -388,7 +419,7 @@ def frozen_rule_parse(record: NoticeRecord, bus_route_map: dict[int, int] | None
     elif charger_ids:
         event_type = "charger_fault" if faulted else "charger_derating"
         source_type = record.source_type if record.source_type == "driver_chat" else "ocpp"
-    elif delay_match or delay_range:
+    elif delay_match or delay_range or return_delay_range:
         event_type = "service_delay"
         source_type = record.source_type if record.source_type == "driver_chat" else "service_alert"
     elif energy_match or energy_factor_match or energy_percent_range or energy_factor_range:
@@ -407,6 +438,22 @@ def frozen_rule_parse(record: NoticeRecord, bus_route_map: dict[int, int] | None
             bus: (0 if recovered else int(round(estimates.get(("delay_minutes", bus), delay_minutes))))
             for bus in bus_ids
             if recovered or (actionable and (delay_match or delay_range))
+        },
+        return_delay_minutes_by_bus={
+            bus: (
+                0
+                if recovered
+                else int(
+                    round(
+                        estimates.get(
+                            ("return_delay_minutes", bus),
+                            return_delay_range[1] if return_delay_range else 0,
+                        )
+                    )
+                )
+            )
+            for bus in bus_ids
+            if recovered or (actionable and return_delay_range is not None)
         },
         energy_multiplier_by_bus={
             bus: (1.0 if recovered else float(estimates.get(("energy_multiplier", bus), energy_multiplier)))
@@ -432,6 +479,7 @@ def frozen_rule_parse(record: NoticeRecord, bus_route_map: dict[int, int] | None
             charger_ids if actionable and faulted and power is None else []
         ),
     )
+    time_window = _timestep_window(text)
     return NoticeInterpretation(
         event_id=record.event_id,
         source_type=source_type,
@@ -439,7 +487,8 @@ def frozen_rule_parse(record: NoticeRecord, bus_route_map: dict[int, int] | None
         phase=phase,
         affected_buses=bus_ids,
         affected_chargers=charger_ids,
-        effective_timestep=record.report_timestep,
+        effective_timestep=(time_window[0] if time_window else record.report_timestep),
+        expected_end_timestep=(time_window[1] if time_window else None),
         uncertainty=bool(uncertainty_details.estimates or uncertainty_details.conflicting_evidence) or bool(
             re.search(
                 r"\b(may|approximately|expected|uncertain|not confirmed|pending|eta)\b",
@@ -472,6 +521,7 @@ def resolve_notice_coreferences(
     buses = parsed.affected_buses or previous.affected_buses
     chargers = parsed.affected_chargers or previous.affected_chargers
     delay = dict(previous.updates.delay_minutes_by_bus)
+    return_delay = dict(previous.updates.return_delay_minutes_by_bus)
     energy = dict(previous.updates.energy_multiplier_by_bus)
     power = dict(previous.updates.charger_power_kw)
     unavailable = list(previous.updates.unavailable_chargers)
@@ -480,6 +530,7 @@ def resolve_notice_coreferences(
 
     if parsed.phase not in {"recovery", "stable"}:
         delay.update(parsed.updates.delay_minutes_by_bus)
+        return_delay.update(parsed.updates.return_delay_minutes_by_bus)
         energy.update(parsed.updates.energy_multiplier_by_bus)
         power.update(parsed.updates.charger_power_kw)
         if parsed.updates.unavailable_chargers:
@@ -530,6 +581,7 @@ def resolve_notice_coreferences(
 
     if parsed.phase == "recovery":
         delay = {bus: 0 for bus in buses if bus in delay}
+        return_delay = {bus: 0 for bus in buses if bus in return_delay}
         energy = {bus: 1.0 for bus in buses if bus in energy}
         power = {charger: 200.0 for charger in chargers}
         unavailable = []
@@ -539,6 +591,7 @@ def resolve_notice_coreferences(
         for item in previous_details.estimates:
             nominal = {
                 "delay_minutes": 0.0,
+                "return_delay_minutes": 0.0,
                 "energy_multiplier": 1.0,
                 "charger_power_kw": 200.0,
                 "charger_unavailability_probability": 0.0,
@@ -590,6 +643,7 @@ def resolve_notice_coreferences(
             "material": parsed.phase != "stable",
             "updates": NoticeParameterUpdates(
                 delay_minutes_by_bus=delay,
+                return_delay_minutes_by_bus=return_delay,
                 energy_multiplier_by_bus=energy,
                 charger_power_kw=power,
                 unavailable_chargers=sorted(unavailable),
@@ -608,6 +662,7 @@ def merge_interpretations(items: Iterable[NoticeInterpretation]) -> NoticeInterp
     phases = {item.phase for item in values}
     phase = next(iter(phases)) if len(phases) == 1 else "severity_change"
     delay: dict[int, int] = {}
+    return_delay: dict[int, int] = {}
     energy: dict[int, float] = {}
     power: dict[int, float] = {}
     unavailable: set[int] = set()
@@ -615,6 +670,7 @@ def merge_interpretations(items: Iterable[NoticeInterpretation]) -> NoticeInterp
     conflicts: list[str] = []
     for item in values:
         delay.update(item.updates.delay_minutes_by_bus)
+        return_delay.update(item.updates.return_delay_minutes_by_bus)
         energy.update(item.updates.energy_multiplier_by_bus)
         power.update(item.updates.charger_power_kw)
         unavailable.update(item.updates.unavailable_chargers)
@@ -638,6 +694,14 @@ def merge_interpretations(items: Iterable[NoticeInterpretation]) -> NoticeInterp
         affected_buses=sorted({bus for item in values for bus in item.affected_buses}),
         affected_chargers=sorted({charger for item in values for charger in item.affected_chargers}),
         effective_timestep=min(item.effective_timestep for item in values),
+        expected_end_timestep=max(
+            (
+                item.expected_end_timestep
+                for item in values
+                if item.expected_end_timestep is not None
+            ),
+            default=None,
+        ),
         uncertainty=any(item.uncertainty for item in values),
         uncertainty_details=NoticeUncertaintyAssessment(
             confidence_level=min(
@@ -654,6 +718,7 @@ def merge_interpretations(items: Iterable[NoticeInterpretation]) -> NoticeInterp
         material=any(item.material for item in values),
         updates=NoticeParameterUpdates(
             delay_minutes_by_bus=delay,
+            return_delay_minutes_by_bus=return_delay,
             energy_multiplier_by_bus=energy,
             charger_power_kw=power,
             unavailable_chargers=sorted(unavailable),
@@ -678,11 +743,36 @@ def apply_notice_updates(
         return revised_chargers, revised_trips, revised_energy
     updates = interpretation.updates
     unavailable = set(updates.unavailable_chargers)
-    if unavailable:
+    temporal_window = interpretation.expected_end_timestep is not None
+    if unavailable and not temporal_window:
         revised_chargers = revised_chargers.loc[
             ~pd.to_numeric(revised_chargers["charger_id"], errors="coerce").isin(unavailable)
         ].copy()
+    if temporal_window and (unavailable or updates.charger_power_kw):
+        if "power_schedule_kw" not in revised_chargers:
+            revised_chargers["power_schedule_kw"] = pd.Series(
+                [None] * len(revised_chargers), dtype="object"
+            )
+        start = interpretation.effective_timestep
+        end = int(interpretation.expected_end_timestep or 48)
+        for index, row in revised_chargers.iterrows():
+            charger_id = int(row["charger_id"])
+            column = "max_power_kw" if "max_power_kw" in revised_chargers else "charger_kw"
+            nominal = float(row[column])
+            schedule = [nominal] * 48
+            window_power = (
+                0.0
+                if charger_id in unavailable
+                else updates.charger_power_kw.get(charger_id)
+            )
+            if window_power is None:
+                continue
+            for timestep in range(start, end + 1):
+                schedule[timestep - 1] = max(0.0, float(window_power))
+            revised_chargers.at[index, "power_schedule_kw"] = schedule
     for charger_id, power in updates.charger_power_kw.items():
+        if temporal_window:
+            continue
         mask = pd.to_numeric(revised_chargers["charger_id"], errors="coerce") == charger_id
         column = "max_power_kw" if "max_power_kw" in revised_chargers else "charger_kw"
         revised_chargers.loc[mask, column] = float(power)
@@ -697,6 +787,11 @@ def apply_notice_updates(
             revised_trips.loc[mask, column] = revised_trips.loc[mask, column].map(
                 lambda value: _shift_time(value, minutes)
             )
+    for bus_id, minutes in updates.return_delay_minutes_by_bus.items():
+        mask = pd.to_numeric(revised_trips["bus_id"], errors="coerce") == bus_id
+        revised_trips.loc[mask, "time_end"] = revised_trips.loc[mask, "time_end"].map(
+            lambda value: _shift_return_time(value, minutes)
+        )
     return revised_chargers, revised_trips, revised_energy
 
 
@@ -704,3 +799,11 @@ def _shift_time(value: Any, minutes: int) -> str:
     hour, minute = (int(part) for part in str(value).split(":", 1))
     total = (hour * 60 + minute + int(minutes)) % 1440
     return f"{total // 60:02d}:{total % 60:02d}"
+
+
+def _shift_return_time(value: Any, minutes: int) -> str:
+    """Extend a return without wrapping a late trip into the start of the day."""
+
+    hour, minute = (int(part) for part in str(value).split(":", 1))
+    total = min(1440, max(0, hour * 60 + minute + int(minutes)))
+    return "24:00" if total == 1440 else f"{total // 60:02d}:{total % 60:02d}"

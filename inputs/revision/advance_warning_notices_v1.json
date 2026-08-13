@@ -1,0 +1,661 @@
+[
+  {
+    "notice_id": "AW-ROUTE6-WARN",
+    "scenario_id": "aw_route6_late_return",
+    "event_id": "AW-ROUTE6",
+    "source_type": "driver_chat",
+    "wording_variant": "uncertain_chat",
+    "report_timestep": 5,
+    "text": "Conditional warning \u2014 Driver 6: the evening roadworks note looks worse than the board. Bus 6 return may be 120-150 minutes late; dispatch has not confirmed the 21:30-to-end-of-day control window. Request confirmation; do not replan yet.",
+    "benchmark_split": "closed_loop_advance_warning",
+    "uncertainty_case": "range_fragmentation_and_coreference",
+    "canonical": {
+      "event_id": "AW-ROUTE6",
+      "source_type": "driver_chat",
+      "event_type": "service_delay",
+      "phase": "warning",
+      "affected_buses": [
+        6
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 44,
+      "expected_end_timestep": 48,
+      "uncertainty": true,
+      "uncertainty_details": {
+        "confidence_level": 0.58,
+        "provisional": true,
+        "conflicting_evidence": [],
+        "estimates": [
+          {
+            "parameter": "return_delay_minutes",
+            "asset_id": 6,
+            "lower_bound": 120,
+            "upper_bound": 150,
+            "selected_value": null,
+            "unit": "minutes",
+            "selection_policy": "no_update_pending_confirmation"
+          }
+        ],
+        "recommended_action": "request_confirmation",
+        "rationale": "Wait for operational confirmation."
+      },
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "return_delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "advance_warning_benchmark_v1"
+      ]
+    }
+  },
+  {
+    "notice_id": "AW-ROUTE6-CONFIRM",
+    "scenario_id": "aw_route6_late_return",
+    "event_id": "AW-ROUTE6",
+    "source_type": "driver_chat",
+    "wording_variant": "uncertain_chat",
+    "report_timestep": 6,
+    "text": "Dispatcher: confirmed for Bus 6. Its return is expected 120 to 150 minutes late, with the operational control window 21:30 to 24:00. Use the conservative upper bound and optimize now; departure remains at its scheduled time.",
+    "benchmark_split": "closed_loop_advance_warning",
+    "uncertainty_case": "range_fragmentation_and_coreference",
+    "canonical": {
+      "event_id": "AW-ROUTE6",
+      "source_type": "driver_chat",
+      "event_type": "service_delay",
+      "phase": "onset",
+      "affected_buses": [
+        6
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 44,
+      "expected_end_timestep": 48,
+      "uncertainty": true,
+      "uncertainty_details": {
+        "confidence_level": 0.92,
+        "provisional": false,
+        "conflicting_evidence": [],
+        "estimates": [
+          {
+            "parameter": "return_delay_minutes",
+            "asset_id": 6,
+            "lower_bound": 120,
+            "upper_bound": 150,
+            "selected_value": 150,
+            "unit": "minutes",
+            "selection_policy": "conservative_upper"
+          }
+        ],
+        "recommended_action": "optimize",
+        "rationale": "Use the confirmed advance information now."
+      },
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "return_delay_minutes_by_bus": {
+          "6": 150
+        },
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "advance_warning_benchmark_v1"
+      ]
+    }
+  },
+  {
+    "notice_id": "AW-ROUTE6-HOLD",
+    "scenario_id": "aw_route6_late_return",
+    "event_id": "AW-ROUTE6",
+    "source_type": "driver_chat",
+    "wording_variant": "uncertain_chat",
+    "report_timestep": 7,
+    "text": "Dispatch: same Bus 6 late-return event remains active and unchanged. Keep the current plan; no replan.",
+    "benchmark_split": "closed_loop_advance_warning",
+    "uncertainty_case": "range_fragmentation_and_coreference",
+    "canonical": {
+      "event_id": "AW-ROUTE6",
+      "source_type": "driver_chat",
+      "event_type": "service_delay",
+      "phase": "persistence",
+      "affected_buses": [
+        6
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 44,
+      "expected_end_timestep": 48,
+      "uncertainty": true,
+      "uncertainty_details": {
+        "confidence_level": 0.92,
+        "provisional": false,
+        "conflicting_evidence": [],
+        "estimates": [
+          {
+            "parameter": "return_delay_minutes",
+            "asset_id": 6,
+            "lower_bound": 120,
+            "upper_bound": 150,
+            "selected_value": 150,
+            "unit": "minutes",
+            "selection_policy": "conservative_upper"
+          }
+        ],
+        "recommended_action": "wait",
+        "rationale": "The active plan already contains this unchanged information."
+      },
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "return_delay_minutes_by_bus": {
+          "6": 150
+        },
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "advance_warning_benchmark_v1"
+      ]
+    }
+  },
+  {
+    "notice_id": "AW-BANK-WARN",
+    "scenario_id": "aw_charger_bank_shutdown",
+    "event_id": "AW-BANK",
+    "source_type": "combined",
+    "wording_variant": "uncertain_chat",
+    "report_timestep": 4,
+    "text": "Conditional warning \u2014 Maintenance chat \u2014 Lee: south bank may need isolating for the 03:30-05:00 busbar job. Ops: which assets? Lee: the map labels that row EVSE 5, EVSE 6, EVSE 7 and EVSE 8, not the north bank. Lockout is pending; request confirmation and do not replan yet.",
+    "benchmark_split": "closed_loop_advance_warning",
+    "uncertainty_case": "range_fragmentation_and_coreference",
+    "canonical": {
+      "event_id": "AW-BANK",
+      "source_type": "combined",
+      "event_type": "charger_fault",
+      "phase": "warning",
+      "affected_buses": [],
+      "affected_chargers": [
+        5,
+        6,
+        7,
+        8
+      ],
+      "effective_timestep": 8,
+      "expected_end_timestep": 10,
+      "uncertainty": false,
+      "uncertainty_details": {
+        "confidence_level": 0.62,
+        "provisional": true,
+        "conflicting_evidence": [],
+        "estimates": [],
+        "recommended_action": "request_confirmation",
+        "rationale": "Wait for operational confirmation."
+      },
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "return_delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "advance_warning_benchmark_v1"
+      ]
+    }
+  },
+  {
+    "notice_id": "AW-BANK-CONFIRM",
+    "scenario_id": "aw_charger_bank_shutdown",
+    "event_id": "AW-BANK",
+    "source_type": "combined",
+    "wording_variant": "uncertain_chat",
+    "report_timestep": 5,
+    "text": "Supervisor: confirmed\u2014go ahead with that same south-row isolation for the stated 03:30 to 05:00 window. Optimize now so charging can be moved ahead of it.",
+    "benchmark_split": "closed_loop_advance_warning",
+    "uncertainty_case": "range_fragmentation_and_coreference",
+    "canonical": {
+      "event_id": "AW-BANK",
+      "source_type": "combined",
+      "event_type": "charger_fault",
+      "phase": "onset",
+      "affected_buses": [],
+      "affected_chargers": [
+        5,
+        6,
+        7,
+        8
+      ],
+      "effective_timestep": 8,
+      "expected_end_timestep": 10,
+      "uncertainty": false,
+      "uncertainty_details": {
+        "confidence_level": 0.98,
+        "provisional": false,
+        "conflicting_evidence": [],
+        "estimates": [],
+        "recommended_action": "optimize",
+        "rationale": "Use the confirmed advance information now."
+      },
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "return_delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": [
+          5,
+          6,
+          7,
+          8
+        ]
+      },
+      "evidence": [
+        "advance_warning_benchmark_v1"
+      ]
+    }
+  },
+  {
+    "notice_id": "AW-BANK-HOLD",
+    "scenario_id": "aw_charger_bank_shutdown",
+    "event_id": "AW-BANK",
+    "source_type": "combined",
+    "wording_variant": "uncertain_chat",
+    "report_timestep": 6,
+    "text": "Maintenance: the same lockout remains active and unchanged. Keep the current plan; no replan.",
+    "benchmark_split": "closed_loop_advance_warning",
+    "uncertainty_case": "range_fragmentation_and_coreference",
+    "canonical": {
+      "event_id": "AW-BANK",
+      "source_type": "combined",
+      "event_type": "charger_fault",
+      "phase": "persistence",
+      "affected_buses": [],
+      "affected_chargers": [
+        5,
+        6,
+        7,
+        8
+      ],
+      "effective_timestep": 8,
+      "expected_end_timestep": 10,
+      "uncertainty": false,
+      "uncertainty_details": {
+        "confidence_level": 0.98,
+        "provisional": false,
+        "conflicting_evidence": [],
+        "estimates": [],
+        "recommended_action": "wait",
+        "rationale": "The active plan already contains this unchanged information."
+      },
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "return_delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": [
+          5,
+          6,
+          7,
+          8
+        ]
+      },
+      "evidence": [
+        "advance_warning_benchmark_v1"
+      ]
+    }
+  },
+  {
+    "notice_id": "AW-BANK-RECOVER",
+    "scenario_id": "aw_charger_bank_shutdown",
+    "event_id": "AW-BANK",
+    "source_type": "ocpp",
+    "wording_variant": "uncertain_chat",
+    "report_timestep": 11,
+    "text": "Recovery confirmed: the south-bank lockout is cleared and EVSE 5, EVSE 6, EVSE 7 and EVSE 8 are restored to normal service.",
+    "benchmark_split": "closed_loop_advance_warning",
+    "uncertainty_case": "range_fragmentation_and_coreference",
+    "canonical": {
+      "event_id": "AW-BANK",
+      "source_type": "ocpp",
+      "event_type": "charger_fault",
+      "phase": "recovery",
+      "affected_buses": [],
+      "affected_chargers": [
+        5,
+        6,
+        7,
+        8
+      ],
+      "effective_timestep": 11,
+      "expected_end_timestep": 11,
+      "uncertainty": false,
+      "uncertainty_details": {
+        "confidence_level": 1.0,
+        "provisional": false,
+        "conflicting_evidence": [],
+        "estimates": [],
+        "recommended_action": "optimize",
+        "rationale": "Use the confirmed advance information now."
+      },
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "return_delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "advance_warning_benchmark_v1"
+      ]
+    }
+  },
+  {
+    "notice_id": "AW-COMBINED-WARN",
+    "scenario_id": "aw_combined_evening",
+    "event_id": "AW-COMBINED",
+    "source_type": "combined",
+    "wording_variant": "uncertain_chat",
+    "report_timestep": 29,
+    "text": "Conditional warning \u2014 14:00 thread \u2014 Driver of Bus 8: closure desk says my return could be 120-150 minutes late. Maintenance: evening switching may also isolate the six-connector service row, EVSE 3, EVSE 4, EVSE 5, EVSE 6, EVSE 7 and EVSE 8, from 20:00-24:00. Dispatcher: both are still conditional; request confirmation and do not replan yet.",
+    "benchmark_split": "closed_loop_advance_warning",
+    "uncertainty_case": "range_fragmentation_and_coreference",
+    "canonical": {
+      "event_id": "AW-COMBINED",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "warning",
+      "affected_buses": [
+        8
+      ],
+      "affected_chargers": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "effective_timestep": 41,
+      "expected_end_timestep": 48,
+      "uncertainty": true,
+      "uncertainty_details": {
+        "confidence_level": 0.55,
+        "provisional": true,
+        "conflicting_evidence": [],
+        "estimates": [
+          {
+            "parameter": "return_delay_minutes",
+            "asset_id": 8,
+            "lower_bound": 120,
+            "upper_bound": 150,
+            "selected_value": null,
+            "unit": "minutes",
+            "selection_policy": "no_update_pending_confirmation"
+          }
+        ],
+        "recommended_action": "request_confirmation",
+        "rationale": "Wait for operational confirmation."
+      },
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "return_delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "advance_warning_benchmark_v1"
+      ]
+    }
+  },
+  {
+    "notice_id": "AW-COMBINED-CONFIRM",
+    "scenario_id": "aw_combined_evening",
+    "event_id": "AW-COMBINED",
+    "source_type": "combined",
+    "wording_variant": "uncertain_chat",
+    "report_timestep": 30,
+    "text": "Dispatcher: combined event confirmed. Bus 8 return is expected 120 to 150 minutes late, and that same six-connector row\u2014EVSE 3, EVSE 4, EVSE 5, EVSE 6, EVSE 7 and EVSE 8\u2014will be unavailable 20:00 to 24:00. Use the upper return-delay bound and optimize now while lower-price preparation and reassignment are still possible.",
+    "benchmark_split": "closed_loop_advance_warning",
+    "uncertainty_case": "range_fragmentation_and_coreference",
+    "canonical": {
+      "event_id": "AW-COMBINED",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "onset",
+      "affected_buses": [
+        8
+      ],
+      "affected_chargers": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "effective_timestep": 41,
+      "expected_end_timestep": 48,
+      "uncertainty": true,
+      "uncertainty_details": {
+        "confidence_level": 0.94,
+        "provisional": false,
+        "conflicting_evidence": [],
+        "estimates": [
+          {
+            "parameter": "return_delay_minutes",
+            "asset_id": 8,
+            "lower_bound": 120,
+            "upper_bound": 150,
+            "selected_value": 150,
+            "unit": "minutes",
+            "selection_policy": "conservative_upper"
+          }
+        ],
+        "recommended_action": "optimize",
+        "rationale": "Use the confirmed advance information now."
+      },
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "return_delay_minutes_by_bus": {
+          "8": 150
+        },
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": [
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ]
+      },
+      "evidence": [
+        "advance_warning_benchmark_v1"
+      ]
+    }
+  },
+  {
+    "notice_id": "AW-COMBINED-CORRECT",
+    "scenario_id": "aw_combined_evening",
+    "event_id": "AW-COMBINED",
+    "source_type": "combined",
+    "wording_variant": "uncertain_chat",
+    "report_timestep": 31,
+    "text": "Dispatch correction\u2014earlier values are superseded: EVSE 6, EVSE 7 and EVSE 8 remain available. Only EVSE 3, EVSE 4 and EVSE 5 are locked out 20:00 to 24:00; the Bus 8 return range is unchanged. Optimize for the corrected capacity.",
+    "benchmark_split": "closed_loop_advance_warning",
+    "uncertainty_case": "range_fragmentation_and_coreference",
+    "canonical": {
+      "event_id": "AW-COMBINED",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "severity_change",
+      "affected_buses": [
+        8
+      ],
+      "affected_chargers": [
+        3,
+        4,
+        5
+      ],
+      "effective_timestep": 41,
+      "expected_end_timestep": 48,
+      "uncertainty": true,
+      "uncertainty_details": {
+        "confidence_level": 0.94,
+        "provisional": false,
+        "conflicting_evidence": [],
+        "estimates": [
+          {
+            "parameter": "return_delay_minutes",
+            "asset_id": 8,
+            "lower_bound": 120,
+            "upper_bound": 150,
+            "selected_value": 150,
+            "unit": "minutes",
+            "selection_policy": "conservative_upper"
+          }
+        ],
+        "recommended_action": "optimize",
+        "rationale": "Use the confirmed advance information now."
+      },
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "return_delay_minutes_by_bus": {
+          "8": 150
+        },
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": [
+          3,
+          4,
+          5
+        ]
+      },
+      "evidence": [
+        "advance_warning_benchmark_v1"
+      ]
+    }
+  },
+  {
+    "notice_id": "AW-COMBINED-HOLD",
+    "scenario_id": "aw_combined_evening",
+    "event_id": "AW-COMBINED",
+    "source_type": "combined",
+    "wording_variant": "uncertain_chat",
+    "report_timestep": 32,
+    "text": "Ops: the corrected combined evening event remains active and unchanged. No new dispatch; keep the current plan.",
+    "benchmark_split": "closed_loop_advance_warning",
+    "uncertainty_case": "range_fragmentation_and_coreference",
+    "canonical": {
+      "event_id": "AW-COMBINED",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "persistence",
+      "affected_buses": [
+        8
+      ],
+      "affected_chargers": [
+        3,
+        4,
+        5
+      ],
+      "effective_timestep": 41,
+      "expected_end_timestep": 48,
+      "uncertainty": true,
+      "uncertainty_details": {
+        "confidence_level": 0.97,
+        "provisional": false,
+        "conflicting_evidence": [],
+        "estimates": [
+          {
+            "parameter": "return_delay_minutes",
+            "asset_id": 8,
+            "lower_bound": 120,
+            "upper_bound": 150,
+            "selected_value": 150,
+            "unit": "minutes",
+            "selection_policy": "conservative_upper"
+          }
+        ],
+        "recommended_action": "wait",
+        "rationale": "The active plan already contains this unchanged information."
+      },
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "return_delay_minutes_by_bus": {
+          "8": 150
+        },
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": [
+          3,
+          4,
+          5
+        ]
+      },
+      "evidence": [
+        "advance_warning_benchmark_v1"
+      ]
+    }
+  },
+  {
+    "notice_id": "AW-COMBINED-RECOVER",
+    "scenario_id": "aw_combined_evening",
+    "event_id": "AW-COMBINED",
+    "source_type": "combined",
+    "wording_variant": "uncertain_chat",
+    "report_timestep": 48,
+    "text": "Recovery confirmed: the evening switching window has cleared and the late-return restriction is closed for the next planning horizon.",
+    "benchmark_split": "closed_loop_advance_warning",
+    "uncertainty_case": "range_fragmentation_and_coreference",
+    "canonical": {
+      "event_id": "AW-COMBINED",
+      "source_type": "combined",
+      "event_type": "combined",
+      "phase": "recovery",
+      "affected_buses": [
+        8
+      ],
+      "affected_chargers": [
+        3,
+        4,
+        5
+      ],
+      "effective_timestep": 48,
+      "expected_end_timestep": 48,
+      "uncertainty": false,
+      "uncertainty_details": {
+        "confidence_level": 1.0,
+        "provisional": false,
+        "conflicting_evidence": [],
+        "estimates": [],
+        "recommended_action": "optimize",
+        "rationale": "Use the confirmed advance information now."
+      },
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "return_delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "advance_warning_benchmark_v1"
+      ]
+    }
+  }
+]

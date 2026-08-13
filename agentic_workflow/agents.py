@@ -19,6 +19,8 @@ from .models import (
     EvaluationDecision,
     EvaluationFeedback,
     NULL_FEEDBACK,
+    NoticeInterpretation,
+    NoticeParameterUpdates,
     PricingDecision,
     StructuredTriggerDecision,
     TriggerDecision,
@@ -60,7 +62,12 @@ class AgentBackend(ABC):
 
 
 class OpenAIAgentBackend(AgentBackend):
-    def __init__(self, model: str = DEFAULT_MODEL):
+    def __init__(
+        self,
+        model: str = DEFAULT_MODEL,
+        *,
+        allow_deterministic_trigger_fallback: bool = True,
+    ):
         try:
             from openai import OpenAI
         except ImportError as exc:
@@ -72,6 +79,9 @@ class OpenAIAgentBackend(AgentBackend):
         self.last_raw_trigger: TriggerDecision | None = None
         self.last_trigger_guard_applied = False
         self.call_records: list[dict[str, Any]] = []
+        self.allow_deterministic_trigger_fallback = (
+            allow_deterministic_trigger_fallback
+        )
 
     def _parse(
         self,
@@ -215,7 +225,11 @@ class OpenAIAgentBackend(AgentBackend):
             role="trigger",
         )
         decision = structured.to_domain()
-        effective = normalize_trigger_decision(decision, context)
+        effective = normalize_trigger_decision(
+            decision,
+            context,
+            allow_numerical_fallback=self.allow_deterministic_trigger_fallback,
+        )
         self.last_raw_trigger = decision
         self.last_trigger_guard_applied = decision.model_dump() != effective.model_dump()
         return effective
@@ -548,6 +562,134 @@ class FixedPlanAgentBackend(RuleBasedAgentBackend):
         )
 
 
+class NoticeOnlyAgentBackend(RuleBasedAgentBackend):
+    """Trigger exclusively from the interpretation supplied by its text path."""
+
+    def trigger(self, context: dict[str, Any]) -> TriggerDecision:
+        if context.get("notice_interpretation") is None:
+            return TriggerDecision(
+                action="skip",
+                reasoning="No new interpreted operational notice is available.",
+                confidence=1.0,
+                trigger_type="none",
+                flagged_buses=[],
+            )
+        return super().trigger(context)
+
+
+class NumericalOnlyAgentBackend(RuleBasedAgentBackend):
+    """Trigger from numerical deviations without access to notice semantics."""
+
+    def __init__(self) -> None:
+        self._active_telemetry_signature: str | None = None
+
+    def trigger(self, context: dict[str, Any]) -> TriggerDecision:
+        numerical_context = dict(context)
+        numerical_context.pop("notice_interpretation", None)
+        numerical_context.pop("notice_flags", None)
+        numerical_context["operational_notices"] = []
+        numerical_context["active_operational_events"] = []
+        numerical_context["notice_event_memory"] = []
+        timestep = int(context["timestep"])
+        telemetry = context.get("numerical_event_telemetry") or {}
+        return_delay = {
+            int(key): int(value)
+            for key, value in (telemetry.get("return_delay_minutes_by_bus") or {}).items()
+        }
+        power = {
+            int(key): float(value)
+            for key, value in (telemetry.get("charger_power_kw") or {}).items()
+        }
+        unavailable = sorted(
+            int(value) for value in (telemetry.get("unavailable_chargers") or [])
+        )
+        signature = json.dumps(
+            {
+                "return_delay": return_delay,
+                "power": power,
+                "unavailable": unavailable,
+            },
+            sort_keys=True,
+        )
+        nominal_signature = json.dumps(
+            {"return_delay": {}, "power": {}, "unavailable": []}, sort_keys=True
+        )
+        if signature != nominal_signature and signature != self._active_telemetry_signature:
+            self._active_telemetry_signature = signature
+            has_bus = bool(return_delay)
+            has_charger = bool(power or unavailable)
+            event_type = (
+                "combined"
+                if has_bus and has_charger
+                else "charger_fault"
+                if unavailable
+                else "charger_derating"
+                if has_charger
+                else "service_delay"
+            )
+            interpretation = NoticeInterpretation(
+                event_id="NUMERICAL-SENSOR-EVENT",
+                source_type=("combined" if has_bus and has_charger else "ocpp" if has_charger else "service_alert"),
+                event_type=event_type,
+                phase="onset",
+                affected_buses=sorted(return_delay),
+                affected_chargers=sorted(set(power) | set(unavailable)),
+                effective_timestep=int(
+                    telemetry.get("effective_timestep") or timestep
+                ),
+                expected_end_timestep=(
+                    int(telemetry["expected_end_timestep"])
+                    if telemetry.get("expected_end_timestep") is not None
+                    else None
+                ),
+                updates=NoticeParameterUpdates(
+                    return_delay_minutes_by_bus=return_delay,
+                    charger_power_kw=power,
+                    unavailable_chargers=unavailable,
+                ),
+                evidence=["causal_numerical_telemetry_v1"],
+            )
+            return TriggerDecision(
+                action="optimize",
+                reasoning="A new stateful numerical estimator event was detected from causal charger or return telemetry.",
+                confidence=1.0,
+                trigger_type=(
+                    "combined_notice" if has_bus and has_charger else "charger_event" if has_charger else "delay"
+                ),
+                flagged_buses=sorted(return_delay),
+                notice_interpretation=interpretation,
+            )
+        if signature == nominal_signature and self._active_telemetry_signature is not None:
+            self._active_telemetry_signature = None
+            interpretation = NoticeInterpretation(
+                event_id="NUMERICAL-SENSOR-EVENT",
+                source_type="combined",
+                event_type="combined",
+                phase="recovery",
+                effective_timestep=timestep,
+                updates=NoticeParameterUpdates(),
+                evidence=["causal_numerical_telemetry_recovery_v1"],
+            )
+            return TriggerDecision(
+                action="optimize",
+                reasoning="The stateful numerical estimator detected recovery to nominal telemetry.",
+                confidence=1.0,
+                trigger_type="combined_notice",
+                flagged_buses=[],
+                notice_interpretation=interpretation,
+            )
+        return TriggerDecision(
+            action="skip",
+            reasoning=(
+                "The stateful numerical estimator has no new causal charger-capacity "
+                "or return-time event; unchanged telemetry does not retrigger."
+            ),
+            confidence=1.0,
+            trigger_type="none",
+            flagged_buses=[],
+        )
+
+
 class HardCheckAgentBackend(RuleBasedAgentBackend):
     """Evaluator-removal comparator: only solver and feasibility guards remain."""
 
@@ -628,6 +770,8 @@ class CompositeAgentBackend(AgentBackend):
 def normalize_trigger_decision(
     decision: TriggerDecision,
     context: dict[str, Any],
+    *,
+    allow_numerical_fallback: bool = True,
 ) -> TriggerDecision:
     """Enforce trigger invariants and recover clear rule-detected events."""
     deterministic = RuleBasedAgentBackend().trigger(context)
@@ -681,7 +825,11 @@ def normalize_trigger_decision(
                     ),
                 }
             )
-    if decision.action == "skip" and deterministic.action == "optimize":
+    if (
+        allow_numerical_fallback
+        and decision.action == "skip"
+        and deterministic.action == "optimize"
+    ):
         return deterministic.model_copy(
             update={
                 "reasoning": (
@@ -774,14 +922,19 @@ def create_experiment_backend(configuration: str, legacy_backend: str, model: st
     if configuration in {
         "structured_reference",
         "oracle_event_trigger",
-        "numerical_event_trigger",
         "rule_text_event_trigger",
-        "full_deterministic",
     }:
+        return NoticeOnlyAgentBackend()
+    if configuration == "numerical_event_trigger":
+        return NumericalOnlyAgentBackend()
+    if configuration == "full_deterministic":
         return rule
-    llm = OpenAIAgentBackend(model=model)
     if configuration == "agent_trigger_only":
-        return CompositeAgentBackend(llm, rule, rule)
+        trigger_llm = OpenAIAgentBackend(
+            model=model, allow_deterministic_trigger_fallback=False
+        )
+        return CompositeAgentBackend(trigger_llm, rule, rule)
+    llm = OpenAIAgentBackend(model=model)
     if configuration == "full_agentic":
         return llm
     if configuration == "rule_parser_trigger_substitution":
