@@ -20,6 +20,10 @@ ExperimentConfiguration = Literal[
     "rule_parser_trigger_substitution",
     "mathematical_pricing_substitution",
     "evaluator_removal",
+    "agent_evaluator_raw_text",
+    "rule_text_evaluator",
+    "structured_evaluator_oracle",
+    "evaluator_removal_control",
 ]
 NoticePathName = Literal["none", "manual", "rule", "llm"]
 OptimizerBackendName = Literal["direct", "http"]

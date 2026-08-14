@@ -305,7 +305,7 @@ def test_openai_evaluator_receives_runtime_rerun_cap():
     assert captured["maximum_reruns"] == 1
 
 
-def test_openai_evaluator_guard_accepts_negative_altruistic_cost():
+def test_openai_evaluator_does_not_auto_accept_negative_remaining_cost():
     def fake_parse(system, user_data, schema, *, role):
         assert role == "evaluator"
         return EvaluationDecision(
@@ -355,22 +355,19 @@ def test_openai_evaluator_guard_accepts_negative_altruistic_cost():
         rerun_count=0,
     )
 
-    assert decision.accept is True
-    assert decision.feedback == NULL_FEEDBACK
-    assert backend.call_records[-1]["post_parse_normalization"]["kind"] == (
-        "negative_altruistic_cost_acceptance_guard"
-    )
+    assert decision.accept is False
+    assert "post_parse_normalization" not in backend.call_records[-1]
 
 
-def test_evaluator_prompt_uses_non_vacuous_all_bus_deviation_checks():
+def test_evaluator_prompt_requires_full_day_accounting_and_no_negative_cost_guard():
     prompt = (
         Path(__file__).parents[1]
         / "agentic_workflow"
         / "prompts"
         / "evaluator_system.txt"
     ).read_text(encoding="utf-8")
-    assert "all buses have |energy_deviation_pct| <= 5%" in prompt
-    assert "Any bus has |energy_deviation_pct| > 15%" in prompt
+    assert "projected_full_day_pto_cost" in prompt
+    assert "negative remaining_horizon_pto_cost is NOT an automatic accept" in prompt
     assert "all flagged buses have |energy_deviation_pct| <= 5%" not in prompt
 
 

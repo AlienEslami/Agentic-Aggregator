@@ -1,0 +1,77 @@
+{
+  "protocol_version": "information_and_evaluator_ablation_v1",
+  "status": "implemented_not_yet_executed",
+  "trigger_comparison": {
+    "common_controls": [
+      "hidden physical event truth",
+      "causal settlement",
+      "optimizer",
+      "deterministic pricing",
+      "deterministic evaluator",
+      "workbooks, tariffs, cases, and mode"
+    ],
+    "methods": {
+      "agent": "raw public chat plus public operational numerics; no canonical interpretation",
+      "rule_text": "the same raw public chat and public operational numerics, interpreted by the frozen parser",
+      "numerical": "causal sensor telemetry only when the event becomes observable; no chat text",
+      "oracle": "canonical structured interpretation at the public report time; labelled upper-bound reference"
+    },
+    "valid_contrasts": {
+      "agent_vs_rule_text": "isolates contextual LLM interpretation of the same public information",
+      "agent_vs_numerical": "estimates the value of advance unstructured information, not interpreter accuracy",
+      "agent_vs_oracle": "measures headroom relative to perfect advance interpretation; oracle is not deployable"
+    },
+    "interpretation_outcomes": [
+      "trigger action accuracy",
+      "event type and affected-asset accuracy",
+      "time-window and parameter-update accuracy",
+      "duplicate-trigger and recovery accuracy"
+    ],
+    "closed_loop_outcomes": [
+      "optimizer usability and physical feasibility",
+      "realized full-day economics",
+      "mode-aligned grid-flexibility outcomes",
+      "tokens, API cost, latency, and compute"
+    ]
+  },
+  "controlled_evaluator_ablation": {
+    "common_upstream_roles": {
+      "trigger": "canonical structured notice, fixed across all evaluator arms",
+      "pricing": "deterministic price-zone pricing, fixed across all evaluator arms"
+    },
+    "methods": {
+      "agent_evaluator_raw_text": "LLM interprets raw public operator text; deterministic code scores the schedule",
+      "rule_text_evaluator": "frozen parser interprets the same raw public operator text; the same deterministic code scores the schedule",
+      "structured_evaluator_oracle": "receives the canonical structured priority; labelled oracle upper bound",
+      "evaluator_removal_control": "uses hard solver and feasibility checks but ignores the qualitative priority"
+    },
+    "hidden_canonical_priority_sent_to_llm": false,
+    "comparison_order": [
+      "optimizer usability and physical feasibility",
+      "canonical operator-priority compliance",
+      "projected full-day cost or revenue among compliant schedules",
+      "incremental full-day cost of compliance",
+      "regret relative to the structured oracle",
+      "tokens, API cost, latency, and compute"
+    ],
+    "full_day_accounting": "realized settled prefix plus candidate remaining horizon",
+    "rerun_mechanism": "an interpreted missed priority becomes a high-penalty soft optimizer requirement on the single rerun; slack is logged if the target is unattainable",
+    "negative_remaining_cost_auto_acceptance": false,
+    "operator_policy_defaults": {
+      "unspecified_extra_reserve_soc_fraction": 0.3,
+      "unspecified_frontload_site_charge_kwh": 100.0,
+      "unspecified_v2g_export_kwh": 50.0,
+      "tonight_timestep_window": [37, 48]
+    },
+    "recommended_repetitions": {
+      "agent_evaluator_raw_text": 5,
+      "deterministic_arms": 1
+    }
+  },
+  "reporting_constraints": [
+    "Do not call the no-evaluator schedule better merely because it is cheaper when it violates the operator request.",
+    "Do not present the structured oracle as an equally informed deployable baseline.",
+    "Do not pool case-mode cells before reporting their individual results.",
+    "Report absolute currency differences when a full-day reference is zero or negative."
+  ]
+}

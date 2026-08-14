@@ -21,11 +21,13 @@ from .models import (
     NULL_FEEDBACK,
     NoticeInterpretation,
     NoticeParameterUpdates,
+    OperationalPriority,
     PricingDecision,
     StructuredPricingDecision,
     StructuredTriggerDecision,
     TriggerDecision,
 )
+from .evaluation import assess_priority, frozen_priority_parse, priority_feedback
 from .notices import normalize_notice_clock_timesteps
 
 
@@ -53,8 +55,6 @@ PUBLIC_TRIGGER_CONTEXT_FIELDS = (
     "numerical_event_telemetry",
     "active_operational_events",
     "notice_event_memory",
-    "notice_interpretation",
-    "notice_flags",
 )
 
 
@@ -72,6 +72,12 @@ def build_openai_trigger_payload(context: dict[str, Any]) -> dict[str, Any]:
     }
     if "history" in payload:
         payload["history"] = list(payload["history"][-5:])
+    # A Trigger Agent must interpret raw public evidence itself.  Never expose a
+    # manual/rule/canonical interpretation if a caller accidentally places one
+    # in the shared runtime context.
+    payload.pop("notice_interpretation", None)
+    payload.pop("notice_flags", None)
+    payload.pop("benchmark_canonical_priorities", None)
     return payload
 
 
@@ -356,6 +362,15 @@ class OpenAIAgentBackend(AgentBackend):
     ) -> EvaluationDecision:
         energy = result.get("energy") or []
         end_energy = [series[-1] if series else None for series in energy]
+        battery_capacity = {
+            int(key): float(value)
+            for key, value in (
+                context.get("fleet_constraints", {}).get(
+                    "battery_capacity_kwh_by_bus", {}
+                )
+                or {}
+            ).items()
+        }
         user_data = {
             "mode": context["mode"],
             "timestep": context["timestep"],
@@ -373,35 +388,70 @@ class OpenAIAgentBackend(AgentBackend):
             "day_ahead_summary": context["day_ahead_summary"],
             "da_benchmark": context["da_benchmark"],
             "intraday_prices": context["intraday_prices"],
+            "operational_messages": context.get("operational_notices", []),
+            "operational_priority_policy": context.get(
+                "operational_priority_policy", {}
+            ),
+            "fleet_constraints": context.get("fleet_constraints", {}),
+            "full_day_accounting": context.get("full_day_accounting", {}),
         }
         decision = self._parse(
             _prompt("evaluator_system.txt"), user_data, EvaluationDecision, role="evaluator"
         )
-        solver_status = str(result.get("solver_status", "")).lower()
-        negative_altruistic_cost = (
-            context["mode"] == "altruistic"
-            and float(result.get("pto_daily_cost") or 0.0) < 0.0
-            and not bool(result.get("is_mock"))
-            and solver_status not in {"infeasible", "error", "unknown", "mock"}
+        priority = decision.interpreted_priority
+        assessment = assess_priority(
+            result,
+            priority,
+            battery_capacity_kwh_by_bus=battery_capacity,
         )
-        if negative_altruistic_cost and not decision.accept:
+        decision = decision.model_copy(update={"priority_assessment": assessment})
+        if assessment is not None and assessment.applicable and not assessment.satisfied:
+            assert priority is not None
             if getattr(self, "call_records", None):
                 self.call_records[-1]["post_parse_normalization"] = {
-                    "kind": "negative_altruistic_cost_acceptance_guard",
-                    "original_accept": False,
-                    "original_feedback": decision.feedback.model_dump(),
+                    "kind": "deterministic_operational_priority_assessment",
+                    "interpreted_priority": priority.model_dump(),
+                    "assessment": assessment.model_dump(),
+                    "original_accept": decision.accept,
                 }
             return decision.model_copy(
                 update={
-                    "accept": True,
+                    "accept": False,
                     "reasoning": (
-                        "Deterministic evaluator guard accepted the solver-usable plan: "
-                        "remaining-horizon PTO cost is negative, so V2G revenue exceeds "
-                        "charging cost."
+                        f"The candidate is optimizer-usable but does not satisfy operator "
+                        f"priority {priority.priority_id}: measured "
+                        f"{assessment.measured_value} versus target "
+                        f"{assessment.target_value}."
                     ),
-                    "feedback": NULL_FEEDBACK,
+                    "feedback": priority_feedback(
+                        priority,
+                        pricing,
+                        planning_start_timestep=int(
+                            context.get("planning_start_timestep") or 1
+                        ),
+                    ),
                 }
             )
+        if assessment is not None and assessment.applicable and assessment.satisfied:
+            solver_status = str(result.get("solver_status", "")).lower()
+            if not result.get("is_mock") and solver_status not in {
+                "infeasible",
+                "error",
+                "unknown",
+                "mock",
+            }:
+                return decision.model_copy(
+                    update={
+                        "accept": True,
+                        "reasoning": (
+                            f"The optimizer-usable candidate satisfies operator priority "
+                            f"{priority.priority_id}; its projected full-day economic "
+                            "premium is retained for reporting rather than used to erase "
+                            "the explicit operator request."
+                        ),
+                        "feedback": NULL_FEEDBACK,
+                    }
+                )
         return decision
 
 
@@ -693,7 +743,24 @@ class RuleBasedAgentBackend(AgentBackend):
         if previous and rerun_count > 0:
             buy = list(previous.buy_multipliers)
             sell = list(previous.sell_multipliers)
-            if feedback and feedback.reason == "infeasible":
+            if feedback and feedback.operational_priority is not None:
+                priority = feedback.operational_priority
+                planning_start = int(context.get("planning_start_timestep") or 1)
+                first = max(0, priority.timestep_start - planning_start)
+                last = min(
+                    len(buy), priority.timestep_end - planning_start + 1
+                )
+                for index in range(first, max(first, last)):
+                    if priority.objective in {
+                        "preserve_bus_reserve",
+                        "frontload_site_charging",
+                    }:
+                        buy[index] = max(1.01, buy[index] - 0.05)
+                    if priority.objective == "preserve_bus_reserve":
+                        sell[index] = max(0.40, sell[index] - 0.05)
+                    elif priority.objective == "prioritize_v2g_export":
+                        sell[index] = min(0.99, sell[index] + 0.05)
+            elif feedback and feedback.reason == "infeasible":
                 buy = [1.03] * len(buy)
                 sell = [0.65] * len(sell)
             elif feedback and feedback.reason == "cost_too_high":
@@ -736,18 +803,51 @@ class RuleBasedAgentBackend(AgentBackend):
             )
         mode = context["mode"]
         benchmark = context["da_benchmark"]
-        if benchmark.get("da_benchmark_valid"):
+        accounting = context.get("full_day_accounting") or {}
+        if accounting.get("incumbent_remaining_valid"):
             if mode == "selfish":
-                result_value = float(result.get("aggregator_revenue") or 0)
-                target = float(benchmark.get("da_revenue_remaining") or 0)
-                accept = result_value >= 0.90 * target
-                reason = "The remaining-horizon revenue is acceptable relative to the day-ahead benchmark."
+                result_value = float(
+                    result.get("projected_full_day_aggregator_revenue") or 0
+                )
+                target = float(
+                    accounting.get(
+                        "projected_full_day_incumbent_aggregator_revenue"
+                    )
+                    or 0
+                )
+                accept = result_value >= target - 1e-3
+                reason = "The projected full-day revenue is no worse than the incumbent schedule."
                 feedback_reason = "revenue_too_low"
             else:
-                result_value = float(result.get("pto_daily_cost") or 0)
-                target = float(benchmark.get("da_cost_remaining") or 0)
-                accept = target <= 0 or result_value <= 1.10 * target
-                reason = "The remaining-horizon PTO cost is acceptable relative to the day-ahead benchmark."
+                result_value = float(result.get("projected_full_day_pto_cost") or 0)
+                target = float(
+                    accounting.get("projected_full_day_incumbent_pto_cost") or 0
+                )
+                accept = result_value <= target + 1e-3
+                reason = "The projected full-day PTO cost is no worse than the incumbent schedule."
+                feedback_reason = "cost_too_high"
+        elif benchmark.get("da_benchmark_valid"):
+            if mode == "selfish":
+                result_value = float(
+                    result.get("projected_full_day_aggregator_revenue") or 0
+                )
+                target = float(
+                    benchmark.get("projected_full_day_da_aggregator_revenue") or 0
+                )
+                accept = result_value >= 0.90 * target
+                reason = "The projected full-day revenue is acceptable relative to the full-day day-ahead benchmark."
+                feedback_reason = "revenue_too_low"
+            else:
+                result_value = float(result.get("projected_full_day_pto_cost") or 0)
+                target = float(
+                    benchmark.get("projected_full_day_da_pto_cost") or 0
+                )
+                accept = (
+                    result_value <= 1.10 * target
+                    if target > 0
+                    else result_value <= target + 1e-3
+                )
+                reason = "The projected full-day PTO cost is acceptable relative to the full-day day-ahead benchmark."
                 feedback_reason = "cost_too_high"
         else:
             accept = True
@@ -938,6 +1038,156 @@ class HardCheckAgentBackend(RuleBasedAgentBackend):
         )
 
 
+def _deterministic_priority_evaluation(
+    context: dict[str, Any],
+    trigger: TriggerDecision,
+    pricing: PricingDecision,
+    result: dict[str, Any],
+    *,
+    rerun_count: int,
+    priority: OperationalPriority | None,
+) -> EvaluationDecision:
+    """Apply one common numerical assessment after any interpretation path."""
+
+    battery_capacity = {
+        int(key): float(value)
+        for key, value in (
+            context.get("fleet_constraints", {}).get(
+                "battery_capacity_kwh_by_bus", {}
+            )
+            or {}
+        ).items()
+    }
+    assessment = assess_priority(
+        result,
+        priority,
+        battery_capacity_kwh_by_bus=battery_capacity,
+    )
+    if assessment is not None and assessment.applicable and not assessment.satisfied:
+        assert priority is not None
+        return EvaluationDecision(
+            accept=False,
+            reasoning=(
+                f"Operator priority {priority.priority_id} is not satisfied: "
+                f"measured {assessment.measured_value} versus target "
+                f"{assessment.target_value}."
+            ),
+            confidence=1.0,
+            feedback=priority_feedback(
+                priority,
+                pricing,
+                planning_start_timestep=int(
+                    context.get("planning_start_timestep") or 1
+                ),
+            ),
+            interpreted_priority=priority,
+            priority_assessment=assessment,
+        )
+    if assessment is not None and assessment.applicable and assessment.satisfied:
+        return EvaluationDecision(
+            accept=True,
+            reasoning=(
+                f"Operator priority {priority.priority_id} is satisfied. The "
+                "projected full-day economic premium is reported separately."
+            ),
+            confidence=1.0,
+            feedback=NULL_FEEDBACK,
+            interpreted_priority=priority,
+            priority_assessment=assessment,
+        )
+    economic = RuleBasedAgentBackend().evaluate(
+        context,
+        trigger,
+        pricing,
+        result,
+        rerun_count=rerun_count,
+    )
+    return economic.model_copy(
+        update={
+            "interpreted_priority": priority,
+            "priority_assessment": assessment,
+        }
+    )
+
+
+class RuleTextPriorityEvaluatorBackend(RuleBasedAgentBackend):
+    """Non-LLM evaluator that consumes the same raw public text as the LLM."""
+
+    def evaluate(self, context, trigger, pricing, result, *, rerun_count):
+        priority = frozen_priority_parse(
+            context.get("operational_notices", []),
+            planning_start_timestep=int(
+                context.get("planning_start_timestep") or 1
+            ),
+        )
+        return _deterministic_priority_evaluation(
+            context,
+            trigger,
+            pricing,
+            result,
+            rerun_count=rerun_count,
+            priority=priority,
+        )
+
+
+class StructuredPriorityEvaluatorBackend(RuleBasedAgentBackend):
+    """Labelled oracle: receives the canonical structured operator priority."""
+
+    def evaluate(self, context, trigger, pricing, result, *, rerun_count):
+        priorities = context.get("benchmark_canonical_priorities") or []
+        priority = (
+            OperationalPriority.model_validate(priorities[0]) if priorities else None
+        )
+        return _deterministic_priority_evaluation(
+            context,
+            trigger,
+            pricing,
+            result,
+            rerun_count=rerun_count,
+            priority=priority,
+        )
+
+
+class LLMPriorityEvaluatorBackend(AgentBackend):
+    """Use an LLM only to interpret text, then share the deterministic scorer."""
+
+    def __init__(self, backend: OpenAIAgentBackend):
+        self.backend = backend
+
+    @property
+    def call_records(self) -> list[dict[str, Any]]:
+        return self.backend.call_records
+
+    def trigger(self, context):
+        return self.backend.trigger(context)
+
+    def price(self, context, trigger, *, rerun_count, previous, feedback):
+        return self.backend.price(
+            context,
+            trigger,
+            rerun_count=rerun_count,
+            previous=previous,
+            feedback=feedback,
+        )
+
+    def evaluate(self, context, trigger, pricing, result, *, rerun_count):
+        interpreted = self.backend.evaluate(
+            context,
+            trigger,
+            pricing,
+            result,
+            rerun_count=rerun_count,
+        )
+        return _deterministic_priority_evaluation(
+            context,
+            trigger,
+            pricing,
+            result,
+            rerun_count=rerun_count,
+            priority=interpreted.interpreted_priority,
+        )
+
+
 class CompositeAgentBackend(AgentBackend):
     """Role-level composition used by the prespecified ablation configurations."""
 
@@ -1016,6 +1266,15 @@ def describe_agent_roles(backend: AgentBackend) -> dict[str, dict[str, Any]]:
                     "deterministic_numerical_trigger_fallback": (
                         resolved.allow_deterministic_trigger_fallback
                     ),
+                }
+            )
+        elif isinstance(resolved, LLMPriorityEvaluatorBackend):
+            description.update(
+                {
+                    "model": resolved.backend.model,
+                    "deterministic_numerical_trigger_fallback": False,
+                    "llm_scope": "raw_priority_text_interpretation_only",
+                    "schedule_scoring": "deterministic",
                 }
             )
         descriptions[role] = description
@@ -1196,6 +1455,27 @@ def create_experiment_backend(configuration: str, legacy_backend: str, model: st
             )
         )
         return CompositeAgentBackend(trigger_llm, rule, rule)
+    if configuration in {
+        "agent_evaluator_raw_text",
+        "rule_text_evaluator",
+        "structured_evaluator_oracle",
+        "evaluator_removal_control",
+    }:
+        trigger = NoticeOnlyAgentBackend()
+        pricing = RuleBasedAgentBackend()
+        if configuration == "agent_evaluator_raw_text":
+            evaluator: AgentBackend = LLMPriorityEvaluatorBackend(
+                OpenAIAgentBackend(
+                    model=model, allow_deterministic_trigger_fallback=False
+                )
+            )
+        elif configuration == "rule_text_evaluator":
+            evaluator = RuleTextPriorityEvaluatorBackend()
+        elif configuration == "structured_evaluator_oracle":
+            evaluator = StructuredPriorityEvaluatorBackend()
+        else:
+            evaluator = HardCheckAgentBackend()
+        return CompositeAgentBackend(trigger, pricing, evaluator)
     llm = EvidenceGatedAgentBackend(
         OpenAIAgentBackend(
             model=model, allow_deterministic_trigger_fallback=False

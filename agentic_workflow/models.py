@@ -271,6 +271,53 @@ class PricingDecision(StructuredPricingDecision):
         return self
 
 
+class OperationalPriority(StrictModel):
+    """Machine-readable interpretation of a qualitative operator request.
+
+    The benchmark may store a canonical instance beside a public message, but
+    that canonical record is reserved for scoring and the explicitly labelled
+    structured oracle.  LLM and frozen-text evaluators must infer this schema
+    from the public message.
+    """
+
+    priority_id: str
+    objective: Literal[
+        "preserve_bus_reserve",
+        "frontload_site_charging",
+        "prioritize_v2g_export",
+        "avoid_bus_v2g",
+    ]
+    affected_buses: list[int] = Field(default_factory=list)
+    timestep_start: int = Field(ge=1, le=48)
+    timestep_end: int = Field(ge=1, le=48)
+    target_value: float = Field(ge=0.0)
+    target_unit: Literal["soc_fraction", "kwh"]
+    priority_level: Literal["soft", "required"] = "soft"
+    default_policy_applied: bool = False
+    evidence: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def valid_window_and_assets(self) -> "OperationalPriority":
+        if self.timestep_start > self.timestep_end:
+            raise ValueError("timestep_start must not exceed timestep_end")
+        if self.objective in {"preserve_bus_reserve", "avoid_bus_v2g"} and not self.affected_buses:
+            raise ValueError(f"{self.objective} requires at least one affected bus")
+        if self.target_unit == "soc_fraction" and self.target_value > 1.0:
+            raise ValueError("soc_fraction targets must lie in [0, 1]")
+        return self
+
+
+class PriorityAssessment(StrictModel):
+    """Deterministic schedule score for one interpreted priority."""
+
+    applicable: bool
+    satisfied: bool | None = None
+    measured_value: float | None = None
+    target_value: float | None = None
+    compliance_gap: float | None = None
+    rationale: str
+
+
 class MultiplierAdjustment(StrictModel):
     timestep_start: int = Field(ge=1, le=48)
     timestep_end: int = Field(ge=1, le=48)
@@ -289,6 +336,7 @@ class EvaluationFeedback(StrictModel):
         "cost_too_high",
         "revenue_too_low",
         "deviation_correction",
+        "operational_priority",
     ] | None
     buy_multiplier_adjustment: MultiplierAdjustment | None
     sell_multiplier_adjustment: MultiplierAdjustment | None
@@ -298,7 +346,9 @@ class EvaluationFeedback(StrictModel):
         "v2g_increase",
         "deviation_correction",
         "mock_recovery",
+        "operational_compliance",
     ] | None
+    operational_priority: OperationalPriority | None = None
 
 
 class EvaluationDecision(StrictModel):
@@ -306,6 +356,8 @@ class EvaluationDecision(StrictModel):
     reasoning: str
     confidence: float = Field(ge=0.0, le=1.0)
     feedback: EvaluationFeedback
+    interpreted_priority: OperationalPriority | None = None
+    priority_assessment: PriorityAssessment | None = None
 
 
 NULL_FEEDBACK = EvaluationFeedback(
@@ -314,4 +366,5 @@ NULL_FEEDBACK = EvaluationFeedback(
     sell_multiplier_adjustment=None,
     period_adjustment=None,
     priority=None,
+    operational_priority=None,
 )

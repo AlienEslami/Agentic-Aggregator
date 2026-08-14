@@ -261,6 +261,18 @@ class WorkflowState:
                 "llm3_reasoning": evaluation.get("reasoning") if evaluation else None,
                 "pto_daily_cost": result.get("pto_daily_cost") if result else None,
                 "aggregator_revenue": result.get("aggregator_revenue") if result else None,
+                "remaining_horizon_pto_cost": result.get("remaining_horizon_pto_cost") if result else None,
+                "remaining_horizon_aggregator_revenue": result.get("remaining_horizon_aggregator_revenue") if result else None,
+                "projected_full_day_pto_cost": result.get("projected_full_day_pto_cost") if result else None,
+                "projected_full_day_aggregator_revenue": result.get("projected_full_day_aggregator_revenue") if result else None,
+                "canonical_priority_satisfied": result.get("benchmark_canonical_priority_satisfied") if result else None,
+                "canonical_priority_compliance_gap": result.get("benchmark_canonical_priority_compliance_gap") if result else None,
+                "interpreted_operational_priority": _json(
+                    evaluation.get("interpreted_priority") if evaluation else None
+                ),
+                "priority_assessment": _json(
+                    evaluation.get("priority_assessment") if evaluation else None
+                ),
                 "total_kwh_bought": result.get("total_kwh_bought") if result else None,
                 "total_kwh_sold": result.get("total_kwh_sold") if result else None,
                 "avg_grid_price": result.get("avg_grid_price") if result else None,

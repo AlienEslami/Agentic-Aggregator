@@ -9,7 +9,7 @@ import pandas as pd
 
 from .agents import AgentBackend, create_experiment_backend, describe_agent_roles
 from .config import WorkflowConfig
-from .context import build_context, build_observation
+from .context import build_context, build_observation, planned_row_for_observation
 from .disturbances import apply_disturbances
 from .io import (
     WorkbookSeries,
@@ -23,9 +23,11 @@ from .models import (
     EvaluationDecision,
     EvaluationFeedback,
     NoticeInterpretation,
+    OperationalPriority,
     PricingDecision,
     TriggerDecision,
 )
+from .evaluation import assess_priority
 from .notices import (
     NoticeRecord,
     NoticeSeries,
@@ -107,6 +109,39 @@ class WorkflowRunner:
             poll_interval_seconds=config.poll_interval_seconds,
         )
 
+    def _information_contract(self) -> dict[str, Any]:
+        configuration = self.config.experiment_configuration
+        if configuration in {"oracle_event_trigger", "structured_reference"}:
+            trigger_input = "canonical_structured_notice_at_public_report_time"
+        elif configuration == "numerical_event_trigger":
+            trigger_input = "causal_sensor_telemetry_only_no_public_text"
+        elif configuration in {
+            "rule_text_event_trigger",
+            "rule_parser_trigger_substitution",
+        }:
+            trigger_input = "raw_public_text_parsed_by_frozen_rules_plus_public_numerics"
+        else:
+            trigger_input = "raw_public_text_plus_public_numerics"
+        evaluator_input = (
+            "canonical_structured_priority_labelled_oracle"
+            if configuration == "structured_evaluator_oracle"
+            else "raw_public_text_plus_candidate_metrics"
+            if configuration in {"agent_evaluator_raw_text", "rule_text_evaluator"}
+            else "solver_and_feasibility_only"
+            if configuration in {"evaluator_removal", "evaluator_removal_control"}
+            else "raw_public_text_plus_candidate_metrics_when_present"
+        )
+        return {
+            "configuration": configuration,
+            "trigger_input": trigger_input,
+            "evaluator_input": evaluator_input,
+            "hidden_physical_truth_sent_to_llm": False,
+            "canonical_trigger_interpretation_sent_to_llm": False,
+            "canonical_operator_priority_sent_to_llm": False,
+            "common_physical_truth_across_methods": True,
+            "causal_settlement": True,
+        }
+
     def _workbook_inputs(self, timestep: int) -> dict[str, pd.DataFrame]:
         required = ["Buses", "Chargers", "Trips"]
         available = self.realtime_series.read_sheets(timestep, required)
@@ -125,6 +160,7 @@ class WorkflowRunner:
         disturbance: Any,
         pricing: PricingDecision,
         trigger: TriggerDecision,
+        feedback: EvaluationFeedback | None = None,
     ) -> dict[str, Any]:
         effective_notice = self._effective_notice_interpretation(trigger)
         revised_chargers, revised_trips, revised_energy = apply_notice_updates(
@@ -144,6 +180,12 @@ class WorkflowRunner:
                 "timestep_minutes": 30,
                 "disturbance": disturbance.scenarios,
                 "v2g_enabled": True,
+                "operational_requirements": (
+                    [feedback.operational_priority.model_dump()]
+                    if feedback is not None
+                    and feedback.operational_priority is not None
+                    else []
+                ),
             },
             "optimization_mode": "real_time",
             # The observation at t has already settled interval t. Optimize
@@ -171,9 +213,32 @@ class WorkflowRunner:
             return False
         if incumbent is None or not self._candidate_is_usable(incumbent):
             return True
+        candidate_priority = candidate.evaluation.priority_assessment
+        incumbent_priority = incumbent.evaluation.priority_assessment
+        if (
+            candidate_priority is not None
+            and candidate_priority.applicable
+        ) or (
+            incumbent_priority is not None
+            and incumbent_priority.applicable
+        ):
+            candidate_satisfied = bool(
+                candidate_priority is not None and candidate_priority.satisfied
+            )
+            incumbent_satisfied = bool(
+                incumbent_priority is not None and incumbent_priority.satisfied
+            )
+            if candidate_satisfied != incumbent_satisfied:
+                return candidate_satisfied
         if self.config.mode == "selfish":
-            candidate_value = candidate.result.get("aggregator_revenue")
-            incumbent_value = incumbent.result.get("aggregator_revenue")
+            candidate_value = candidate.result.get(
+                "projected_full_day_aggregator_revenue",
+                candidate.result.get("aggregator_revenue"),
+            )
+            incumbent_value = incumbent.result.get(
+                "projected_full_day_aggregator_revenue",
+                incumbent.result.get("aggregator_revenue"),
+            )
             candidate_score = float(
                 candidate_value if candidate_value is not None else float("-inf")
             )
@@ -185,8 +250,14 @@ class WorkflowRunner:
             if candidate_score < incumbent_score - OBJECTIVE_TIE_TOLERANCE:
                 return False
         else:
-            candidate_value = candidate.result.get("pto_daily_cost")
-            incumbent_value = incumbent.result.get("pto_daily_cost")
+            candidate_value = candidate.result.get(
+                "projected_full_day_pto_cost",
+                candidate.result.get("pto_daily_cost"),
+            )
+            incumbent_value = incumbent.result.get(
+                "projected_full_day_pto_cost",
+                incumbent.result.get("pto_daily_cost"),
+            )
             candidate_score = float(
                 candidate_value if candidate_value is not None else float("inf")
             )
@@ -269,6 +340,24 @@ class WorkflowRunner:
                 "solver_attempts": json.dumps(result.get("solver_attempts", [])),
                 "pto_daily_cost": result.get("pto_daily_cost"),
                 "aggregator_revenue": result.get("aggregator_revenue"),
+                "remaining_horizon_pto_cost": result.get(
+                    "remaining_horizon_pto_cost"
+                ),
+                "remaining_horizon_aggregator_revenue": result.get(
+                    "remaining_horizon_aggregator_revenue"
+                ),
+                "projected_full_day_pto_cost": result.get(
+                    "projected_full_day_pto_cost"
+                ),
+                "projected_full_day_aggregator_revenue": result.get(
+                    "projected_full_day_aggregator_revenue"
+                ),
+                "projected_full_day_pto_cost_delta_vs_incumbent": result.get(
+                    "projected_full_day_pto_cost_delta_vs_incumbent"
+                ),
+                "projected_full_day_aggregator_revenue_delta_vs_incumbent": result.get(
+                    "projected_full_day_aggregator_revenue_delta_vs_incumbent"
+                ),
                 "total_kwh_bought": result.get("total_kwh_bought"),
                 "total_kwh_sold": result.get("total_kwh_sold"),
                 "proposed_period_boundaries": json.dumps(
@@ -291,6 +380,141 @@ class WorkflowRunner:
                     "Accepted by evaluator." if evaluation.accept else None
                 ),
                 "feedback": evaluation.feedback.model_dump_json(),
+                "interpreted_operational_priority": (
+                    evaluation.interpreted_priority.model_dump_json()
+                    if evaluation.interpreted_priority is not None
+                    else None
+                ),
+                "priority_assessment": (
+                    evaluation.priority_assessment.model_dump_json()
+                    if evaluation.priority_assessment is not None
+                    else None
+                ),
+                "canonical_priority_satisfied": result.get(
+                    "benchmark_canonical_priority_satisfied"
+                ),
+                "canonical_priority_compliance_gap": result.get(
+                    "benchmark_canonical_priority_compliance_gap"
+                ),
+                "operational_requirements_applied": json.dumps(
+                    result.get("operational_requirements_applied", []), default=str
+                ),
+                "operational_priority_slack": json.dumps(
+                    result.get("operational_priority_slack", []), default=str
+                ),
+            }
+        )
+
+    def _update_full_day_accounting(
+        self, context: dict[str, Any], *, timestep: int
+    ) -> None:
+        realized_pto_cost = sum(
+            float(row.get("realized_pto_cost") or 0.0)
+            for row in self.state.settlement
+        )
+        realized_aggregator_revenue = sum(
+            float(row.get("realized_aggregator_revenue") or 0.0)
+            for row in self.state.settlement
+        )
+        price_map = {
+            int(row["timestep"]): float(row["spot_market"])
+            for row in context.get("intraday_prices", {}).get("prices", [])
+        }
+        incumbent_cost_remaining = 0.0
+        incumbent_revenue_remaining = 0.0
+        incumbent_valid = True
+        for current in range(timestep + 1, 49):
+            row = planned_row_for_observation(self.state.realtime_plan, current)
+            price = price_map.get(current)
+            if row is None or price is None:
+                incumbent_valid = False
+                break
+            buy = float(row.get("w_buy") or 0.0)
+            sell = float(row.get("w_sell") or 0.0)
+            buy_multiplier = float(self.state.buy_multiplier_schedule[current])
+            sell_multiplier = float(self.state.sell_multiplier_schedule[current])
+            incumbent_cost_remaining += price * (
+                buy_multiplier * buy - sell_multiplier * sell
+            )
+            incumbent_revenue_remaining += price * (
+                (buy_multiplier - 1.0) * buy
+                + (1.0 - sell_multiplier) * sell
+            )
+        benchmark = context["da_benchmark"]
+        benchmark["projected_full_day_da_pto_cost"] = round(
+            realized_pto_cost + float(benchmark.get("da_cost_remaining") or 0.0),
+            6,
+        )
+        benchmark["projected_full_day_da_aggregator_revenue"] = round(
+            realized_aggregator_revenue
+            + float(benchmark.get("da_revenue_remaining") or 0.0),
+            6,
+        )
+        context["full_day_accounting"] = {
+            "settled_through_timestep": timestep,
+            "realized_prefix_pto_cost": round(realized_pto_cost, 6),
+            "realized_prefix_aggregator_revenue": round(
+                realized_aggregator_revenue, 6
+            ),
+            "incumbent_remaining_valid": incumbent_valid,
+            "incumbent_remaining_pto_cost": round(
+                incumbent_cost_remaining, 6
+            ),
+            "incumbent_remaining_aggregator_revenue": round(
+                incumbent_revenue_remaining, 6
+            ),
+            "projected_full_day_incumbent_pto_cost": round(
+                realized_pto_cost + incumbent_cost_remaining, 6
+            ),
+            "projected_full_day_incumbent_aggregator_revenue": round(
+                realized_aggregator_revenue + incumbent_revenue_remaining, 6
+            ),
+            "comparison_rule": (
+                "realized settled prefix plus candidate or incumbent future; "
+                "negative remaining-horizon cost is not an automatic acceptance"
+            ),
+        }
+
+    @staticmethod
+    def _attach_full_day_projection(
+        context: dict[str, Any], result: dict[str, Any]
+    ) -> None:
+        accounting = context.get("full_day_accounting") or {}
+        remaining_cost = float(result.get("pto_daily_cost") or 0.0)
+        remaining_revenue = float(result.get("aggregator_revenue") or 0.0)
+        projected_cost = float(accounting.get("realized_prefix_pto_cost") or 0.0) + remaining_cost
+        projected_revenue = (
+            float(accounting.get("realized_prefix_aggregator_revenue") or 0.0)
+            + remaining_revenue
+        )
+        result.update(
+            {
+                "remaining_horizon_pto_cost": round(remaining_cost, 6),
+                "remaining_horizon_aggregator_revenue": round(
+                    remaining_revenue, 6
+                ),
+                "projected_full_day_pto_cost": round(projected_cost, 6),
+                "projected_full_day_aggregator_revenue": round(
+                    projected_revenue, 6
+                ),
+                "projected_full_day_pto_cost_delta_vs_incumbent": round(
+                    projected_cost
+                    - float(
+                        accounting.get("projected_full_day_incumbent_pto_cost")
+                        or 0.0
+                    ),
+                    6,
+                ),
+                "projected_full_day_aggregator_revenue_delta_vs_incumbent": round(
+                    projected_revenue
+                    - float(
+                        accounting.get(
+                            "projected_full_day_incumbent_aggregator_revenue"
+                        )
+                        or 0.0
+                    ),
+                    6,
+                ),
             }
         )
 
@@ -327,6 +551,7 @@ class WorkflowRunner:
                 disturbance=disturbance,
                 pricing=pricing,
                 trigger=trigger,
+                feedback=feedback,
             )
             payload["rerun_count"] = attempt - 1
             with ResourceMeter() as optimizer_meter:
@@ -334,6 +559,7 @@ class WorkflowRunner:
             optimizer_telemetry = optimizer_meter.metrics or {}
             result["optimizer_telemetry"] = optimizer_telemetry
             result["optimizer_latency_seconds"] = optimizer_telemetry.get("wall_seconds")
+            self._attach_full_day_projection(context, result)
             try:
                 evaluation = self.agents.evaluate(
                     context,
@@ -345,6 +571,31 @@ class WorkflowRunner:
             except Exception:
                 self._checkpoint_agent_failure(timestep)
                 raise
+            canonical_priorities = context.get("benchmark_canonical_priorities") or []
+            if canonical_priorities:
+                canonical_priority = OperationalPriority.model_validate(
+                    canonical_priorities[0]
+                )
+                canonical_assessment = assess_priority(
+                    result,
+                    canonical_priority,
+                    battery_capacity_kwh_by_bus={
+                        int(key): float(value)
+                        for key, value in (
+                            context.get("fleet_constraints", {}).get(
+                                "battery_capacity_kwh_by_bus", {}
+                            )
+                            or {}
+                        ).items()
+                    },
+                )
+                if canonical_assessment is not None:
+                    result["benchmark_canonical_priority_satisfied"] = (
+                        canonical_assessment.satisfied
+                    )
+                    result["benchmark_canonical_priority_compliance_gap"] = (
+                        canonical_assessment.compliance_gap
+                    )
             if result.get("is_mock") and evaluation.accept:
                 evaluation = evaluation.model_copy(
                     update={
@@ -524,6 +775,25 @@ class WorkflowRunner:
                 context_history=self.state.context_history,
                 )
                 context["operational_notices"] = [record.public_dict() for record in notice_records]
+                context["benchmark_canonical_priorities"] = [
+                    record.canonical_priority.model_dump()
+                    for record in notice_records
+                    if record.canonical_priority is not None
+                ]
+                context["operational_priority_policy"] = {
+                    "unspecified_extra_reserve_soc_fraction": 0.30,
+                    "unspecified_frontload_site_charge_kwh": 100.0,
+                    "unspecified_v2g_export_kwh": 50.0,
+                    "tonight_timestep_window": [37, 48],
+                    "policy_frozen_before_evaluation": True,
+                }
+                context["fleet_constraints"] = {
+                    "battery_capacity_kwh_by_bus": {
+                        str(int(row["bus_id"])): float(row["bus_kwh"])
+                        for row in dataframe_records(workbook["Buses"])
+                    },
+                    "minimum_soc_fraction": 0.20,
+                }
                 context["maximum_reruns"] = self.config.max_reruns
                 context["numerical_event_telemetry"] = (
                     {
@@ -630,6 +900,7 @@ class WorkflowRunner:
                         planner_assumption=planner_assumption_now,
                     )
                 )
+                self._update_full_day_accounting(context, timestep=timestep)
                 if trigger.action == "optimize":
                     self.state.update_forecasts(
                     timestep=timestep,
@@ -716,6 +987,9 @@ class WorkflowRunner:
                 "maximum_optimizer_attempts_per_trigger": self.config.max_reruns + 1,
                 "agent_role_provenance": json.dumps(
                     describe_agent_roles(self.agents), sort_keys=True
+                ),
+                "information_contract": json.dumps(
+                    self._information_contract(), sort_keys=True
                 ),
                 "accepted_optimizer_calls": sum(
                     bool(row.get("accepted")) for row in self.state.attempts
@@ -828,6 +1102,10 @@ class WorkflowRunner:
             "full_agentic": "llm",
             "mathematical_pricing_substitution": "llm",
             "evaluator_removal": "llm",
+            "agent_evaluator_raw_text": "manual",
+            "rule_text_evaluator": "manual",
+            "structured_evaluator_oracle": "manual",
+            "evaluator_removal_control": "manual",
         }.get(self.config.experiment_configuration, "none")
 
     def _preinterpret_notices(

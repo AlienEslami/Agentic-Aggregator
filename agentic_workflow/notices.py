@@ -13,6 +13,7 @@ from .models import (
     NoticeInterpretation,
     NoticeParameterUpdates,
     NoticeUncertaintyAssessment,
+    OperationalPriority,
     UncertainParameterEstimate,
 )
 from .uncertainty import select_operational_value
@@ -94,6 +95,7 @@ class NoticeRecord:
     benchmark_split: str | None = None
     uncertainty_case: str | None = None
     canonical: NoticeInterpretation | None = None
+    canonical_priority: OperationalPriority | None = None
 
     def public_dict(self) -> dict[str, Any]:
         """Return only fields available to an operational decision maker.
@@ -131,6 +133,14 @@ class NoticeSeries:
             if isinstance(canonical_raw, str) and canonical_raw.strip():
                 canonical_raw = json.loads(canonical_raw)
             canonical = NoticeInterpretation.model_validate(canonical_raw) if canonical_raw else None
+            canonical_priority_raw = row.get("canonical_priority")
+            if isinstance(canonical_priority_raw, str) and canonical_priority_raw.strip():
+                canonical_priority_raw = json.loads(canonical_priority_raw)
+            canonical_priority = (
+                OperationalPriority.model_validate(canonical_priority_raw)
+                if canonical_priority_raw
+                else None
+            )
             self._records.append(
                 NoticeRecord(
                     notice_id=str(row["notice_id"]),
@@ -151,6 +161,7 @@ class NoticeSeries:
                         else None
                     ),
                     canonical=canonical,
+                    canonical_priority=canonical_priority,
                 )
             )
 

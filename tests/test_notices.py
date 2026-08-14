@@ -307,6 +307,7 @@ def test_public_notice_payload_excludes_experimental_labels_and_truth():
     assert "scenario_id" not in public
     assert "wording_variant" not in public
     assert "canonical" not in public
+    assert "canonical_priority" not in public
     assert public["text"]
 
 

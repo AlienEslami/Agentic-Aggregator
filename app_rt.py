@@ -302,6 +302,7 @@ def build_dataframes(input_data):
         "Trip state": trip_state,
         "timestep_minutes": input_data.get("timestep_minutes"),
         "v2g_enabled": input_data.get("v2g_enabled"),
+        "operational_requirements": input_data.get("operational_requirements", []),
     }
 
 
@@ -636,6 +637,7 @@ def build_rt_context(data, payload_price_guidance, current_timestep, disturbance
         "timestep_hours": timestep_hours,
         "v2g_enabled": parse_bool(data.get("v2g_enabled", True), True),
         "price_guidance": price_guidance,
+        "operational_requirements": list(data.get("operational_requirements") or []),
     }
 
 
@@ -713,6 +715,7 @@ def solve_rt_rescheduling(ctx):
     prices = ctx["prices"]
     timestep_hours = ctx["timestep_hours"]
     v2g_enabled = ctx["v2g_enabled"]
+    operational_requirements = list(ctx.get("operational_requirements") or [])
     T = len(prices["spot"])
 
     if not trips:
@@ -767,6 +770,10 @@ def solve_rt_rescheduling(ctx):
     model.u = pyo.Var(model.I, model.T, domain=pyo.Binary)
     model.switch = pyo.Var(model.K, model.I, model.T, domain=pyo.Binary)
     model.soc_shortfall = pyo.Var(model.K, model.T, domain=pyo.NonNegativeReals)
+    model.R = pyo.Set(initialize=range(len(operational_requirements)), ordered=True)
+    model.operational_priority_slack = pyo.Var(
+        model.R, domain=pyo.NonNegativeReals
+    )
 
     model.constraints = pyo.ConstraintList()
 
@@ -776,6 +783,7 @@ def solve_rt_rescheduling(ctx):
     switch_penalty = 25.0
     soc_shortfall_penalty = 8e3
     same_bus_break_penalty = 2e4
+    operational_priority_penalty = 1e4
     e_min_fraction = 0.2
     e_max_fraction = 1.0
     e_end_fraction = 0.2
@@ -841,6 +849,55 @@ def solve_rt_rescheduling(ctx):
             model.constraints.add(model.e[k, t] <= e_max_fraction * cap)
         model.constraints.add(model.e[k, T] >= e_end_fraction * cap)
 
+    for requirement_index in model.R:
+        requirement = operational_requirements[int(requirement_index)]
+        objective = str(requirement.get("objective") or "")
+        absolute_start = int(requirement.get("timestep_start") or ctx["current_timestep"])
+        absolute_end = int(requirement.get("timestep_end") or ctx["current_timestep"] + T - 1)
+        local_start = max(1, absolute_start - ctx["current_timestep"] + 1)
+        local_end = min(T, absolute_end - ctx["current_timestep"] + 1)
+        active_steps = list(range(local_start, local_end + 1))
+        target = float(requirement.get("target_value") or 0.0)
+        slack = model.operational_priority_slack[requirement_index]
+        if not active_steps:
+            model.constraints.add(slack >= target)
+            continue
+        if objective == "preserve_bus_reserve":
+            for bus_id in requirement.get("affected_buses") or []:
+                bus_id = int(bus_id)
+                if bus_id not in K:
+                    continue
+                target_energy = (
+                    target * bus_by_id[bus_id]["bus_kwh"]
+                    if requirement.get("target_unit") == "soc_fraction"
+                    else target
+                )
+                for t in active_steps:
+                    model.constraints.add(model.e[bus_id, t] + slack >= target_energy)
+        elif objective == "frontload_site_charging":
+            model.constraints.add(
+                sum(model.w_buy[t] for t in active_steps) + slack >= target
+            )
+        elif objective == "prioritize_v2g_export":
+            model.constraints.add(
+                sum(model.w_sell[t] for t in active_steps) + slack >= target
+            )
+        elif objective == "avoid_bus_v2g":
+            selected_buses = [
+                int(bus_id)
+                for bus_id in requirement.get("affected_buses") or []
+                if int(bus_id) in K
+            ]
+            model.constraints.add(
+                sum(
+                    model.alpha[n, t] * model.y[k, n, t]
+                    for k in selected_buses
+                    for n in model.N
+                    for t in active_steps
+                )
+                <= target + slack
+            )
+
     for i in model.I:
         trip = trip_by_id[i]
         if not active_trip_steps[i]:
@@ -890,6 +947,9 @@ def solve_rt_rescheduling(ctx):
         if trip_by_id[i]["active_now"]
     )
     total_soc_shortfall = sum(model.soc_shortfall[k, t] for k in model.K for t in model.T)
+    total_operational_priority_slack = sum(
+        model.operational_priority_slack[r] for r in model.R
+    )
     same_bus_breaks = sum(
         1 - model.s[initial_active_bus[i], i, 1]
         for i in model.I
@@ -903,6 +963,7 @@ def solve_rt_rescheduling(ctx):
         + same_bus_break_penalty * same_bus_breaks
         + switch_penalty * total_switching
         + soc_shortfall_penalty * total_soc_shortfall
+        + operational_priority_penalty * total_operational_priority_slack
         + total_buy_cost
         - total_sell_revenue,
         sense=pyo.minimize,
@@ -1093,6 +1154,10 @@ def extract_time_series_results(model, ctx):
             [float(pyo.value(model.soc_shortfall[k, t])) for t in range(1, T + 1)]
             for k in K
         ],
+        "operational_priority_slack": [
+            float(pyo.value(model.operational_priority_slack[r]))
+            for r in model.R
+        ],
         "trip_assignment_by_timestep": trip_assignment_by_timestep,
         "trip_coverage_by_timestep": trip_coverage_by_timestep,
         "temporarily_unserved_trip_ids": sorted(temporarily_unserved),
@@ -1227,6 +1292,12 @@ def run_optimization(
                 for bus_shortfall in series["soc_shortfall"]
                 for shortfall in bus_shortfall
                 if shortfall > 1e-6
+            ),
+            "operational_requirements_applied": ctx.get(
+                "operational_requirements", []
+            ),
+            "operational_priority_slack": series.get(
+                "operational_priority_slack", []
             ),
             "availability_conflicts": [],
             "solver_status": solve_meta.get("solver_status"),

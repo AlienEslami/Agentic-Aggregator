@@ -114,6 +114,48 @@ def test_isolated_trigger_configurations_resolve_expected_information_paths():
         assert runner._resolved_notice_path() == notice_path
 
 
+def test_full_day_projection_adds_settled_prefix_and_compares_incumbent():
+    runner = WorkflowRunner.__new__(WorkflowRunner)
+    runner.state = SimpleNamespace(
+        settlement=[
+            {
+                "realized_pto_cost": 5.0,
+                "realized_aggregator_revenue": 2.0,
+            }
+        ],
+        realtime_plan=pd.DataFrame(
+            [
+                {"timestep": timestep, "w_buy": 1.0, "w_sell": 0.0}
+                for timestep in range(48)
+            ]
+        ),
+        buy_multiplier_schedule={timestep: 1.1 for timestep in range(1, 49)},
+        sell_multiplier_schedule={timestep: 0.7 for timestep in range(1, 49)},
+    )
+    context = {
+        "intraday_prices": {
+            "prices": [
+                {"timestep": timestep, "spot_market": 1.0}
+                for timestep in range(2, 49)
+            ]
+        },
+        "da_benchmark": {
+            "da_cost_remaining": 40.0,
+            "da_revenue_remaining": 4.0,
+        },
+    }
+
+    runner._update_full_day_accounting(context, timestep=1)
+    result = {"pto_daily_cost": -3.0, "aggregator_revenue": 1.0}
+    runner._attach_full_day_projection(context, result)
+
+    assert result["remaining_horizon_pto_cost"] == -3.0
+    assert result["projected_full_day_pto_cost"] == 2.0
+    assert result["projected_full_day_aggregator_revenue"] == 3.0
+    assert context["da_benchmark"]["projected_full_day_da_pto_cost"] == 45.0
+    assert result["projected_full_day_pto_cost_delta_vs_incumbent"] == -54.7
+
+
 def test_observed_warning_memory_is_separate_from_accepted_optimizer_state():
     runner = WorkflowRunner.__new__(WorkflowRunner)
     runner.state = SimpleNamespace(

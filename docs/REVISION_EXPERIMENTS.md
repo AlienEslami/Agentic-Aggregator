@@ -132,16 +132,62 @@ python scripts/build_experiment_manifest.py `
 | `rule_parser_trigger_substitution` | frozen parser + deterministic trigger | LLM | LLM + hard guards |
 | `mathematical_pricing_substitution` | LLM | deterministic price-zone heuristic | LLM + hard guards |
 | `evaluator_removal` | LLM | LLM | solver/feasibility checks only |
+| `agent_evaluator_raw_text` | structured fixed control | deterministic | LLM text interpretation + deterministic priority scoring |
+| `rule_text_evaluator` | structured fixed control | deterministic | frozen raw-text parser + the same priority scoring |
+| `structured_evaluator_oracle` | structured fixed control | deterministic | canonical structured priority + the same scoring |
+| `evaluator_removal_control` | structured fixed control | deterministic | solver/feasibility checks; soft priority ignored |
 
 The historical CLI identifier `mathematical_pricing_substitution` is retained
 for compatibility with the frozen v3 protocol. The comparator is a
 deterministic price-zone heuristic, not a separately optimized mathematical
 pricing model. Its fixed multipliers are therefore one prespecified baseline,
 not proof that the LLM Pricing Agent is better than every possible non-agentic
-tariff policy. A lower/higher-multiplier sensitivity grid must be calibrated on
-separate pilot cases and evaluated on untouched holdout episodes.
+tariff policy. The remaining-horizon price range determines cheap, transition,
+and expensive timing zones. The multiplier levels then implement an explicit
+value-sharing policy: selfish mode retains a larger charging-service and V2G
+margin (`buy=1.10/1.14/1.18`, `sell=0.58/0.66/0.72`), while altruistic mode
+uses a smaller charging margin and passes more grid value to the PTO
+(`buy=1.01/1.03/1.05`, `sell=0.82/0.89/0.96`). These values are illustrative,
+prespecified policy parameters rather than claimed market-standard markups.
+Published EV-pricing models generally optimize prices using elasticity, user
+utility, willingness-to-pay, and technical constraints rather than prescribe a
+universal percentage (Luo et al., https://arxiv.org/abs/1801.02783; Mousavi et
+al., https://arxiv.org/abs/2209.05658; Hematiboroujeni et al.,
+https://arxiv.org/abs/2603.20226).
 
 ### Post-confirmatory evaluator and reporting improvements
+
+The follow-up controlled Evaluator study is specified in
+`inputs/revision/information_and_evaluator_ablation_protocol_v1.json`. It replaces
+the old interpretation of “Evaluator removal” as sufficient evidence for the LLM
+Evaluator's contribution. The controlled study fixes the Trigger to the structured
+notice and Pricing to the deterministic policy, then compares four Evaluator paths:
+raw-text LLM, raw-text frozen rule, structured-priority oracle, and removal. The
+canonical operator priority is retained only for scoring and the labelled oracle;
+it is excluded from every OpenAI request.
+
+Evaluator economics now use projected full-day values: realized settlement through
+the decision timestep plus the proposed remaining schedule. A negative
+remaining-horizon PTO cost is no longer an automatic acceptance. Canonical priority
+compliance is reported before economics, and economics are compared among compliant
+schedules. When the first candidate misses an interpreted priority, the single rerun
+passes that structured priority to the optimizer as a high-penalty soft requirement.
+This asks for the least-cost compliant schedule when compliance is physically
+possible, while an explicit slack variable preserves feasibility and records an
+unattainable target rather than crashing the episode. The dedicated commands are:
+
+```powershell
+python scripts/run_evaluator_ablation.py --output-root results/revision/evaluator_ablation_v1 --dry-run
+python scripts/run_evaluator_ablation.py --output-root results/revision/evaluator_ablation_v1 --allow-external-llm
+python scripts/analyze_evaluator_ablation.py --input-root results/revision/evaluator_ablation_v1
+```
+
+For the Trigger study, Agent and frozen-rule paths consume the same raw public text
+and public numerical context. Agent versus rule isolates text interpretation; Agent
+versus numerical estimates the value of advance text compared with later causal
+sensor evidence; Agent versus oracle measures remaining headroom relative to a
+perfectly structured advance interpretation. These three contrasts answer different
+questions and are not pooled.
 
 The frozen v3 workbooks retain their original candidate-selection rule and are
 never overwritten. Subsequent workflow versions persist every proposed
