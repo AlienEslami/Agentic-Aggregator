@@ -48,6 +48,9 @@ from .state import WorkflowState
 from .telemetry import ResourceMeter, summarize_agent_calls, system_profile
 
 
+OBJECTIVE_TIE_TOLERANCE = 1e-3
+
+
 @dataclass(slots=True)
 class OptimizationCandidate:
     pricing: PricingDecision
@@ -143,7 +146,9 @@ class WorkflowRunner:
                 "v2g_enabled": True,
             },
             "optimization_mode": "real_time",
-            "current_timestep": timestep,
+            # The observation at t has already settled interval t. Optimize
+            # only executable future intervals, beginning at t+1.
+            "current_timestep": timestep + 1,
             "price_guidance": {
                 "buy_multipliers": pricing.buy_multipliers,
                 "sell_multipliers": pricing.sell_multipliers,
@@ -162,23 +167,45 @@ class WorkflowRunner:
         candidate: OptimizationCandidate,
         incumbent: OptimizationCandidate | None,
     ) -> bool:
-        if candidate.result.get("is_mock"):
+        if not self._candidate_is_usable(candidate):
             return False
-        if incumbent is None or incumbent.result.get("is_mock"):
+        if incumbent is None or not self._candidate_is_usable(incumbent):
             return True
-        if candidate.evaluation.accept != incumbent.evaluation.accept:
-            return candidate.evaluation.accept
         if self.config.mode == "selfish":
             candidate_value = candidate.result.get("aggregator_revenue")
             incumbent_value = incumbent.result.get("aggregator_revenue")
-            return float(candidate_value if candidate_value is not None else float("-inf")) > float(
+            candidate_score = float(
+                candidate_value if candidate_value is not None else float("-inf")
+            )
+            incumbent_score = float(
                 incumbent_value if incumbent_value is not None else float("-inf")
             )
-        candidate_value = candidate.result.get("pto_daily_cost")
-        incumbent_value = incumbent.result.get("pto_daily_cost")
-        return float(candidate_value if candidate_value is not None else float("inf")) < float(
-            incumbent_value if incumbent_value is not None else float("inf")
-        )
+            if candidate_score > incumbent_score + OBJECTIVE_TIE_TOLERANCE:
+                return True
+            if candidate_score < incumbent_score - OBJECTIVE_TIE_TOLERANCE:
+                return False
+        else:
+            candidate_value = candidate.result.get("pto_daily_cost")
+            incumbent_value = incumbent.result.get("pto_daily_cost")
+            candidate_score = float(
+                candidate_value if candidate_value is not None else float("inf")
+            )
+            incumbent_score = float(
+                incumbent_value if incumbent_value is not None else float("inf")
+            )
+            if candidate_score < incumbent_score - OBJECTIVE_TIE_TOLERANCE:
+                return True
+            if candidate_score > incumbent_score + OBJECTIVE_TIE_TOLERANCE:
+                return False
+        # When the objective is tied, prefer the evaluator-accepted candidate.
+        return candidate.evaluation.accept and not incumbent.evaluation.accept
+
+    @staticmethod
+    def _candidate_is_usable(candidate: OptimizationCandidate) -> bool:
+        if candidate.result.get("is_mock"):
+            return False
+        solver_status = str(candidate.result.get("solver_status", "")).lower()
+        return solver_status not in {"infeasible", "error", "unknown", "mock"}
 
     def _record_attempt(
         self,
@@ -244,9 +271,21 @@ class WorkflowRunner:
                 "aggregator_revenue": result.get("aggregator_revenue"),
                 "total_kwh_bought": result.get("total_kwh_bought"),
                 "total_kwh_sold": result.get("total_kwh_sold"),
+                "proposed_period_boundaries": json.dumps(
+                    result.get("period_boundaries", []), default=str
+                ),
+                "proposed_w_buy_kwh": json.dumps(result.get("w_buy", []), default=str),
+                "proposed_w_sell_kwh": json.dumps(
+                    result.get("w_sell", []), default=str
+                ),
+                "proposed_energy_by_bus_kwh": json.dumps(
+                    result.get("energy", []), default=str
+                ),
                 "accepted": evaluation.accept,
+                "selected_for_execution": evaluation.accept,
                 "evaluator_accepted": evaluation.accept,
                 "forced_at_rerun_cap": False,
+                "retained_better_candidate": False,
                 "evaluation_reasoning": evaluation.reasoning,
                 "selection_reasoning": (
                     "Accepted by evaluator." if evaluation.accept else None
@@ -334,14 +373,30 @@ class WorkflowRunner:
             previous = pricing
             feedback = evaluation.feedback
         if best is not None:
+            evaluator_accepted_any = any(
+                bool(row.get("evaluator_accepted"))
+                for row in self.state.attempts
+                if row["timestep"] == timestep
+            )
+            retained_better_candidate = (
+                evaluator_accepted_any and not best.evaluation.accept
+            )
             if not best.evaluation.accept:
+                if retained_better_candidate:
+                    selection_reasoning = (
+                        "A solver-usable earlier attempt had a better mode-aligned "
+                        "economic objective than the evaluator-accepted rerun, so the "
+                        "earlier schedule was retained."
+                    )
+                else:
+                    selection_reasoning = (
+                        f"Rerun cap of {self.config.max_reruns} reached; "
+                        "the best solver-usable result was retained."
+                    )
                 accepted = best.evaluation.model_copy(
                     update={
                         "accept": True,
-                        "reasoning": (
-                            f"Rerun cap of {self.config.max_reruns} reached; "
-                            "the best feasible result was retained."
-                        ),
+                        "reasoning": selection_reasoning,
                     }
                 )
                 best = OptimizationCandidate(
@@ -353,12 +408,28 @@ class WorkflowRunner:
                 for attempt_row in self.state.attempts:
                     if attempt_row["timestep"] == timestep:
                         attempt_row["accepted"] = False
+                        attempt_row["selected_for_execution"] = False
                 for attempt_row in reversed(self.state.attempts):
                     if attempt_row["timestep"] == timestep and attempt_row["attempt"] == best.attempt:
                         attempt_row["accepted"] = True
-                        attempt_row["forced_at_rerun_cap"] = True
+                        attempt_row["selected_for_execution"] = True
+                        attempt_row["forced_at_rerun_cap"] = not evaluator_accepted_any
+                        attempt_row["retained_better_candidate"] = (
+                            retained_better_candidate
+                        )
                         attempt_row["selection_reasoning"] = accepted.reasoning
                         break
+            else:
+                for attempt_row in self.state.attempts:
+                    if attempt_row["timestep"] == timestep:
+                        selected = attempt_row["attempt"] == best.attempt
+                        attempt_row["accepted"] = selected
+                        attempt_row["selected_for_execution"] = selected
+                        if selected:
+                            attempt_row["selection_reasoning"] = (
+                                "Selected as the best solver-usable evaluator-accepted "
+                                "attempt."
+                            )
             return best
         if last is None:
             raise RuntimeError("The optimization loop produced no attempts")
@@ -522,6 +593,21 @@ class WorkflowRunner:
                 context["trigger_guard_applied"] = bool(
                 getattr(self.agents, "last_trigger_guard_applied", False)
                 )
+                if (
+                    trigger.action == "optimize"
+                    and int(context["remaining_timesteps"]) == 0
+                ):
+                    trigger = trigger.model_copy(
+                        update={
+                            "action": "skip",
+                            "trigger_type": "none",
+                            "flagged_buses": [],
+                            "reasoning": (
+                                "No future interval remains after the current "
+                                "observation was settled."
+                            ),
+                        }
+                    )
                 pricing: PricingDecision | None = None
                 evaluation: EvaluationDecision | None = None
                 result: dict[str, Any] | None = None
@@ -639,6 +725,10 @@ class WorkflowRunner:
                 ),
                 "forced_optimizer_selections": sum(
                     bool(row.get("forced_at_rerun_cap")) for row in self.state.attempts
+                ),
+                "retained_better_candidate_selections": sum(
+                    bool(row.get("retained_better_candidate"))
+                    for row in self.state.attempts
                 ),
                 "optimize_decisions": sum(
                     row.get("action") == "optimize" for row in self.state.logs

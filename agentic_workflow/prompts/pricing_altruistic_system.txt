@@ -198,8 +198,8 @@ OUTPUT FORMAT
 Respond only with a valid JSON object, no preamble, no markdown:
 
 {
-  "buy_multipliers": [<one float per remaining timestep, current to timestep 48>],
-  "sell_multipliers": [<one float per remaining timestep, current to timestep 48>],
+  "buy_multipliers": [<one float per remaining timestep, planning_start_timestep to timestep 48>],
+  "sell_multipliers": [<one float per remaining timestep, planning_start_timestep to timestep 48>],
   "reasoning": "Explicitly state:
   (1) current timestep and price_position,
   (2) default strategy applied — buy=1.01 everywhere, sell by zone,

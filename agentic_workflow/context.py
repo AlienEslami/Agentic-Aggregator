@@ -79,11 +79,24 @@ def _last_reoptimization(realtime_plan: pd.DataFrame, timestep: int) -> dict[str
         return None
     flags = realtime_plan["reoptimized"].fillna(False).astype(bool)
     state_index = timestep - 1
-    candidates = realtime_plan.loc[flags & (realtime_plan["timestep"] <= state_index)]
+    if "decision_timestep" in realtime_plan:
+        decisions = pd.to_numeric(
+            realtime_plan["decision_timestep"], errors="coerce"
+        )
+        candidates = realtime_plan.loc[flags & decisions.le(timestep)]
+    else:
+        candidates = realtime_plan.loc[
+            flags & (realtime_plan["timestep"] <= state_index)
+        ]
     if candidates.empty:
         return None
     row = candidates.sort_values("timestep").iloc[-1].to_dict()
-    row["observation_timestep"] = int(row["timestep"]) + 1
+    decision_timestep = _float(row.get("decision_timestep"))
+    row["observation_timestep"] = (
+        int(decision_timestep)
+        if decision_timestep is not None
+        else int(row["timestep"]) + 1
+    )
     return row
 
 
@@ -181,10 +194,11 @@ def build_context(
         if observed_price is not None and forecasted_price not in {None, 0}
         else None
     )
+    planning_start_timestep = timestep + 1
     remaining_prices = [
         {"timestep": current, "spot_market": price}
         for current, price in sorted(disturbed_price_map.items())
-        if current >= timestep
+        if current >= planning_start_timestep
     ]
     remaining_values = [row["spot_market"] for row in remaining_prices]
     minimum_price = min(remaining_values) if remaining_values else None
@@ -193,8 +207,12 @@ def build_context(
         row["price_zone"] = _price_zone(row["spot_market"], minimum_price or 0, maximum_price or 0)
 
     full_price_map = dict(price_history)
+    if observed_price is not None:
+        full_price_map[timestep] = observed_price
     full_price_map.update({row["timestep"]: row["spot_market"] for row in remaining_prices})
-    full_prices_complete = all(current in full_price_map for current in range(1, 49))
+    full_prices_complete = all(
+        current in full_price_map for current in range(planning_start_timestep, 49)
+    )
     summary = day_ahead.summary
     buy_multipliers = list(summary.get("buy_multipliers") or [1.05, 1.10, 1.05])
     sell_multipliers = list(summary.get("sell_multipliers") or [0.80, 0.85, 0.80])
@@ -204,7 +222,7 @@ def build_context(
     da_cost_remaining = 0.0
     da_benchmark_valid = full_prices_complete
     if da_benchmark_valid:
-        for current in range(timestep, 49):
+        for current in range(planning_start_timestep, 49):
             plan_row = planned_row_for_observation(day_ahead.plan, current)
             if plan_row is None:
                 da_benchmark_valid = False
@@ -326,11 +344,14 @@ def build_context(
         ),
         default=0,
     )
-    remaining_timesteps = 49 - timestep
+    remaining_timesteps = 48 - timestep
     history = [entry["history_entry"] for entry in context_history]
 
     context = {
         "timestep": timestep,
+        "planning_start_timestep": (
+            planning_start_timestep if planning_start_timestep <= 48 else None
+        ),
         "total_timesteps": 48,
         "remaining_timesteps": remaining_timesteps,
         "remaining_hours": f"{remaining_timesteps * 0.5:.1f}",

@@ -305,6 +305,63 @@ def test_openai_evaluator_receives_runtime_rerun_cap():
     assert captured["maximum_reruns"] == 1
 
 
+def test_openai_evaluator_guard_accepts_negative_altruistic_cost():
+    def fake_parse(system, user_data, schema, *, role):
+        assert role == "evaluator"
+        return EvaluationDecision(
+            accept=False,
+            reasoning="incorrect percentage comparison against a negative benchmark",
+            confidence=0.9,
+            feedback=NULL_FEEDBACK,
+        )
+
+    backend = OpenAIAgentBackend.__new__(OpenAIAgentBackend)
+    backend._parse = fake_parse
+    backend.call_records = [{}]
+    context = _context()
+    context.update(
+        {
+            "mode": "altruistic",
+            "maximum_reruns": 1,
+            "deviations": {},
+            "day_ahead_summary": {},
+            "da_benchmark": {"da_benchmark_valid": True, "da_cost_remaining": -40},
+        }
+    )
+    trigger = TriggerDecision(
+        action="optimize",
+        reasoning="test",
+        confidence=1.0,
+        trigger_type="price",
+        flagged_buses=[],
+    )
+    pricing = PricingDecision(
+        buy_multipliers=[1.01] * 44,
+        sell_multipliers=[0.9] * 44,
+        reasoning="test",
+        confidence=1.0,
+    )
+
+    decision = backend.evaluate(
+        context,
+        trigger,
+        pricing,
+        {
+            "energy": [[100.0]],
+            "is_mock": False,
+            "solver_status": "ok/optimal",
+            "pto_daily_cost": -5.0,
+        },
+        rerun_count=0,
+    )
+
+    assert decision.accept is True
+    assert decision.feedback == NULL_FEEDBACK
+    assert backend.call_records[-1]["post_parse_normalization"]["kind"] == (
+        "negative_altruistic_cost_acceptance_guard"
+    )
+
+
 def test_evaluator_prompt_uses_non_vacuous_all_bus_deviation_checks():
     prompt = (
         Path(__file__).parents[1]

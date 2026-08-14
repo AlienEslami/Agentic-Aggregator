@@ -122,16 +122,46 @@ python scripts/build_experiment_manifest.py `
 | CLI value | Trigger | Pricing | Evaluator |
 |---|---|---|---|
 | `fixed_da_plan` | disabled | existing DA | hard checks |
-| `structured_reference` | canonical fields + deterministic trigger | mathematical/rule | deterministic |
-| `oracle_event_trigger` | canonical event truth | mathematical/rule | deterministic |
-| `numerical_event_trigger` | numerical state/deviation flags only | mathematical/rule | deterministic |
-| `rule_text_event_trigger` | raw notice/chat → frozen stateful parser | mathematical/rule | deterministic |
-| `agent_trigger_only` | raw notice/chat + event memory → LLM Trigger | mathematical/rule | deterministic |
-| `full_deterministic` | frozen parser + deterministic trigger | mathematical/rule | deterministic |
+| `structured_reference` | canonical fields + deterministic trigger | deterministic price-zone heuristic | deterministic |
+| `oracle_event_trigger` | canonical event truth | deterministic price-zone heuristic | deterministic |
+| `numerical_event_trigger` | numerical state/deviation flags only | deterministic price-zone heuristic | deterministic |
+| `rule_text_event_trigger` | raw notice/chat → frozen stateful parser | deterministic price-zone heuristic | deterministic |
+| `agent_trigger_only` | raw notice/chat + event memory → LLM Trigger | deterministic price-zone heuristic | deterministic |
+| `full_deterministic` | frozen parser + deterministic trigger | deterministic price-zone heuristic | deterministic |
 | `full_agentic` | LLM notice + state | LLM | LLM + hard guards |
 | `rule_parser_trigger_substitution` | frozen parser + deterministic trigger | LLM | LLM + hard guards |
-| `mathematical_pricing_substitution` | LLM | mathematical/rule | LLM + hard guards |
+| `mathematical_pricing_substitution` | LLM | deterministic price-zone heuristic | LLM + hard guards |
 | `evaluator_removal` | LLM | LLM | solver/feasibility checks only |
+
+The historical CLI identifier `mathematical_pricing_substitution` is retained
+for compatibility with the frozen v3 protocol. The comparator is a
+deterministic price-zone heuristic, not a separately optimized mathematical
+pricing model. Its fixed multipliers are therefore one prespecified baseline,
+not proof that the LLM Pricing Agent is better than every possible non-agentic
+tariff policy. A lower/higher-multiplier sensitivity grid must be calibrated on
+separate pilot cases and evaluated on untouched holdout episodes.
+
+### Post-confirmatory evaluator and reporting improvements
+
+The frozen v3 workbooks retain their original candidate-selection rule and are
+never overwritten. Subsequent workflow versions persist every proposed
+charging/V2G schedule in `optimization_attempts` and select the best
+solver-usable candidate by the mode-aligned objective (within a 0.001 numerical
+tie tolerance). An evaluator-accepted rerun can no longer replace a materially
+better earlier schedule solely because it was accepted. A deterministic guard
+also accepts a solver-usable altruistic result with negative remaining-horizon
+PTO cost, as V2G revenue already exceeds charging cost.
+
+Secondary grid-flexibility reporting is derived from `ex_post_settlement`:
+
+- cheap-period charging (downward flexibility delivered);
+- expensive-period V2G export (upward flexibility delivered);
+- cheap charging and expensive export shares;
+- energy-weighted buy and sell grid prices;
+- peak 30-minute net import; and
+- grid-side charging plus export as a battery-throughput/cycling proxy.
+
+The throughput value is descriptive and is not a battery degradation model.
 
 Example closed-loop rule-text run:
 
@@ -162,6 +192,9 @@ numerical telemetry, stateful text parsing, or Agent interpretation.
 
 At observation timestep `t`, the workflow first settles the plan for the
 completed interval before any decision at `t` can modify the future schedule.
+Post-confirmatory workflow versions pass only intervals `t+1,...,48` to the
+optimizer and map the first returned action to interval `t+1`; the already
+settled interval is excluded from both the proposed schedule and its objective.
 The simulator carries physical bus energy forward cumulatively. Extra traction
 consumption and charging curtailed by a failed or derated charger therefore
 remain visible in later SOC and reserve-shortfall metrics. The workbook records
@@ -613,3 +646,65 @@ episode time before API and solver variability. The proposed confirmatory comman
 therefore uses a USD 4.00 episode-boundary ceiling and should be allowed a
 two-to-three-hour wall-time window. The runner also refuses confirmatory
 execution from a dirty Git worktree and records both safeguards in the manifest.
+
+### v3 confirmatory role-ablation results and post-run audit
+
+All 120 frozen episodes completed 48 timesteps with Gurobi and no solver
+fallback. Realized operational feasibility (complete run, no reserve shortfall,
+no reserve-violation interval, and minimum/terminal SOC at least 20%) was:
+
+| Configuration | Feasible | Infeasible |
+|---|---:|---:|
+| `full_agentic` | 30 | 0 |
+| `rule_parser_trigger_substitution` | 21 | 9 |
+| `mathematical_pricing_substitution` | 29 | 1 |
+| `evaluator_removal` | 30 | 0 |
+
+All nine rule-trigger failures occurred in the charger-shutdown case (five
+selfish and four altruistic episodes). The deterministic-pricing failure was
+one selfish charger-shutdown episode. Thus the strongest role result is the
+LLM Trigger's operational-feasibility advantage for ambiguous advance charger
+information, not universal economic dominance by all three Agents.
+
+Economics are compared only among realized-operationally-feasible episodes.
+The full workflow reduced combined-event altruistic PTO cost by 9.4770 versus
+the rule Trigger (95% bootstrap interval 4.7385 to 11.8463) and by 7.2543 versus
+deterministic price-zone pricing (0.1954 to 11.9684). It improved selfish
+charger revenue by 3.1700 versus evaluator removal (approximately 0 to 7.5409).
+Other point estimates were mixed; no negative full-workflow contrast had a 95%
+bootstrap interval entirely below zero. These results do not support a claim
+that the complete three-Agent workflow always improves profit or cost.
+
+The interval-level secondary analysis reconciles exactly with all run totals.
+In these cases every realized charge occurred in the lower daily price zone and
+every nonzero V2G export occurred in the upper zone, so alignment shares alone
+do not discriminate methods. Export volume is informative: in the combined
+altruistic cell the full workflow exported 180 kWh on average, versus 100 kWh
+with the rule Trigger and 120 kWh with deterministic pricing, but 200 kWh with
+evaluator removal. The full workflow therefore improves grid support relative
+to the Trigger and Pricing substitutions in that cell, while the Evaluator adds
+no benefit there. Charging plus export is reported as a cycling proxy and is
+not interpreted as automatically beneficial.
+
+An audit of 240 optimization decisions found 12 cases where an
+evaluator-accepted rerun was materially worse than an earlier solver-usable
+candidate under the 0.001 objective tolerance. It also found three erroneous
+rejections of negative altruistic PTO cost; all three feedback instructions
+lowered buy multipliers even though the candidate bought zero energy. The
+post-confirmatory retention and negative-cost guards above correct these issues
+for future runs.
+
+The audit also exposed a one-interval horizon alignment defect in the frozen
+implementation: interval `t` was settled before the decision but was still
+included in the optimizer horizon. In the combined altruistic outlier, the full
+workflow proposed 200 kWh of remaining V2G, but 100 kWh was allocated to the
+already-settled first optimizer interval and only 100 kWh was realized. Future
+workflow versions optimize `t+1,...,48` only. This correction and the candidate
+retention changes require a clearly labelled post-confirmatory diagnostic; they
+must not be used to overwrite the frozen v3 evidence.
+
+The confirmatory matrix used 10,873,413 tokens in 983 successful OpenAI
+requests, with no failed request. Approximate API cost was USD 2.1037. Summed
+episode wall time was 2.222 hours and summed local process CPU time was 4.521
+hours. The full workflow was the most expensive configuration, averaging about
+123,450 tokens and USD 0.0246 per episode.

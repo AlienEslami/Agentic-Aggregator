@@ -7,6 +7,7 @@ from scripts.analyze_advance_warning_matrix import (
     annotate_runs,
     build_ablation_contrasts,
     build_primary_pairs,
+    settlement_secondary_outcomes,
     summarize_pairs,
 )
 from scripts.run_advance_warning_matrix import (
@@ -293,3 +294,25 @@ def test_paired_analysis_treats_sub_milliscale_solver_noise_as_a_tie():
     assert comparison["economic_wins"] == 0
     assert comparison["economic_ties"] == 1
     assert comparison["economic_losses"] == 0
+
+
+def test_secondary_outcomes_measure_price_aligned_flexibility_and_throughput():
+    outcomes = settlement_secondary_outcomes(
+        pd.DataFrame(
+            {
+                "spot_price": [1.0, 2.0, 3.0, 4.0],
+                "realized_buy_kwh": [10.0, 20.0, 0.0, 0.0],
+                "realized_sell_kwh": [0.0, 0.0, 5.0, 15.0],
+            }
+        )
+    )
+
+    assert outcomes["downward_flexibility_cheap_buy_kwh"] == 30.0
+    assert outcomes["upward_flexibility_expensive_sell_kwh"] == 20.0
+    assert outcomes["price_aligned_flexibility_kwh"] == 50.0
+    assert outcomes["cheap_period_buy_share"] == 1.0
+    assert outcomes["expensive_period_sell_share"] == 1.0
+    assert outcomes["energy_weighted_average_buy_grid_price"] == pytest.approx(5 / 3)
+    assert outcomes["energy_weighted_average_sell_grid_price"] == pytest.approx(3.75)
+    assert outcomes["peak_net_import_kwh_per_interval"] == 20.0
+    assert outcomes["battery_throughput_proxy_kwh"] == 50.0

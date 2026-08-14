@@ -46,5 +46,7 @@ def test_bus_discovery_and_plan_application_support_16_buses():
         },
         intraday_prices=[],
     )
-    assert state.realtime_plan.loc[0, "bus_16_kwh"] == 115.0
-    assert state.forecast_energy.loc[0, "bus_16_kwh"] == 115.0
+    assert state.realtime_plan.loc[0, "bus_16_kwh"] == 100.0
+    assert state.realtime_plan.loc[1, "bus_16_kwh"] == 115.0
+    assert state.forecast_energy.loc[1, "bus_16_kwh"] == 115.0
+    assert state.realtime_plan.loc[1, "decision_timestep"] == 1

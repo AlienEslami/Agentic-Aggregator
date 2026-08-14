@@ -27,6 +27,7 @@ SUMMARY_COLUMNS = (
     "accepted_optimizer_calls",
     "evaluator_accepted_optimizer_calls",
     "forced_optimizer_selections",
+    "retained_better_candidate_selections",
     "optimize_decisions",
     "realized_pto_cost",
     "realized_aggregator_revenue",

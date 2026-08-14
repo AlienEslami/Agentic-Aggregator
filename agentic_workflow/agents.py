@@ -33,6 +33,7 @@ PROMPT_DIR = Path(__file__).with_name("prompts")
 PUBLIC_TRIGGER_CONTEXT_FIELDS = (
     "timestep",
     "total_timesteps",
+    "planning_start_timestep",
     "remaining_timesteps",
     "remaining_hours",
     "mode",
@@ -305,6 +306,7 @@ class OpenAIAgentBackend(AgentBackend):
         user_data = {
             "mode": context["mode"],
             "timestep": context["timestep"],
+            "planning_start_timestep": context.get("planning_start_timestep"),
             "remaining_timesteps": context["remaining_timesteps"],
             "remaining_hours": context["remaining_hours"],
             "trigger": trigger.model_dump(),
@@ -357,6 +359,7 @@ class OpenAIAgentBackend(AgentBackend):
         user_data = {
             "mode": context["mode"],
             "timestep": context["timestep"],
+            "planning_start_timestep": context.get("planning_start_timestep"),
             "remaining_timesteps": context["remaining_timesteps"],
             "rerun_count": rerun_count,
             "maximum_reruns": int(context["maximum_reruns"]),
@@ -371,9 +374,35 @@ class OpenAIAgentBackend(AgentBackend):
             "da_benchmark": context["da_benchmark"],
             "intraday_prices": context["intraday_prices"],
         }
-        return self._parse(
+        decision = self._parse(
             _prompt("evaluator_system.txt"), user_data, EvaluationDecision, role="evaluator"
         )
+        solver_status = str(result.get("solver_status", "")).lower()
+        negative_altruistic_cost = (
+            context["mode"] == "altruistic"
+            and float(result.get("pto_daily_cost") or 0.0) < 0.0
+            and not bool(result.get("is_mock"))
+            and solver_status not in {"infeasible", "error", "unknown", "mock"}
+        )
+        if negative_altruistic_cost and not decision.accept:
+            if getattr(self, "call_records", None):
+                self.call_records[-1]["post_parse_normalization"] = {
+                    "kind": "negative_altruistic_cost_acceptance_guard",
+                    "original_accept": False,
+                    "original_feedback": decision.feedback.model_dump(),
+                }
+            return decision.model_copy(
+                update={
+                    "accept": True,
+                    "reasoning": (
+                        "Deterministic evaluator guard accepted the solver-usable plan: "
+                        "remaining-horizon PTO cost is negative, so V2G revenue exceeds "
+                        "charging cost."
+                    ),
+                    "feedback": NULL_FEEDBACK,
+                }
+            )
+        return decision
 
 
 class EvidenceGatedAgentBackend(AgentBackend):

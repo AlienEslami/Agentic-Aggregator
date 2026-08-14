@@ -57,7 +57,7 @@ METHOD_LABELS = {
     "agent_trigger_only": "agent",
     "full_agentic": "full_agentic",
     "rule_parser_trigger_substitution": "rule_trigger_ablation",
-    "mathematical_pricing_substitution": "mathematical_pricing_ablation",
+    "mathematical_pricing_substitution": "deterministic_price_zone_ablation",
     "evaluator_removal": "evaluator_ablation",
 }
 

@@ -166,7 +166,12 @@ class WorkflowState:
         bus_ids = bus_ids_from_frame(self.realtime_plan)
         if not w_buy or not w_sell or len(energy) < len(bus_ids):
             return
-        start_state_index = timestep - 1
+        # Observation timestep t is settled before this method is called. The
+        # first executable optimizer action therefore belongs to interval t+1,
+        # represented by zero-based plan state index t.
+        start_state_index = timestep
+        if "decision_timestep" not in self.realtime_plan:
+            self.realtime_plan["decision_timestep"] = None
         for offset in range(min(len(w_buy), 48 - start_state_index)):
             state_index = start_state_index + offset
             matches = self.realtime_plan.index[self.realtime_plan["timestep"].astype(int) == state_index]
@@ -188,17 +193,20 @@ class WorkflowState:
                         ] = series[offset]
             is_first = offset == 0
             self.realtime_plan.at[index, "reoptimized"] = is_first
+            self.realtime_plan.at[index, "decision_timestep"] = (
+                timestep if is_first else None
+            )
             self.realtime_plan.at[index, "trigger_type"] = trigger.trigger_type if is_first else None
             self.realtime_plan.at[index, "buy_multipliers"] = _json(pricing.buy_multipliers) if is_first else None
             self.realtime_plan.at[index, "sell_multipliers"] = _json(pricing.sell_multipliers) if is_first else None
             if offset < len(pricing.buy_multipliers):
                 self.realtime_plan.at[index, "buy_multiplier"] = pricing.buy_multipliers[offset]
-                self.buy_multiplier_schedule[timestep + offset] = float(
+                self.buy_multiplier_schedule[timestep + 1 + offset] = float(
                     pricing.buy_multipliers[offset]
                 )
             if offset < len(pricing.sell_multipliers):
                 self.realtime_plan.at[index, "sell_multiplier"] = pricing.sell_multipliers[offset]
-                self.sell_multiplier_schedule[timestep + offset] = float(
+                self.sell_multiplier_schedule[timestep + 1 + offset] = float(
                     pricing.sell_multipliers[offset]
                 )
             self.realtime_plan.at[index, "intraday_prices"] = _json(intraday_prices) if is_first else None

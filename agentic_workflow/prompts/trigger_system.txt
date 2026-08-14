@@ -18,7 +18,8 @@ Treat the report time and the physical event time separately. A driver or mainte
 The Trigger action must agree with recommended_action: optimize maps to action=optimize; wait and request_confirmation map to action=skip. A conditional warning belongs to phase=warning. If a material notice is at confirmed onset, severity change, or recovery, optimize. Skip unchanged persistence already incorporated into the active plan and informational notices. Use service_notice, charger_event, or combined_notice as trigger_type.
 Current timestep info
 timestep: current position in the day (1-48)
-remaining_timesteps: how many timesteps are left
+planning_start_timestep: first unsettled interval that a new plan can change
+remaining_timesteps: how many unsettled future intervals are left
 remaining_hours: hours left in the day
 mode: altruistic (minimize PTO cost) or selfish (maximize aggregator revenue)
 Re-optimization history

@@ -282,7 +282,8 @@ def test_runner_replaces_branching_merging_and_persistence(tmp_path):
     assert [row["action"] for row in result.logs] == ["skip", "optimize"]
     assert len(result.attempts) == 1
     marker = result.realtime_plan.loc[result.realtime_plan["reoptimized"] == True].iloc[0]
-    assert marker["timestep"] == 1
+    assert marker["timestep"] == 2
+    assert marker["decision_timestep"] == 2
     assert marker["trigger_type"] == "price"
     assert result.logs[-1]["rerun_count"] == 0
     assert output.exists()
@@ -389,7 +390,7 @@ def test_optimizer_never_accepts_an_all_mock_rerun_sequence(tmp_path):
     assert not any(row["accepted"] for row in runner.state.attempts)
 
 
-def test_evaluator_accepted_attempt_outranks_rejected_higher_revenue(tmp_path):
+def test_better_earlier_schedule_outranks_worse_evaluator_accepted_rerun(tmp_path):
     state, forecast, spot, states_zip, prices_zip, disturbances = _build_inputs(tmp_path)
     config = WorkflowConfig(
         state_workbook=state,
@@ -445,11 +446,17 @@ def test_evaluator_accepted_attempt_outranks_rejected_higher_revenue(tmp_path):
         observation=[],
         disturbance=disturbance,
     )
-    assert selected.attempt == 2
-    assert selected.result["aggregator_revenue"] == 5.0
+    assert selected.attempt == 1
+    assert selected.result["aggregator_revenue"] == 10.0
     accepted = [row for row in runner.state.attempts if row["accepted"]]
     assert len(accepted) == 1
-    assert accepted[0]["attempt"] == 2
+    assert accepted[0]["attempt"] == 1
+    assert accepted[0]["selected_for_execution"] is True
+    assert accepted[0]["evaluator_accepted"] is False
+    assert accepted[0]["forced_at_rerun_cap"] is False
+    assert accepted[0]["retained_better_candidate"] is True
+    assert "better mode-aligned economic objective" in accepted[0]["selection_reasoning"]
+    assert all("proposed_w_buy_kwh" in row for row in runner.state.attempts)
 
 
 def test_forced_cap_selection_preserves_original_evaluator_rejections(tmp_path):
@@ -515,8 +522,10 @@ def test_forced_cap_selection_preserves_original_evaluator_rejections(tmp_path):
     assert selected.evaluation.accept is True
     selected_row = next(row for row in runner.state.attempts if row["accepted"])
     assert selected_row["attempt"] == 1
+    assert selected_row["selected_for_execution"] is True
     assert selected_row["evaluator_accepted"] is False
     assert selected_row["forced_at_rerun_cap"] is True
+    assert selected_row["retained_better_candidate"] is False
     assert selected_row["evaluation_reasoning"] == "reject attempt 0"
     assert "Rerun cap of 1 reached" in selected_row["selection_reasoning"]
     assert not any(row["evaluator_accepted"] for row in runner.state.attempts)

@@ -226,6 +226,7 @@ def initialize_realtime_plan(reference: DayAheadReference) -> pd.DataFrame:
         "sell_multiplier",
         "intraday_prices",
         "reoptimized",
+        "decision_timestep",
         "trigger_type",
     ]:
         frame[column] = None
