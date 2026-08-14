@@ -170,7 +170,8 @@ minimum and terminal SOC, reserve shortfall, planner/truth mismatch, optimizer
 calls, solver resources, LLM tokens, and approximate API cost.
 
 The frozen v3 notice timing remains unchanged for confirmatory interpretation
-accuracy. The separate `advance_warning_notices_v1.json` set contains three
+accuracy. The separate `advance_warning_notices_v1.json` path now contains the
+calibrated v2 protocol with three
 paired operational stress cases: a late-return driver report before departure,
 a charger-bank lockout before the morning charging peak, and a combined evening
 late-return/charger event before the afternoon price trough. A separate
@@ -182,6 +183,24 @@ cases with:
 
 ```powershell
 python scripts/build_closed_loop_notice_cases.py
+```
+
+Clock conversion is deterministic and is not delegated to the LLM. Timestep 1
+covers 00:00-00:30 and public clock windows use `[start,end)`: for example,
+03:30-05:00 affects timesteps 8-10 inclusive. The raw LLM interpretation is
+retained for audit, while the effective decision uses the deterministic window.
+Follow-up messages for the same active event inherit that normalized window;
+recovery messages retain their actual recovery timestep.
+
+The v2 disturbances were selected by a declared Gurobi calibration sweep, not
+by Agent outcomes. The selected late-return range is 60-90 minutes (90-minute
+conservative update), and the selected charger outage is EVSE 6-8 from
+03:30-05:00. In each changed case, the selected setting is the strongest tested
+setting for which the structured advance-information oracle remains safe while
+the delayed numerical trigger is unsafe. Reproduce the sweep with:
+
+```powershell
+python scripts/calibrate_advance_warning_cases.py --force
 ```
 
 Run the deterministic comparison first:
@@ -266,6 +285,10 @@ effects are reported only for pairs in which both methods are safety-feasible.
 In selfish mode, a positive paired effect means greater aggregator revenue; in
 altruistic mode, it means lower PTO cost. This prevents an unsafe schedule from
 appearing superior merely because it bought less energy or earned more revenue.
+Absolute mode-aligned differences no greater than 0.001 are reported as economic
+ties, preventing solver-scale floating-point noise from being labeled a win or
+loss. The threshold is configurable with `--economic-tie-tolerance` and is
+recorded in the JSON analysis protocol.
 Primary Agent contrasts use repeated paired differences against the fixed
 deterministic baseline in each case-mode cell. Because all role-ablation methods
 contain stochastic LLM components, their secondary contrasts use independent-
@@ -332,7 +355,11 @@ The 8/16/32 scaling study also still requires physically coherent 16- and
 32-bus workbooks and a declared replication rule for trips, charger ratios,
 depot power, and terminal SOC. A second depot must be a distinct input instance.
 
-### Six-run Agent pilot (preliminary, not confirmatory)
+### Six-run Agent pilot (historical pre-calibration result)
+
+This section records the original v1 pilot for provenance. Its case severities
+and nondeterministic clock interpretations have been superseded by the calibrated
+v2 protocol and must not be combined with new confirmatory repetitions.
 
 On 2026-08-13, one `agent_trigger_only` repetition was run for each of the three
 advance-warning cases in both modes with `gpt-5.6-luna` at low reasoning effort.
@@ -356,7 +383,7 @@ was sent. HiGHS (`appsi_highs`) solved every pilot optimization. The installed
 Gurobi licence could not be used because it is bound to HostID `846d74f2` while
 the current host reports `f47957cb`; this fallback is recorded in the run index.
 
-### Five-repetition Gurobi matrix
+### Five-repetition Gurobi matrix (historical pre-calibration result)
 
 On 2026-08-13--14, the primary matrix was rerun in the normal Windows user context
 with the current default academic licence at `C:\Users\alien\gurobi.lic` and
@@ -396,3 +423,27 @@ workbooks remain ignored under `results/`; the local matrix index and analysis
 summary have SHA-256 digests
 `101f10659692f06424a404821ab113ffaa415ed6adbb0342bd686cf3d4ce3f89` and
 `0b62a852ea337a872e689743f174c5a27f659f2be8aae8ed8cc0e7b75d8d2a24`.
+
+### Calibrated v2 deterministic matrix
+
+On 2026-08-14, the three deterministic trigger methods were rerun for all three
+cases and both modes after freezing the deterministic clock conversion and the
+calibrated case settings. All 18 runs completed 48 timesteps with Gurobi 13.0.2,
+and no solver fallback was recorded. The structured oracle was safe in all six
+case-mode cells, the rule-text method in four, and the causal numerical trigger
+in three.
+
+The numerical trigger was unsafe in the selfish 90-minute late-return case
+(1.764 kWh maximum reserve shortfall) and in both three-charger outage modes
+(63.12 and 216.38 kWh). The oracle was safe in each of those cells because it
+could act on confirmed advance information. All methods were safe in the
+combined case. In its altruistic cell, structured advance information reduced
+PTO cost by 11.7242 relative to delayed numerical detection; selfish revenue was
+an economic tie. The frozen rule failed to convert the coreferential phrase
+"same south auxiliary-row isolation" into an unavailable-charger update, so its
+two charger failures are retained as a transparent text-parser limitation.
+
+These deterministic results establish that the revised cases are feasible and
+decision-sensitive. They do not establish Agent performance: the next
+confirmatory step is five new Agent repetitions per case-mode cell using only
+the v2 inputs, followed by the frozen safety-first paired analysis.

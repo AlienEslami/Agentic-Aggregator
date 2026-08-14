@@ -292,7 +292,7 @@ def write_manifest(
     completed_rows: int,
 ) -> None:
     manifest = {
-        "protocol_version": "advance_warning_matrix_v1",
+        "protocol_version": "advance_warning_matrix_v2",
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "git_commit": git_revision(),
         "design": {

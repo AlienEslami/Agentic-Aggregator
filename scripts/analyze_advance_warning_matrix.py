@@ -469,7 +469,10 @@ def build_ablation_contrasts(
 
 
 def summarize_pairs(
-    pairs: pd.DataFrame, *, bootstrap_iterations: int
+    pairs: pd.DataFrame,
+    *,
+    bootstrap_iterations: int,
+    economic_tie_tolerance: float = 1e-3,
 ) -> pd.DataFrame:
     if pairs.empty:
         return pd.DataFrame(columns=CONTRAST_SUMMARY_COLUMNS)
@@ -484,7 +487,6 @@ def summarize_pairs(
             seed=seed_for(keys),
             bootstrap_iterations=bootstrap_iterations,
         )
-        tolerance = 1e-9
         rows.append(
             {
                 **dict(zip(group_columns, keys)),
@@ -503,9 +505,9 @@ def summarize_pairs(
                 "mode_aligned_economic_gain_std": std,
                 "mode_aligned_economic_gain_ci95_low": low,
                 "mode_aligned_economic_gain_ci95_high": high,
-                "economic_wins": int(gains.gt(tolerance).sum()),
-                "economic_ties": int(gains.abs().le(tolerance).sum()),
-                "economic_losses": int(gains.lt(-tolerance).sum()),
+                "economic_wins": int(gains.gt(economic_tie_tolerance).sum()),
+                "economic_ties": int(gains.abs().le(economic_tie_tolerance).sum()),
+                "economic_losses": int(gains.lt(-economic_tie_tolerance).sum()),
                 "candidate_llm_total_tokens": float(
                     numeric(group, "candidate_llm_total_tokens").sum()
                 ),
@@ -540,6 +542,12 @@ def main() -> None:
     )
     parser.add_argument("--reserve-tolerance-kwh", type=float, default=1e-6)
     parser.add_argument("--minimum-soc-fraction", type=float, default=0.2)
+    parser.add_argument(
+        "--economic-tie-tolerance",
+        type=float,
+        default=1e-3,
+        help="Absolute mode-aligned score difference counted as an economic tie.",
+    )
     parser.add_argument("--bootstrap-iterations", type=int, default=10000)
     args = parser.parse_args()
 
@@ -559,7 +567,9 @@ def main() -> None:
     )
     primary_pairs = build_primary_pairs(runs)
     primary_summary = summarize_pairs(
-        primary_pairs, bootstrap_iterations=args.bootstrap_iterations
+        primary_pairs,
+        bootstrap_iterations=args.bootstrap_iterations,
+        economic_tie_tolerance=args.economic_tie_tolerance,
     )
     ablation_runs = runs[
         runs["configuration"].isin(
@@ -587,7 +597,7 @@ def main() -> None:
         frame.to_csv(output_dir / filename, index=False)
 
     summary = {
-        "protocol_version": "advance_warning_analysis_v1",
+        "protocol_version": "advance_warning_analysis_v2",
         "source": {
             "path": str(runs_path),
             "sha256": sha256(runs_path),
@@ -604,6 +614,7 @@ def main() -> None:
             "selfish": "higher realized aggregator revenue is better",
             "altruistic": "lower realized PTO cost is better",
             "paired_economic_effect_reported_only_when_both_runs_are_safe": True,
+            "absolute_tie_tolerance": args.economic_tie_tolerance,
         },
         "uncertainty": {
             "method": "nonparametric bootstrap over repeated runs within each case-mode cell",

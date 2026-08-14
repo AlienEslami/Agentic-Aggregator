@@ -31,6 +31,9 @@ def test_advance_warning_cases_are_reproducible_and_complete() -> None:
     assert manifest["notice_sha256"] == sha256(OUTPUT)
     assert manifest["physical_event_sha256"] == sha256(PHYSICAL_OUTPUT)
     assert manifest["comparison"] == ["agent", "rule_text", "numerical", "oracle"]
+    assert manifest["version"] == "advance_warning_benchmark_v2"
+    assert manifest["calibration"]["route_delay_minutes_selected"] == 90
+    assert manifest["calibration"]["unavailable_chargers_selected"] == [6, 7, 8]
 
 
 def test_hidden_truth_is_separate_from_public_trigger_payload() -> None:
@@ -43,4 +46,4 @@ def test_hidden_truth_is_separate_from_public_trigger_payload() -> None:
     assert physical.truth_at(7, scenario_ids=("aw_charger_bank_shutdown",)) is None
     truth = physical.truth_at(8, scenario_ids=("aw_charger_bank_shutdown",))
     assert truth is not None
-    assert truth.updates.unavailable_chargers == [5, 6, 7, 8]
+    assert truth.updates.unavailable_chargers == [6, 7, 8]

@@ -25,6 +25,7 @@ from .models import (
     StructuredTriggerDecision,
     TriggerDecision,
 )
+from .notices import normalize_notice_clock_timesteps
 
 
 PROMPT_DIR = Path(__file__).with_name("prompts")
@@ -225,8 +226,16 @@ class OpenAIAgentBackend(AgentBackend):
             role="trigger",
         )
         decision = structured.to_domain()
+        normalized_notice = (
+            normalize_notice_clock_timesteps(decision.notice_interpretation, context)
+            if decision.notice_interpretation is not None
+            else None
+        )
+        normalized_decision = decision.model_copy(
+            update={"notice_interpretation": normalized_notice}
+        )
         effective = normalize_trigger_decision(
-            decision,
+            normalized_decision,
             context,
             allow_numerical_fallback=self.allow_deterministic_trigger_fallback,
         )

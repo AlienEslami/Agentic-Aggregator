@@ -18,6 +18,7 @@ from agentic_workflow.notices import (
     NoticeSeries,
     apply_notice_updates,
     frozen_rule_parse,
+    normalize_notice_clock_timesteps,
     resolve_notice_coreferences,
 )
 from agentic_workflow.runner import WorkflowRunner
@@ -32,6 +33,77 @@ from agentic_workflow.uncertainty import select_operational_value
 
 DATA = Path(__file__).parents[1] / "inputs" / "revision" / "trigger_notices.json"
 V3_DATA = Path(__file__).parents[1] / "inputs" / "revision" / "trigger_notices_v3.json"
+
+
+def test_public_clock_window_has_one_deterministic_timestep_mapping():
+    interpretation = NoticeInterpretation(
+        event_id="AW-BANK",
+        source_type="combined",
+        event_type="charger_fault",
+        phase="onset",
+        effective_timestep=7,
+        expected_end_timestep=11,
+    )
+    normalized = normalize_notice_clock_timesteps(
+        interpretation,
+        {
+            "operational_notices": [
+                {
+                    "event_id": "AW-BANK",
+                    "text": "Isolate the south row from 03:30 to 05:00.",
+                }
+            ]
+        },
+    )
+    assert normalized.effective_timestep == 8
+    assert normalized.expected_end_timestep == 10
+
+
+def test_non_aligned_clock_window_includes_every_overlapping_half_hour():
+    interpretation = NoticeInterpretation(
+        event_id="WINDOW",
+        source_type="combined",
+        event_type="charger_fault",
+        phase="onset",
+        effective_timestep=1,
+        expected_end_timestep=1,
+    )
+    normalized = normalize_notice_clock_timesteps(
+        interpretation,
+        {
+            "operational_notices": [
+                {"event_id": "WINDOW", "text": "Restriction from 03:45 to 05:15."}
+            ]
+        },
+    )
+    assert (normalized.effective_timestep, normalized.expected_end_timestep) == (8, 11)
+
+
+def test_followup_inherits_normalized_window_but_recovery_does_not():
+    active = {
+        "event_id": "AW-BANK",
+        "effective_timestep": 8,
+        "expected_end_timestep": 10,
+    }
+    persistence = NoticeInterpretation(
+        event_id="AW-BANK",
+        source_type="combined",
+        event_type="charger_fault",
+        phase="persistence",
+        effective_timestep=6,
+        expected_end_timestep=11,
+    )
+    normalized = normalize_notice_clock_timesteps(
+        persistence, {"active_operational_events": [active]}
+    )
+    assert (normalized.effective_timestep, normalized.expected_end_timestep) == (8, 10)
+
+    recovery = persistence.model_copy(
+        update={"phase": "recovery", "effective_timestep": 11, "expected_end_timestep": 11}
+    )
+    assert normalize_notice_clock_timesteps(
+        recovery, {"active_operational_events": [active]}
+    ) == recovery
 
 
 def test_revision_dataset_has_aligned_lifecycle_and_wording_variants():

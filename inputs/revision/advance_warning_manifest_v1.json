@@ -1,9 +1,9 @@
 {
-  "version": "advance_warning_benchmark_v1",
+  "version": "advance_warning_benchmark_v2",
   "notice_file": "inputs/revision/advance_warning_notices_v1.json",
   "physical_event_file": "inputs/revision/advance_warning_physical_events_v1.json",
-  "notice_sha256": "931a1311149260167962644bbf1f4e80c93782b1cb032e85a5afcd6b6f4b047b",
-  "physical_event_sha256": "860baa275ce6aba79dca69c7be838acbf22286672f10a7b5f944748a225c206e",
+  "notice_sha256": "9e4e4860166f66dd99df0ee5e077df5661969e1c6b9a1522ae2a71a8dbec89d9",
+  "physical_event_sha256": "1f5ff94f13bd5728b7d0eff4c9fb49015a8b5a4d8675a475ef72860dbe959f2c",
   "cases": [
     {
       "scenario_id": "aw_route6_late_return",
@@ -33,6 +33,44 @@
     "numerical",
     "oracle"
   ],
+  "deterministic_clock_mapping": {
+    "timestep_1": "00:00-00:30",
+    "window_convention": "closed-open [start,end)",
+    "example": "03:30-05:00 maps to timesteps 8-10 inclusive"
+  },
+  "calibration": {
+    "selection_rule": "Choose the strongest tested disturbance for which the oracle is safety-feasible while a delayed numerical trigger is unsafe.",
+    "route_delay_minutes_tested": [
+      60,
+      90,
+      120,
+      150
+    ],
+    "route_delay_minutes_selected": 90,
+    "charger_sets_tested": [
+      [
+        7,
+        8
+      ],
+      [
+        6,
+        7,
+        8
+      ],
+      [
+        5,
+        6,
+        7,
+        8
+      ]
+    ],
+    "unavailable_chargers_selected": [
+      6,
+      7,
+      8
+    ],
+    "solver": "gurobi"
+  },
   "information_protocol": {
     "agent_and_rule_text": "identical public chat text",
     "numerical": "no chat; causal telemetry only from sensor_detection_timestep",

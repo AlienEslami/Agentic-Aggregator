@@ -1,0 +1,117 @@
+{
+  "protocol_version": "advance_warning_v2_deterministic_v1",
+  "run_date_utc": "2026-08-14",
+  "git_commit_at_execution": "e11b097c223a39ff16ab155770b2385f0bdbb164",
+  "design": {
+    "cases": [
+      "aw_route6_late_return",
+      "aw_charger_bank_shutdown",
+      "aw_combined_evening"
+    ],
+    "modes": ["selfish", "altruistic"],
+    "configurations": [
+      "oracle_event_trigger",
+      "numerical_event_trigger",
+      "rule_text_event_trigger"
+    ],
+    "runs": 18,
+    "timesteps_per_run": 48,
+    "agent_runs_included": false
+  },
+  "frozen_protocol": {
+    "clock_mapping": "timestep 1 is 00:00-00:30; clock windows are [start,end)",
+    "economic_tie_tolerance": 0.001,
+    "route_delay_range_minutes": [60, 90],
+    "route_conservative_delay_minutes": 90,
+    "unavailable_chargers": [6, 7, 8],
+    "charger_outage_window": "03:30-05:00"
+  },
+  "calibration": {
+    "agent_outputs_used": false,
+    "selection_rule": "strongest tested disturbance with a safety-feasible oracle and unsafe delayed numerical trigger",
+    "route_delays_tested_minutes": [60, 90, 120, 150],
+    "charger_sets_tested": [[7, 8], [6, 7, 8], [5, 6, 7, 8]]
+  },
+  "solver_audit": {
+    "solver": "gurobi",
+    "gurobi_version": "13.0.2",
+    "complete_runs": 18,
+    "runs_recording_only_gurobi": 18,
+    "runs_with_solver_fallback": 0
+  },
+  "safety_by_method": {
+    "oracle_event_trigger": {"safe": 6, "runs": 6},
+    "rule_text_event_trigger": {"safe": 4, "runs": 6},
+    "numerical_event_trigger": {"safe": 3, "runs": 6}
+  },
+  "cells": [
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "oracle_safe": true,
+      "rule_text_safe": true,
+      "numerical_safe": false,
+      "numerical_maximum_reserve_shortfall_kwh": 1.764
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "altruistic",
+      "oracle_safe": true,
+      "rule_text_safe": true,
+      "numerical_safe": true,
+      "oracle_realized_pto_cost": 118.251782,
+      "numerical_realized_pto_cost": 110.477798
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "selfish",
+      "oracle_safe": true,
+      "rule_text_safe": false,
+      "numerical_safe": false,
+      "rule_text_maximum_reserve_shortfall_kwh": 226.206,
+      "numerical_maximum_reserve_shortfall_kwh": 63.12
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "altruistic",
+      "oracle_safe": true,
+      "rule_text_safe": false,
+      "numerical_safe": false,
+      "rule_text_maximum_reserve_shortfall_kwh": 231.3662,
+      "numerical_maximum_reserve_shortfall_kwh": 216.38
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "selfish",
+      "oracle_safe": true,
+      "rule_text_safe": true,
+      "numerical_safe": true,
+      "oracle_realized_aggregator_revenue": 25.520859,
+      "numerical_realized_aggregator_revenue": 25.520859
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "altruistic",
+      "oracle_safe": true,
+      "rule_text_safe": true,
+      "numerical_safe": true,
+      "oracle_realized_pto_cost": 133.2523,
+      "numerical_realized_pto_cost": 144.976459,
+      "structured_advance_information_pto_cost_reduction": 11.724159
+    }
+  ],
+  "interpretation": [
+    "The calibrated cases establish feasibility and decision sensitivity but do not establish Agent performance.",
+    "Advance information has a safety advantage in the selfish route and both charger cells.",
+    "Advance information has an economic advantage in the altruistic combined cell and an economic tie in the selfish combined cell.",
+    "The frozen rule does not map the coreferential phrase 'same south auxiliary-row isolation' to an unavailable-charger update."
+  ],
+  "artifact_hashes": {
+    "notice_sha256": "9e4e4860166f66dd99df0ee5e077df5661969e1c6b9a1522ae2a71a8dbec89d9",
+    "physical_event_sha256": "1f5ff94f13bd5728b7d0eff4c9fb49015a8b5a4d8675a475ef72860dbe959f2c",
+    "benchmark_manifest_sha256": "fda98128cc8c7ebf23e27dff599f083a4d8c5cbaaed8a8131cf49504214fd7bc",
+    "matrix_runs_csv_sha256": "408fc378c3b8f77ba3f91ad496f06aa6ff93feb67bc519fa6b481d16ecdf6ab1",
+    "matrix_manifest_sha256": "8d69871db53dffe6f0b2defa09e38d24a56ab6139f710a417665d54cd14fc1f3",
+    "analysis_summary_sha256": "26a9ebe6b9f6af07bdb47ec03c8e08c5d3edd39d1c3d6cfb58ac5fc4701ec617"
+  }
+}

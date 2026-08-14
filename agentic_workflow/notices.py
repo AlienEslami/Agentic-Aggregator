@@ -178,7 +178,12 @@ def _ints(match: re.Match[str] | None) -> list[int]:
 
 
 def _timestep_window(text: str) -> tuple[int, int] | None:
-    """Parse a half-hour operational window into inclusive day timesteps."""
+    """Parse ``[start, end)`` clock time into inclusive half-hour timesteps.
+
+    Timestep 1 covers 00:00-00:30, so a 03:30-05:00 operational window
+    affects timesteps 8, 9, and 10.  Treating the stated end as an exclusive
+    boundary removes an otherwise unnecessary LLM interpretation choice.
+    """
 
     match = _TIME_WINDOW_RE.search(text)
     if not match:
@@ -189,8 +194,52 @@ def _timestep_window(text: str) -> tuple[int, int] | None:
     if end_minutes <= start_minutes:
         return None
     start = max(1, min(48, start_minutes // 30 + 1))
-    end = max(start, min(48, end_minutes // 30))
+    end = max(start, min(48, (end_minutes + 29) // 30))
     return start, end
+
+
+def normalize_notice_clock_timesteps(
+    interpretation: NoticeInterpretation,
+    context: dict[str, Any],
+) -> NoticeInterpretation:
+    """Deterministically normalize public clock windows in an LLM interpretation.
+
+    Only public operational text or the already-observed interpretation of the
+    same event is used.  Canonical/hidden benchmark truth is never consulted.
+    Recovery and stable messages retain their own effective timestep rather than
+    inheriting the window of the event that just ended.
+    """
+
+    if interpretation.phase in {"recovery", "stable"}:
+        return interpretation
+
+    window: tuple[int, int] | None = None
+    for notice in reversed(list(context.get("operational_notices") or [])):
+        if str(notice.get("event_id") or "") != interpretation.event_id:
+            continue
+        window = _timestep_window(str(notice.get("text") or ""))
+        if window is not None:
+            break
+
+    if window is None:
+        for active in reversed(list(context.get("active_operational_events") or [])):
+            if str(active.get("event_id") or "") != interpretation.event_id:
+                continue
+            effective = active.get("effective_timestep")
+            expected_end = active.get("expected_end_timestep")
+            if effective is not None and expected_end is not None:
+                window = (int(effective), int(expected_end))
+                break
+
+    if window is None:
+        return interpretation
+    effective, expected_end = window
+    return interpretation.model_copy(
+        update={
+            "effective_timestep": effective,
+            "expected_end_timestep": expected_end,
+        }
+    )
 
 
 def _phase(text: str) -> str:

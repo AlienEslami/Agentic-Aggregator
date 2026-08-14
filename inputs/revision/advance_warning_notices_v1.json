@@ -6,7 +6,7 @@
     "source_type": "driver_chat",
     "wording_variant": "uncertain_chat",
     "report_timestep": 5,
-    "text": "Conditional warning \u2014 Driver 6: the evening roadworks note looks worse than the board. Bus 6 return may be 120-150 minutes late; dispatch has not confirmed the 21:30-to-end-of-day control window. Request confirmation; do not replan yet.",
+    "text": "Conditional warning \u2014 Driver 6: the evening roadworks note looks worse than the board. Bus 6 return may be 60-90 minutes late; dispatch has not confirmed the 21:30-to-end-of-day control window. Request confirmation; do not replan yet.",
     "benchmark_split": "closed_loop_advance_warning",
     "uncertainty_case": "range_fragmentation_and_coreference",
     "canonical": {
@@ -29,8 +29,8 @@
           {
             "parameter": "return_delay_minutes",
             "asset_id": 6,
-            "lower_bound": 120,
-            "upper_bound": 150,
+            "lower_bound": 60,
+            "upper_bound": 90,
             "selected_value": null,
             "unit": "minutes",
             "selection_policy": "no_update_pending_confirmation"
@@ -48,7 +48,7 @@
         "unavailable_chargers": []
       },
       "evidence": [
-        "advance_warning_benchmark_v1"
+        "advance_warning_benchmark_v2"
       ]
     }
   },
@@ -59,7 +59,7 @@
     "source_type": "driver_chat",
     "wording_variant": "uncertain_chat",
     "report_timestep": 6,
-    "text": "Dispatcher: confirmed for Bus 6. Its return is expected 120 to 150 minutes late, with the operational control window 21:30 to 24:00. Use the conservative upper bound and optimize now; departure remains at its scheduled time.",
+    "text": "Dispatcher: confirmed for Bus 6. Its return is expected 60 to 90 minutes late, with the operational control window 21:30 to 24:00. Use the conservative upper bound and optimize now; departure remains at its scheduled time.",
     "benchmark_split": "closed_loop_advance_warning",
     "uncertainty_case": "range_fragmentation_and_coreference",
     "canonical": {
@@ -82,9 +82,9 @@
           {
             "parameter": "return_delay_minutes",
             "asset_id": 6,
-            "lower_bound": 120,
-            "upper_bound": 150,
-            "selected_value": 150,
+            "lower_bound": 60,
+            "upper_bound": 90,
+            "selected_value": 90,
             "unit": "minutes",
             "selection_policy": "conservative_upper"
           }
@@ -96,14 +96,14 @@
       "updates": {
         "delay_minutes_by_bus": {},
         "return_delay_minutes_by_bus": {
-          "6": 150
+          "6": 90
         },
         "energy_multiplier_by_bus": {},
         "charger_power_kw": {},
         "unavailable_chargers": []
       },
       "evidence": [
-        "advance_warning_benchmark_v1"
+        "advance_warning_benchmark_v2"
       ]
     }
   },
@@ -137,9 +137,9 @@
           {
             "parameter": "return_delay_minutes",
             "asset_id": 6,
-            "lower_bound": 120,
-            "upper_bound": 150,
-            "selected_value": 150,
+            "lower_bound": 60,
+            "upper_bound": 90,
+            "selected_value": 90,
             "unit": "minutes",
             "selection_policy": "conservative_upper"
           }
@@ -151,14 +151,14 @@
       "updates": {
         "delay_minutes_by_bus": {},
         "return_delay_minutes_by_bus": {
-          "6": 150
+          "6": 90
         },
         "energy_multiplier_by_bus": {},
         "charger_power_kw": {},
         "unavailable_chargers": []
       },
       "evidence": [
-        "advance_warning_benchmark_v1"
+        "advance_warning_benchmark_v2"
       ]
     }
   },
@@ -169,7 +169,7 @@
     "source_type": "combined",
     "wording_variant": "uncertain_chat",
     "report_timestep": 4,
-    "text": "Conditional warning \u2014 Maintenance chat \u2014 Lee: south bank may need isolating for the 03:30-05:00 busbar job. Ops: which assets? Lee: the map labels that row EVSE 5, EVSE 6, EVSE 7 and EVSE 8, not the north bank. Lockout is pending; request confirmation and do not replan yet.",
+    "text": "Conditional warning \u2014 Maintenance chat \u2014 Lee: the south auxiliary row may need isolating for the 03:30-05:00 busbar job. Ops: which assets? Lee: the map labels that row EVSE 6, EVSE 7 and EVSE 8, not the north bank. Lockout is pending; request confirmation and do not replan yet.",
     "benchmark_split": "closed_loop_advance_warning",
     "uncertainty_case": "range_fragmentation_and_coreference",
     "canonical": {
@@ -179,7 +179,6 @@
       "phase": "warning",
       "affected_buses": [],
       "affected_chargers": [
-        5,
         6,
         7,
         8
@@ -204,7 +203,7 @@
         "unavailable_chargers": []
       },
       "evidence": [
-        "advance_warning_benchmark_v1"
+        "advance_warning_benchmark_v2"
       ]
     }
   },
@@ -215,7 +214,7 @@
     "source_type": "combined",
     "wording_variant": "uncertain_chat",
     "report_timestep": 5,
-    "text": "Supervisor: confirmed\u2014go ahead with that same south-row isolation for the stated 03:30 to 05:00 window. Optimize now so charging can be moved ahead of it.",
+    "text": "Supervisor: confirmed\u2014go ahead with that same south auxiliary-row isolation for the stated 03:30 to 05:00 window. Optimize now so charging can be moved ahead of it.",
     "benchmark_split": "closed_loop_advance_warning",
     "uncertainty_case": "range_fragmentation_and_coreference",
     "canonical": {
@@ -225,7 +224,6 @@
       "phase": "onset",
       "affected_buses": [],
       "affected_chargers": [
-        5,
         6,
         7,
         8
@@ -248,14 +246,13 @@
         "energy_multiplier_by_bus": {},
         "charger_power_kw": {},
         "unavailable_chargers": [
-          5,
           6,
           7,
           8
         ]
       },
       "evidence": [
-        "advance_warning_benchmark_v1"
+        "advance_warning_benchmark_v2"
       ]
     }
   },
@@ -276,7 +273,6 @@
       "phase": "persistence",
       "affected_buses": [],
       "affected_chargers": [
-        5,
         6,
         7,
         8
@@ -299,14 +295,13 @@
         "energy_multiplier_by_bus": {},
         "charger_power_kw": {},
         "unavailable_chargers": [
-          5,
           6,
           7,
           8
         ]
       },
       "evidence": [
-        "advance_warning_benchmark_v1"
+        "advance_warning_benchmark_v2"
       ]
     }
   },
@@ -317,7 +312,7 @@
     "source_type": "ocpp",
     "wording_variant": "uncertain_chat",
     "report_timestep": 11,
-    "text": "Recovery confirmed: the south-bank lockout is cleared and EVSE 5, EVSE 6, EVSE 7 and EVSE 8 are restored to normal service.",
+    "text": "Recovery confirmed: the south auxiliary-row lockout is cleared and EVSE 6, EVSE 7 and EVSE 8 are restored to normal service.",
     "benchmark_split": "closed_loop_advance_warning",
     "uncertainty_case": "range_fragmentation_and_coreference",
     "canonical": {
@@ -327,7 +322,6 @@
       "phase": "recovery",
       "affected_buses": [],
       "affected_chargers": [
-        5,
         6,
         7,
         8
@@ -352,7 +346,7 @@
         "unavailable_chargers": []
       },
       "evidence": [
-        "advance_warning_benchmark_v1"
+        "advance_warning_benchmark_v2"
       ]
     }
   },
@@ -412,7 +406,7 @@
         "unavailable_chargers": []
       },
       "evidence": [
-        "advance_warning_benchmark_v1"
+        "advance_warning_benchmark_v2"
       ]
     }
   },
@@ -481,7 +475,7 @@
         ]
       },
       "evidence": [
-        "advance_warning_benchmark_v1"
+        "advance_warning_benchmark_v2"
       ]
     }
   },
@@ -544,7 +538,7 @@
         ]
       },
       "evidence": [
-        "advance_warning_benchmark_v1"
+        "advance_warning_benchmark_v2"
       ]
     }
   },
@@ -607,7 +601,7 @@
         ]
       },
       "evidence": [
-        "advance_warning_benchmark_v1"
+        "advance_warning_benchmark_v2"
       ]
     }
   },
@@ -654,7 +648,7 @@
         "unavailable_chargers": []
       },
       "evidence": [
-        "advance_warning_benchmark_v1"
+        "advance_warning_benchmark_v2"
       ]
     }
   }

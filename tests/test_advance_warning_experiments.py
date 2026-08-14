@@ -186,3 +186,23 @@ def test_role_ablation_uses_independent_sample_difference():
     assert result["candidate_runs"] == 2
     assert result["baseline_runs"] == 3
     assert result["mode_aligned_economic_gain_mean"] == 11
+
+
+def test_paired_analysis_treats_sub_milliscale_solver_noise_as_a_tie():
+    raw = pd.DataFrame(
+        [
+            _run("rule_text_event_trigger", 1, revenue=10.0, pto_cost=20),
+            _run("numerical_event_trigger", 1, revenue=10.0, pto_cost=20),
+            _run("oracle_event_trigger", 1, revenue=10.0, pto_cost=20),
+            _run("agent_trigger_only", 1, revenue=10.0000018, pto_cost=20),
+        ]
+    )
+    summary = summarize_pairs(
+        build_primary_pairs(annotate_runs(raw)),
+        bootstrap_iterations=100,
+        economic_tie_tolerance=1e-3,
+    )
+    comparison = summary[summary["contrast"].eq("agent_vs_rule_text")].iloc[0]
+    assert comparison["economic_wins"] == 0
+    assert comparison["economic_ties"] == 1
+    assert comparison["economic_losses"] == 0

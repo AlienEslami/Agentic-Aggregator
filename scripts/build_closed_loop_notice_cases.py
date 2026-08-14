@@ -105,7 +105,7 @@ def _canonical(
             "unavailable_chargers": [],
             **updates,
         },
-        "evidence": ["advance_warning_benchmark_v1"],
+        "evidence": ["advance_warning_benchmark_v2"],
     }
 
 
@@ -137,10 +137,10 @@ def build() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     notices: list[dict[str, Any]] = []
 
     route_estimate_pending = [
-        _estimate("return_delay_minutes", 6, 120, 150, None, "minutes")
+        _estimate("return_delay_minutes", 6, 60, 90, None, "minutes")
     ]
     route_estimate = [
-        _estimate("return_delay_minutes", 6, 120, 150, 150, "minutes")
+        _estimate("return_delay_minutes", 6, 60, 90, 90, "minutes")
     ]
     notices.extend(
         [
@@ -152,7 +152,7 @@ def build() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
                 source_type="driver_chat",
                 text=(
                     "Conditional warning — Driver 6: the evening roadworks note looks worse than the board. "
-                    "Bus 6 return may be 120-150 minutes late; dispatch has not confirmed "
+                    "Bus 6 return may be 60-90 minutes late; dispatch has not confirmed "
                     "the 21:30-to-end-of-day control window. Request confirmation; do not replan yet."
                 ),
                 canonical=_canonical(
@@ -178,7 +178,7 @@ def build() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
                 report=6,
                 source_type="driver_chat",
                 text=(
-                    "Dispatcher: confirmed for Bus 6. Its return is expected 120 to 150 minutes "
+                    "Dispatcher: confirmed for Bus 6. Its return is expected 60 to 90 minutes "
                     "late, with the operational control window 21:30 to 24:00. Use the conservative upper bound "
                     "and optimize now; departure remains at its scheduled time."
                 ),
@@ -192,7 +192,7 @@ def build() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
                     effective=44,
                     end=48,
                     recommendation="optimize",
-                    updates={"return_delay_minutes_by_bus": {6: 150}},
+                    updates={"return_delay_minutes_by_bus": {6: 90}},
                     estimates=route_estimate,
                     confidence=0.92,
                     provisional=False,
@@ -215,7 +215,7 @@ def build() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
                     effective=44,
                     end=48,
                     recommendation="wait",
-                    updates={"return_delay_minutes_by_bus": {6: 150}},
+                    updates={"return_delay_minutes_by_bus": {6: 90}},
                     estimates=route_estimate,
                     confidence=0.92,
                 ),
@@ -223,7 +223,7 @@ def build() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
         ]
     )
 
-    charger_ids = [5, 6, 7, 8]
+    charger_ids = [6, 7, 8]
     notices.extend(
         [
             _notice(
@@ -233,8 +233,8 @@ def build() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
                 report=4,
                 source_type="combined",
                 text=(
-                    "Conditional warning — Maintenance chat — Lee: south bank may need isolating for the 03:30-05:00 "
-                    "busbar job. Ops: which assets? Lee: the map labels that row EVSE 5, EVSE 6, EVSE 7 and EVSE 8, "
+                    "Conditional warning — Maintenance chat — Lee: the south auxiliary row may need isolating for the 03:30-05:00 "
+                    "busbar job. Ops: which assets? Lee: the map labels that row EVSE 6, EVSE 7 and EVSE 8, "
                     "not the north bank. Lockout is pending; request confirmation and do not replan yet."
                 ),
                 canonical=_canonical(
@@ -259,7 +259,7 @@ def build() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
                 report=5,
                 source_type="combined",
                 text=(
-                    "Supervisor: confirmed—go ahead with that same south-row isolation for the "
+                    "Supervisor: confirmed—go ahead with that same south auxiliary-row isolation for the "
                     "stated 03:30 to 05:00 window. Optimize now so charging can be moved ahead of it."
                 ),
                 canonical=_canonical(
@@ -303,7 +303,7 @@ def build() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
                 event_id="AW-BANK",
                 report=11,
                 source_type="ocpp",
-                text="Recovery confirmed: the south-bank lockout is cleared and EVSE 5, EVSE 6, EVSE 7 and EVSE 8 are restored to normal service.",
+                text="Recovery confirmed: the south auxiliary-row lockout is cleared and EVSE 6, EVSE 7 and EVSE 8 are restored to normal service.",
                 canonical=_canonical(
                     event_id="AW-BANK",
                     source_type="ocpp",
@@ -474,7 +474,7 @@ def build() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
             "effective_timestep": 44,
             "end_timestep": 48,
             "sensor_detection_timestep": 44,
-            "updates": {"return_delay_minutes_by_bus": {6: 150}},
+            "updates": {"return_delay_minutes_by_bus": {6: 90}},
         },
         {
             "scenario_id": "aw_charger_bank_shutdown",
@@ -510,7 +510,7 @@ def main() -> None:
         json.dumps({"events": physical}, indent=2) + "\n", encoding="utf-8"
     )
     manifest = {
-        "version": "advance_warning_benchmark_v1",
+        "version": "advance_warning_benchmark_v2",
         "notice_file": str(OUTPUT.relative_to(ROOT)).replace("\\", "/"),
         "physical_event_file": str(PHYSICAL_OUTPUT.relative_to(ROOT)).replace("\\", "/"),
         "notice_sha256": sha256(OUTPUT),
@@ -539,6 +539,22 @@ def main() -> None:
             },
         ],
         "comparison": ["agent", "rule_text", "numerical", "oracle"],
+        "deterministic_clock_mapping": {
+            "timestep_1": "00:00-00:30",
+            "window_convention": "closed-open [start,end)",
+            "example": "03:30-05:00 maps to timesteps 8-10 inclusive",
+        },
+        "calibration": {
+            "selection_rule": (
+                "Choose the strongest tested disturbance for which the oracle is "
+                "safety-feasible while a delayed numerical trigger is unsafe."
+            ),
+            "route_delay_minutes_tested": [60, 90, 120, 150],
+            "route_delay_minutes_selected": 90,
+            "charger_sets_tested": [[7, 8], [6, 7, 8], [5, 6, 7, 8]],
+            "unavailable_chargers_selected": [6, 7, 8],
+            "solver": "gurobi",
+        },
         "information_protocol": {
             "agent_and_rule_text": "identical public chat text",
             "numerical": "no chat; causal telemetry only from sensor_detection_timestep",
