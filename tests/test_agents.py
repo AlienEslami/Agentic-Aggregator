@@ -431,10 +431,13 @@ def test_selfish_pricing_prompt_models_margin_volume_tradeoff():
         / "prompts"
         / "pricing_selfish_system.txt"
     ).read_text(encoding="utf-8")
+    normalized_prompt = " ".join(prompt.split())
     assert "charges buses regardless of buy level" not in prompt
     assert "Extreme buy multipliers can suppress" in prompt
     assert "margin TIMES endogenous transaction volume" in prompt
     assert "Do not lower sell when there is no" in prompt
+    assert "whole contiguous expensive price-zone block" in normalized_prompt
+    assert "0.55–0.62" in prompt
 
 
 def test_evaluator_prompt_requires_dispatch_sensitive_pricing_feedback():
@@ -444,9 +447,12 @@ def test_evaluator_prompt_requires_dispatch_sensitive_pricing_feedback():
         / "prompts"
         / "evaluator_system.txt"
     ).read_text(encoding="utf-8")
+    normalized_prompt = " ".join(prompt.split())
     assert "proposed_w_buy_kwh and" in prompt
     assert "do NOT lower sell" in prompt
     assert "Do not raise buy merely because revenue is low" in prompt
+    assert "whole contiguous expensive price-zone block" in normalized_prompt
+    assert "0.55–0.62" in prompt
 
 
 def test_trigger_comparison_channels_are_isolated() -> None:

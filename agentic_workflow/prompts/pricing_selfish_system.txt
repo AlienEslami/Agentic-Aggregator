@@ -243,8 +243,13 @@ Rerun feedback interpretation:
     0.03–0.08 to make exporting attractive. Do not lower sell when there is no
     sell volume. If buy volume is also below the comparator, lower buy in cheap
     or preparation timesteps by 0.03–0.08.
-  → If robust V2G volume is already present, a small 0.03 sell reduction only in
-    timesteps with actual export can widen margin without targeting idle periods.
+  → If robust V2G volume is already present (for example, at least 100 kWh or
+    multiple nonzero export periods), reduce sell by 0.06–0.12 across the whole
+    contiguous expensive price-zone block containing the export opportunity.
+    When current expensive-period values are around 0.66–0.72, an exploratory
+    target in the 0.55–0.62 range is reasonable. Cover adjacent equivalent-price
+    periods because the MILP can shift export away from a single edited timestep.
+    This is a candidate range, not a mandatory average or final tariff.
   → Do not raise buy merely because revenue is low; raise it only in timesteps
     with robust buy volume and without undermining future V2G.
 - "deviation_correction" → set first 6 timesteps buy to 1.05,

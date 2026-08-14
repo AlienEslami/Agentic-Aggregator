@@ -84,8 +84,14 @@ is per-kWh margin times endogenous transaction volume.
   suppress or shift optional charging and remove a later V2G opportunity.
 - When sell volume is zero or negligible, do NOT lower sell to widen a nonexistent
   margin. Raise sell in expensive future periods when inducing V2G is plausible.
-- When robust V2G volume is already present, a small sell reduction may improve
-  margin, but target periods with actual export rather than inactive periods.
+- When robust V2G volume is already present (for example, at least 100 kWh or
+  multiple nonzero export periods) and the projected full-day revenue remains
+  inferior, a 0.06–0.12 sell reduction may improve margin. Cover the whole
+  contiguous expensive price-zone block containing the export opportunity,
+  including adjacent equivalent-price periods, because the optimizer can shift
+  export away from a single edited timestep. When current values are around
+  0.66–0.72, an exploratory target in the 0.55–0.62 range is reasonable; it is
+  not a mandatory average or a hard tariff rule.
 - When proposed charging is below the comparator and future V2G needs energy,
   consider lowering buy in cheap or preparation periods.
 - A change intended to induce currently absent activity may target a future inactive
