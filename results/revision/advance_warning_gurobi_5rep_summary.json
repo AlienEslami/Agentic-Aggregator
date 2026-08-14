@@ -1,0 +1,106 @@
+{
+  "protocol_version": "advance_warning_gurobi_5rep_v1",
+  "run_date_local": "2026-08-13--14",
+  "git_commit_at_execution": "34ef2dffd5127cbcbf2b802692a74f00cd452e3d",
+  "design": {
+    "cases": [
+      "aw_route6_late_return",
+      "aw_charger_bank_shutdown",
+      "aw_combined_evening"
+    ],
+    "modes": ["selfish", "altruistic"],
+    "notice_variant": "uncertain_chat",
+    "agent_repetitions_per_case_mode": 5,
+    "deterministic_repetitions_per_case_mode": 1,
+    "agent_episodes": 30,
+    "total_indexed_runs": 48
+  },
+  "solver_audit": {
+    "required_solver": "gurobi",
+    "gurobi_version": "13.0.2",
+    "license_source": "default current-user license",
+    "complete_runs": 48,
+    "runs_recording_only_gurobi": 48,
+    "runs_with_solver_fallback": 0
+  },
+  "agent_safety_by_cell": [
+    {"case": "aw_route6_late_return", "mode": "selfish", "safe": 0, "runs": 5},
+    {"case": "aw_route6_late_return", "mode": "altruistic", "safe": 5, "runs": 5},
+    {"case": "aw_charger_bank_shutdown", "mode": "selfish", "safe": 5, "runs": 5},
+    {"case": "aw_charger_bank_shutdown", "mode": "altruistic", "safe": 2, "runs": 5},
+    {"case": "aw_combined_evening", "mode": "selfish", "safe": 5, "runs": 5},
+    {"case": "aw_combined_evening", "mode": "altruistic", "safe": 5, "runs": 5}
+  ],
+  "agent_safety_total": {
+    "safe": 22,
+    "runs": 30,
+    "rate": 0.7333333333
+  },
+  "aggregate_pair_outcomes": {
+    "agent_vs_numerical": {
+      "pairs": 30,
+      "agent_only_safe": 12,
+      "numerical_only_safe": 0,
+      "both_safe": 10,
+      "neither_safe": 8,
+      "economic_wins": 3,
+      "economic_ties": 7,
+      "economic_losses": 0
+    },
+    "agent_vs_rule_text": {
+      "pairs": 30,
+      "agent_only_safe": 7,
+      "rule_only_safe": 0,
+      "both_safe": 15,
+      "neither_safe": 8,
+      "economic_wins": 0,
+      "economic_ties": 10,
+      "economic_losses": 5
+    },
+    "agent_vs_oracle": {
+      "pairs": 30,
+      "agent_only_safe": 2,
+      "oracle_only_safe": 0,
+      "both_safe": 20,
+      "neither_safe": 8
+    }
+  },
+  "principal_economic_result": {
+    "contrast": "agent_vs_numerical",
+    "case": "aw_combined_evening",
+    "mode": "altruistic",
+    "jointly_safe_pairs": 5,
+    "pto_cost_reduction_mean": 7.0344918147,
+    "bootstrap_ci95": [2.3448306049, 11.7241530245],
+    "wins": 3,
+    "ties": 2,
+    "losses": 0
+  },
+  "model_usage": {
+    "model": "gpt-5.6-luna",
+    "structured_requests": 150,
+    "successful_requests": 150,
+    "failed_attempts": 0,
+    "total_tokens": 3097406,
+    "approximate_cost_usd": 0.66222039,
+    "provider_latency_seconds": 674.498015,
+    "summed_episode_wall_seconds": 967.137951,
+    "summed_episode_process_cpu_seconds": 1430.75
+  },
+  "interpretation_caveats": [
+    "The selfish route-delay case was unsafe for Agent, oracle, rule-text, and numerical methods; this is not an Agent-specific Trigger failure.",
+    "The two safe altruistic charger-bank Agent runs shifted the interpreted notice boundary relative to canonical truth. They are interpretation variability, not correct Agent wins over the oracle.",
+    "The five-run evidence supports advance text over delayed numerical sensing in selected cases, but does not establish general LLM superiority over the frozen stateful rule-text method."
+  ],
+  "local_artifact_hashes": {
+    "matrix_runs_csv_sha256": "101f10659692f06424a404821ab113ffaa415ed6adbb0342bd686cf3d4ce3f89",
+    "analysis_summary_json_sha256": "0b62a852ea337a872e689743f174c5a27f659f2be8aae8ed8cc0e7b75d8d2a24"
+  },
+  "privacy": {
+    "external_payload": "synthetic public notice/chat text plus operational numerical context",
+    "canonical_hidden_truth_sent": false,
+    "api_key_recorded": false,
+    "raw_workbooks_versioned": false,
+    "api_transcripts_versioned": false
+  }
+}

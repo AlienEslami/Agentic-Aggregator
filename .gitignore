@@ -69,6 +69,7 @@ results/revision/*
 !results/revision/trigger_agent_v3_test_summary.json
 !results/revision/stateful_rule_v3_test_summary.json
 !results/revision/trigger_agent_vs_rule_v3_test.summary.json
+!results/revision/advance_warning_gurobi_5rep_summary.json
 
 # Legacy generated-data folder from earlier versions of the repository
 Files/

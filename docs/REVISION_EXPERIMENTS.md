@@ -217,7 +217,7 @@ deterministic comparators without contacting an external model provider:
 python scripts/run_advance_warning_matrix.py
 ```
 
-The primary stochastic design uses ten independent `agent_trigger_only`
+The primary stochastic design uses five independent `agent_trigger_only`
 repetitions per case-mode cell. The Agent receives only synthetic public
 notice/chat text, operational numerical context, and observational event memory;
 it never receives canonical hidden truth. A deterministic evidence gate invokes
@@ -228,7 +228,7 @@ External calls require both an API key and an explicit transfer-authorization fl
 ```powershell
 python scripts/run_advance_warning_matrix.py `
   --include-agent `
-  --agent-repetitions 10 `
+  --agent-repetitions 5 `
   --allow-external-llm
 ```
 
@@ -240,7 +240,7 @@ Trigger substitution, mathematical-pricing substitution, and evaluator removal:
 python scripts/run_advance_warning_matrix.py `
   --include-agent `
   --include-role-ablations `
-  --agent-repetitions 10 `
+  --agent-repetitions 5 `
   --ablation-repetitions 5 `
   --allow-external-llm
 ```
@@ -355,3 +355,44 @@ and synthetic text. No canonical interpretation or hidden physical-event state
 was sent. HiGHS (`appsi_highs`) solved every pilot optimization. The installed
 Gurobi licence could not be used because it is bound to HostID `846d74f2` while
 the current host reports `f47957cb`; this fallback is recorded in the run index.
+
+### Five-repetition Gurobi matrix
+
+On 2026-08-13--14, the primary matrix was rerun in the normal Windows user context
+with the current default academic licence at `C:\Users\alien\gurobi.lic` and
+`gurobi` enforced as the only solver. The older Downloads licence used by the
+pilot is bound to a different HostID. All 48 indexed method runs completed, all
+optimization attempts recorded Gurobi, and no solver fallback was used. The
+matrix includes the three single-run deterministic comparators and five
+independent Agent Trigger repetitions in each of the six case-mode cells.
+
+The Agent was safety-feasible in 22 of 30 repetitions. This headline rate must
+not be read as a pure Trigger-accuracy score. In the selfish route-delay cell,
+the Agent, oracle, rule-text, and numerical methods were all unsafe; all five
+Agent repetitions exactly matched the oracle actions and parameter updates. In
+the altruistic charger-bank cell, the Agent was safe in two of five repetitions,
+but those two outputs interpreted the notice window one interval more
+conservatively than the canonical record. The canonical oracle, rule-text, and
+numerical schedules were all unsafe in that cell. Accordingly, the conservative
+Agent outcomes are reported as interpretation variability, not as evidence that
+the Agent correctly outperformed the oracle.
+
+Against the numerical trigger, the Agent was the only safe method in 12 of 30
+paired repetitions; both were safe in 10 and neither was safe in eight. In the
+ten jointly safe combined-event comparisons, selfish-mode revenue was tied; in
+altruistic mode the Agent reduced PTO cost by a mean of approximately 7.03, with
+three wins and two ties. Against the rule-text method, the Agent was the only
+safe method in seven paired repetitions, both were safe in 15, and neither was
+safe in eight. Jointly safe rule-text comparisons produced ten economic ties
+and five Agent losses, all in the altruistic combined case. These results support
+separate conclusions: advance text can improve on waiting for sensor detection,
+while the present five-run evidence does not establish general LLM superiority
+over the frozen text rule.
+
+The 30 Agent episodes used 3,097,406 tokens, 150 successful structured model
+requests with zero failed attempts, about USD 0.6622 at the frozen rates, 674.5
+seconds of provider latency, and 967.1 seconds of summed episode wall time. Raw
+workbooks remain ignored under `results/`; the local matrix index and analysis
+summary have SHA-256 digests
+`101f10659692f06424a404821ab113ffaa415ed6adbb0342bd686cf3d4ce3f89` and
+`0b62a852ea337a872e689743f174c5a27f659f2be8aae8ed8cc0e7b75d8d2a24`.

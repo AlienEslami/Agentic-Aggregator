@@ -87,7 +87,7 @@ def build_run_specs(
     modes: Iterable[str] = PRIMARY_MODES,
     variant: str = "uncertain_chat",
     include_agent: bool = False,
-    agent_repetitions: int = 10,
+    agent_repetitions: int = 5,
     include_role_ablations: bool = False,
     ablation_repetitions: int = 5,
     include_fixed: bool = False,
@@ -351,7 +351,7 @@ def main() -> None:
     parser.add_argument("--end", type=int, default=48)
     parser.add_argument("--model", default="gpt-5.6-luna")
     parser.add_argument("--include-agent", action="store_true")
-    parser.add_argument("--agent-repetitions", type=int, default=10)
+    parser.add_argument("--agent-repetitions", type=int, default=5)
     parser.add_argument("--include-role-ablations", action="store_true")
     parser.add_argument("--ablation-repetitions", type=int, default=5)
     parser.add_argument("--include-fixed", action="store_true")
