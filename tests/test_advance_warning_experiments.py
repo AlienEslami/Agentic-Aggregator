@@ -17,6 +17,7 @@ from scripts.run_advance_warning_matrix import (
     should_reuse_workbook,
     validate_ablation_protocol,
     validate_external_llm_gate,
+    validate_execution_budget,
     validate_resume_fingerprints,
     workbook_path,
 )
@@ -82,10 +83,13 @@ def test_stochastic_only_force_never_reuses_agent_but_keeps_fixed(monkeypatch, t
 def test_ablation_protocol_is_frozen_and_matches_runner():
     protocol = validate_ablation_protocol()
     assert ABLATION_PROTOCOL_PATH.exists()
-    assert protocol["status"] == "frozen_before_v2_primary_agent_execution"
+    assert protocol["status"] == "amended_and_frozen_before_confirmatory_role_ablation"
     assert tuple(protocol["design"]["configurations"]) == ROLE_ABLATION_CONFIGURATIONS
     assert protocol["design"]["planned_runs"] == 120
-    assert protocol["reporting"]["do_not_redesign_after_primary_results"] is True
+    assert protocol["controls"]["shared_trigger_evidence_change_gate"] is True
+    assert protocol["controls"]["maximum_pricing_reruns"] == 1
+    assert protocol["controls"]["maximum_optimizer_attempts_per_trigger"] == 2
+    assert protocol["reporting"]["do_not_redesign_after_v3_freeze"] is True
 
 
 def test_resume_rejects_changed_frozen_inputs(monkeypatch, tmp_path):
@@ -128,6 +132,15 @@ def test_external_llm_gate_requires_explicit_authorization_and_key():
         dry_run=False,
         environ={"OPENAI_API_KEY": "test-only-placeholder"},
     )
+
+
+def test_execution_budget_stops_before_next_episode_at_ceiling():
+    rows = [{"llm_approximate_cost_usd": 0.04}, {"llm_approximate_cost_usd": 0.06}]
+    validate_execution_budget(rows, 0.11)
+    with pytest.raises(RuntimeError, match="cost ceiling reached"):
+        validate_execution_budget(rows, 0.10)
+    with pytest.raises(ValueError, match="must be positive"):
+        validate_execution_budget(rows, 0)
 
 
 def test_solver_provenance_records_solver_and_fallback(monkeypatch, tmp_path):
@@ -176,6 +189,9 @@ def _run(
         "terminal_minimum_soc_fraction": 0.21 if shortfall == 0 else 0.18,
         "llm_total_tokens": 100 if configuration == "agent_trigger_only" else 0,
         "llm_approximate_cost_usd": 0.001 if configuration == "agent_trigger_only" else 0,
+        "optimize_decisions": 2,
+        "evaluator_accepted_optimizer_calls": 1,
+        "forced_optimizer_selections": 1,
     }
 
 
@@ -254,6 +270,9 @@ def test_role_ablation_uses_independent_sample_difference():
     assert result["candidate_runs"] == 2
     assert result["baseline_runs"] == 3
     assert result["mode_aligned_economic_gain_mean"] == 11
+    assert result["candidate_evaluator_acceptance_rate"] == 0.5
+    assert result["baseline_evaluator_acceptance_rate"] == 0.5
+    assert result["candidate_forced_selection_rate"] == 0.5
 
 
 def test_paired_analysis_treats_sub_milliscale_solver_noise_as_a_tie():

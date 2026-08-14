@@ -1,0 +1,150 @@
+{
+  "protocol_version": "advance_warning_ablation_v3",
+  "status": "amended_and_frozen_before_confirmatory_role_ablation",
+  "frozen_date_utc": "2026-08-14",
+  "benchmark_version": "advance_warning_benchmark_v2",
+  "parent_protocol": {
+    "file": "inputs/revision/advance_warning_ablation_protocol_v2.json",
+    "sha256": "2ea01a05d3bb84cffb34161457c3c59f00a5dc31e021260f0784a00b0ce96d53"
+  },
+  "amendment_scope": "Execution-validity corrections identified by the isolated role-path pilot before confirmatory execution. Cases, hypotheses, outcomes, and planned sample sizes are unchanged.",
+  "sequence": {
+    "primary_completed": "The five-repetition Agent Trigger comparison was run and audited before role ablations.",
+    "execution_pilot": "The v2 one-repetition role-path pilot was used only to find implementation defects and is excluded from confirmatory evidence.",
+    "confirmatory_next": "After a separate v3 smoke test, execute the frozen role-ablation matrix in a fresh output root without further outcome-driven redesign."
+  },
+  "design": {
+    "candidate_configuration": "full_agentic",
+    "configurations": [
+      "full_agentic",
+      "rule_parser_trigger_substitution",
+      "mathematical_pricing_substitution",
+      "evaluator_removal"
+    ],
+    "cases": [
+      "aw_route6_late_return",
+      "aw_charger_bank_shutdown",
+      "aw_combined_evening"
+    ],
+    "modes": ["selfish", "altruistic"],
+    "notice_variant": "uncertain_chat",
+    "repetitions_per_configuration_case_mode": 5,
+    "case_mode_cells": 6,
+    "planned_runs": 120,
+    "experimental_unit": "one complete 48-timestep closed-loop episode",
+    "analysis": "independent-sample difference in means within each case-mode cell"
+  },
+  "contrasts": [
+    {
+      "name": "llm_trigger_contribution",
+      "candidate": "full_agentic",
+      "baseline": "rule_parser_trigger_substitution",
+      "single_component_changed": "Replace the LLM Trigger interpreter with the frozen rule parser while retaining the same deterministic evidence-change gate.",
+      "hypothesis": "Contextual LLM interpretation improves safety and, when both runs are safe, mode-aligned economics."
+    },
+    {
+      "name": "llm_pricing_contribution",
+      "candidate": "full_agentic",
+      "baseline": "mathematical_pricing_substitution",
+      "single_component_changed": "Replace LLM pricing with the deterministic mathematical pricing policy.",
+      "hypothesis": "LLM pricing improves mode-aligned economics without reducing safety."
+    },
+    {
+      "name": "llm_evaluator_contribution",
+      "candidate": "full_agentic",
+      "baseline": "evaluator_removal",
+      "single_component_changed": "Remove the LLM evaluator while retaining solver and feasibility hard checks.",
+      "hypothesis": "The LLM evaluator improves acceptance quality without reducing safety."
+    }
+  ],
+  "controls": {
+    "common_hidden_physical_truth": true,
+    "causal_ex_post_settlement": true,
+    "same_workbooks_tariffs_solver_and_case_inputs": true,
+    "canonical_hidden_truth_sent_to_llm": false,
+    "model": "gpt-5.6-luna",
+    "reasoning_effort": "low",
+    "shared_trigger_evidence_change_gate": true,
+    "llm_deterministic_numerical_trigger_fallback": false,
+    "maximum_pricing_reruns": 1,
+    "maximum_optimizer_attempts_per_trigger": 2,
+    "evaluator_accepted_candidate_precedes_economic_ranking": true,
+    "rerun_cap_auto_acceptance": false,
+    "forced_cap_selection_logged_separately": true,
+    "pricing_transport_length_normalization_logged": true,
+    "end_of_day_clock_normalization": "timestep_48",
+    "trigger_payload_public_allowlist": true,
+    "trigger_history_intervals": 5,
+    "confirmatory_requires_clean_git": true,
+    "api_cost_ceiling_requires_explicit_approval": true
+  },
+  "amendments": [
+    {
+      "id": "shared-trigger-gate",
+      "pilot_issue": "The rule-trigger substitution polled unchanged numerical deviations while the LLM Trigger was evidence-gated, causing 25 optimizer calls in one pilot cell.",
+      "correction": "Apply the identical deterministic evidence-change gate to both trigger interpreters. The frozen rule parser itself is unchanged."
+    },
+    {
+      "id": "disable-trigger-fallback",
+      "pilot_issue": "Role-ablation LLM Triggers could silently inherit a deterministic numerical fallback not enabled in the primary Agent comparison.",
+      "correction": "Disable deterministic numerical Trigger fallback in every role-ablation LLM Trigger. Structural schema and duplicate-evidence guards remain active."
+    },
+    {
+      "id": "rerun-semantics",
+      "pilot_issue": "A configured value of one rerun produced one total optimizer attempt, so evaluator rejection could not cause revised pricing.",
+      "correction": "Interpret maximum_pricing_reruns as additional attempts after the initial attempt; one rerun permits two total optimizer attempts."
+    },
+    {
+      "id": "accepted-candidate-priority",
+      "pilot_issue": "Economic ranking could retain an evaluator-rejected attempt over a later accepted attempt.",
+      "correction": "Rank feasible evaluator-accepted candidates ahead of rejected candidates, then apply the mode-aligned economic objective within the same acceptance class."
+    },
+    {
+      "id": "prompt-cap-context",
+      "pilot_issue": "The evaluator prompt assumed five reruns while the experiment protocol specified one, and initially treated reaching the cap as sufficient reason to accept.",
+      "correction": "Provide maximum_reruns in runtime context, require a genuine quality assessment at the cap, and log any runner-forced feasible selection separately from evaluator acceptance."
+    },
+    {
+      "id": "role-provenance",
+      "pilot_issue": "Workbook summaries did not directly prove which backend served each agent role.",
+      "correction": "Record role backend, role-specific evidence-gate state, model, and Trigger fallback setting in every run summary and matrix index."
+    },
+    {
+      "id": "public-trigger-payload",
+      "pilot_issue": "The Trigger request included irrelevant internal numerical-scenario metadata even though the benchmark uses a separate hidden physical-event state.",
+      "correction": "Project Trigger input onto an explicit public operational allowlist and include only the five most recent history intervals needed for trend analysis. Canonical truth, physical truth, notice scenario identifiers, wording variants, and internal event-configuration metadata are excluded."
+    },
+    {
+      "id": "non-vacuous-evaluator-deviation-check",
+      "pilot_issue": "A charger event can have no flagged bus IDs, making an all-flagged-buses energy-deviation condition vacuously true despite large fleet deviations.",
+      "correction": "Apply post-optimization energy-deviation acceptance and rejection checks to all buses."
+    },
+    {
+      "id": "confirmatory-execution-guardrails",
+      "pilot_issue": "A long repeated run needs code-state provenance and a bounded approved spend.",
+      "correction": "Require a clean Git worktree for confirmatory execution and stop between episodes when the approved approximate API-cost ceiling is reached. The manifest records both controls."
+    }
+  ],
+  "outcomes": {
+    "safety_first": true,
+    "complete_48_timesteps_required": true,
+    "maximum_reserve_shortfall_kwh": 0.000001,
+    "reserve_violation_timesteps": 0,
+    "minimum_observed_soc_fraction": 0.2,
+    "terminal_minimum_soc_fraction": 0.2,
+    "economic_comparison_only_when_both_groups_have_safe_runs": true,
+    "selfish_score": "realized aggregator revenue; higher is better",
+    "altruistic_score": "negative realized PTO cost; higher is better",
+    "economic_tie_tolerance": 0.001,
+    "bootstrap_iterations": 10000
+  },
+  "reporting": {
+    "report_each_case_mode_contrast": true,
+    "report_safety_rate_before_economics": true,
+    "report_token_usage_and_approximate_api_cost": true,
+    "do_not_pool_case_modes": true,
+    "pilot_outputs_excluded_from_confirmatory_analysis": true,
+    "confirmatory_output_root_must_be_fresh": true,
+    "do_not_redesign_after_v3_freeze": true
+  }
+}

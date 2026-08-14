@@ -30,10 +30,48 @@ from .notices import normalize_notice_clock_timesteps
 
 
 PROMPT_DIR = Path(__file__).with_name("prompts")
+PUBLIC_TRIGGER_CONTEXT_FIELDS = (
+    "timestep",
+    "total_timesteps",
+    "remaining_timesteps",
+    "remaining_hours",
+    "mode",
+    "trigger_flags",
+    "n_periods",
+    "period_size",
+    "realtime_state",
+    "day_ahead_state",
+    "day_ahead_summary",
+    "reoptimization_history",
+    "da_benchmark",
+    "intraday_prices",
+    "deviations",
+    "deviation_summary",
+    "history",
+    "operational_notices",
+    "numerical_event_telemetry",
+    "active_operational_events",
+    "notice_event_memory",
+    "notice_interpretation",
+    "notice_flags",
+)
 
 
 def _prompt(name: str) -> str:
     return (PROMPT_DIR / name).read_text(encoding="utf-8")
+
+
+def build_openai_trigger_payload(context: dict[str, Any]) -> dict[str, Any]:
+    """Project runtime state onto the public operational Trigger interface."""
+
+    payload = {
+        key: context[key]
+        for key in PUBLIC_TRIGGER_CONTEXT_FIELDS
+        if key in context
+    }
+    if "history" in payload:
+        payload["history"] = list(payload["history"][-5:])
+    return payload
 
 
 class AgentBackend(ABC):
@@ -222,7 +260,7 @@ class OpenAIAgentBackend(AgentBackend):
     def trigger(self, context: dict[str, Any]) -> TriggerDecision:
         structured = self._parse(
             _prompt("trigger_system.txt"),
-            context,
+            build_openai_trigger_payload(context),
             StructuredTriggerDecision,
             role="trigger",
         )
@@ -321,6 +359,7 @@ class OpenAIAgentBackend(AgentBackend):
             "timestep": context["timestep"],
             "remaining_timesteps": context["remaining_timesteps"],
             "rerun_count": rerun_count,
+            "maximum_reruns": int(context["maximum_reruns"]),
             "trigger": trigger.model_dump(),
             "pricing": pricing.model_dump(),
             "optimization_result": result,
@@ -916,6 +955,44 @@ class CompositeAgentBackend(AgentBackend):
         )
 
 
+def describe_agent_roles(backend: AgentBackend) -> dict[str, dict[str, Any]]:
+    """Return non-secret, machine-readable provenance for each agent role."""
+
+    if isinstance(backend, CompositeAgentBackend):
+        role_backends = {
+            "trigger": backend.trigger_backend,
+            "pricing": backend.pricing_backend,
+            "evaluator": backend.evaluator_backend,
+        }
+    else:
+        role_backends = {role: backend for role in ("trigger", "pricing", "evaluator")}
+
+    descriptions: dict[str, dict[str, Any]] = {}
+    for role, role_backend in role_backends.items():
+        wrapped_by_evidence_gate = isinstance(
+            role_backend, EvidenceGatedAgentBackend
+        )
+        evidence_gate = role == "trigger" and wrapped_by_evidence_gate
+        resolved = (
+            role_backend.backend if wrapped_by_evidence_gate else role_backend
+        )
+        description: dict[str, Any] = {
+            "backend": type(resolved).__name__,
+            "evidence_gate": evidence_gate,
+        }
+        if isinstance(resolved, OpenAIAgentBackend):
+            description.update(
+                {
+                    "model": resolved.model,
+                    "deterministic_numerical_trigger_fallback": (
+                        resolved.allow_deterministic_trigger_fallback
+                    ),
+                }
+            )
+        descriptions[role] = description
+    return descriptions
+
+
 def normalize_trigger_decision(
     decision: TriggerDecision,
     context: dict[str, Any],
@@ -1090,11 +1167,15 @@ def create_experiment_backend(configuration: str, legacy_backend: str, model: st
             )
         )
         return CompositeAgentBackend(trigger_llm, rule, rule)
-    llm = EvidenceGatedAgentBackend(OpenAIAgentBackend(model=model))
+    llm = EvidenceGatedAgentBackend(
+        OpenAIAgentBackend(
+            model=model, allow_deterministic_trigger_fallback=False
+        )
+    )
     if configuration == "full_agentic":
         return llm
     if configuration == "rule_parser_trigger_substitution":
-        return CompositeAgentBackend(rule, llm, llm)
+        return CompositeAgentBackend(EvidenceGatedAgentBackend(rule), llm, llm)
     if configuration == "mathematical_pricing_substitution":
         return CompositeAgentBackend(llm, rule, llm)
     if configuration == "evaluator_removal":

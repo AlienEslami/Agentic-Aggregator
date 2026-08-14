@@ -74,7 +74,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--optimizer-backend", choices=("direct", "http"), default="direct")
     parser.add_argument("--optimizer-url", default="http://127.0.0.1:5002")
     parser.add_argument("--model", default=DEFAULT_MODEL)
-    parser.add_argument("--max-reruns", type=int, default=3)
+    parser.add_argument(
+        "--max-reruns",
+        type=int,
+        default=3,
+        help="Additional pricing/optimization attempts allowed after the initial attempt.",
+    )
     parser.add_argument("--state-source", choices=("plan", "workbook"), default="plan")
     parser.add_argument("--checkpoint-every", type=int, default=1)
     return parser

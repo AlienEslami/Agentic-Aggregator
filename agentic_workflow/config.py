@@ -86,7 +86,7 @@ class WorkflowConfig:
             raise ValueError("start_timestep must be in [1, 48]")
         if not self.start_timestep <= self.end_timestep <= 48:
             raise ValueError("end_timestep must be in [start_timestep, 48]")
-        if self.max_reruns < 1:
-            raise ValueError("max_reruns must be positive")
+        if self.max_reruns < 0:
+            raise ValueError("max_reruns must be nonnegative")
         if self.checkpoint_every < 1:
             raise ValueError("checkpoint_every must be positive")

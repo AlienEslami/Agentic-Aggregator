@@ -32,7 +32,7 @@ PHYSICAL_INPUT = (
     ROOT / "inputs" / "revision" / "advance_warning_physical_events_v1.json"
 )
 ABLATION_PROTOCOL_PATH = (
-    ROOT / "inputs" / "revision" / "advance_warning_ablation_protocol_v2.json"
+    ROOT / "inputs" / "revision" / "advance_warning_ablation_protocol_v3.json"
 )
 PRIMARY_DETERMINISTIC_CONFIGURATIONS = (
     "oracle_event_trigger",
@@ -249,6 +249,26 @@ def validate_ablation_protocol() -> dict[str, Any]:
             "Frozen ablation configurations do not match the matrix runner: "
             f"{configured!r} != {ROLE_ABLATION_CONFIGURATIONS!r}"
         )
+    design = protocol["design"]
+    expected_runs = (
+        len(configured)
+        * len(design["cases"])
+        * len(design["modes"])
+        * int(design["repetitions_per_configuration_case_mode"])
+    )
+    if int(design["planned_runs"]) != expected_runs:
+        raise ValueError(
+            "Frozen ablation planned_runs does not match its factorial design: "
+            f"{design['planned_runs']} != {expected_runs}"
+        )
+    controls = protocol["controls"]
+    if int(controls["maximum_optimizer_attempts_per_trigger"]) != (
+        int(controls["maximum_pricing_reruns"]) + 1
+    ):
+        raise ValueError(
+            "Frozen rerun controls are inconsistent: maximum optimizer attempts "
+            "must equal maximum pricing reruns plus the initial attempt"
+        )
     return protocol
 
 
@@ -327,6 +347,35 @@ def git_revision() -> str | None:
         return None
 
 
+def git_worktree_is_clean() -> bool:
+    try:
+        result = subprocess.run(
+            ["git", "status", "--porcelain"],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return False
+    return not result.stdout.strip()
+
+
+def validate_execution_budget(
+    rows: list[dict[str, Any]], maximum_cost_usd: float | None
+) -> None:
+    if maximum_cost_usd is None:
+        return
+    if maximum_cost_usd <= 0:
+        raise ValueError("--max-approximate-api-cost-usd must be positive")
+    spent = sum(float(row.get("llm_approximate_cost_usd") or 0) for row in rows)
+    if spent >= maximum_cost_usd:
+        raise RuntimeError(
+            "Approved approximate API-cost ceiling reached before the next episode: "
+            f"USD {spent:.4f} >= USD {maximum_cost_usd:.4f}"
+        )
+
+
 def run_row(
     spec: RunSpec,
     workbook: Path,
@@ -373,12 +422,13 @@ def write_manifest(
     specs: list[RunSpec],
     *,
     args: argparse.Namespace,
-    completed_rows: int,
+    rows: list[dict[str, Any]],
 ) -> None:
     manifest = {
-        "protocol_version": "advance_warning_matrix_v2",
+        "protocol_version": "advance_warning_matrix_v3",
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "git_commit": git_revision(),
+        "git_worktree_clean": git_worktree_is_clean(),
         "design": {
             "cases": list(unique_in_order(spec.case for spec in specs)),
             "modes": list(unique_in_order(spec.mode for spec in specs)),
@@ -415,14 +465,21 @@ def write_manifest(
                 "physical_event_sha256"
             ],
             "ablation_protocol_file": (
-                "inputs/revision/advance_warning_ablation_protocol_v2.json"
+                "inputs/revision/advance_warning_ablation_protocol_v3.json"
             ),
             "ablation_protocol_sha256": current_input_fingerprints()[
                 "ablation_protocol_sha256"
             ],
         },
         "planned_runs": len(specs),
-        "indexed_completed_runs": completed_rows,
+        "indexed_completed_runs": len(rows),
+        "execution_budget": {
+            "maximum_approximate_api_cost_usd": args.max_approximate_api_cost_usd,
+            "indexed_approximate_api_cost_usd": sum(
+                float(row.get("llm_approximate_cost_usd") or 0)
+                for row in rows
+            ),
+        },
         "runs": [asdict(spec) | {"run_id": spec.run_id} for spec in specs],
     }
     output_root.mkdir(parents=True, exist_ok=True)
@@ -477,6 +534,19 @@ def main() -> None:
     parser.add_argument("--keep-going", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument(
+        "--require-clean-git",
+        action="store_true",
+        help="Refuse execution unless the Git worktree is clean.",
+    )
+    parser.add_argument(
+        "--max-approximate-api-cost-usd",
+        type=float,
+        help=(
+            "Stop before the next episode once indexed approximate API cost reaches "
+            "this approved ceiling."
+        ),
+    )
+    parser.add_argument(
         "--output-root",
         type=Path,
         default=Path("results/revision/closed_loop"),
@@ -485,6 +555,13 @@ def main() -> None:
 
     if args.only_role_ablations and not args.include_role_ablations:
         raise SystemExit("--only-role-ablations requires --include-role-ablations")
+    if args.require_clean_git and not git_worktree_is_clean():
+        raise SystemExit("Refusing execution because the Git worktree is not clean")
+    if (
+        args.max_approximate_api_cost_usd is not None
+        and args.max_approximate_api_cost_usd <= 0
+    ):
+        raise SystemExit("--max-approximate-api-cost-usd must be positive")
 
     try:
         validate_ablation_protocol()
@@ -543,6 +620,12 @@ def main() -> None:
     rows: list[dict[str, Any]] = []
     failures: list[str] = []
     for index, spec in enumerate(specs, start=1):
+        try:
+            validate_execution_budget(rows, args.max_approximate_api_cost_usd)
+        except (RuntimeError, ValueError) as exc:
+            write_run_index(output_root, rows)
+            write_manifest(output_root, specs, args=args, rows=rows)
+            raise SystemExit(str(exc)) from exc
         workbook = workbook_path(output_root, spec)
         reused = should_reuse_workbook(
             workbook,
@@ -589,9 +672,7 @@ def main() -> None:
                 raise
         finally:
             write_run_index(output_root, rows)
-            write_manifest(
-                output_root, specs, args=args, completed_rows=len(rows)
-            )
+            write_manifest(output_root, specs, args=args, rows=rows)
 
     print(f"Indexed {len(rows)} of {len(specs)} planned runs in {output_root}")
     if failures:

@@ -260,20 +260,25 @@ python scripts/run_advance_warning_matrix.py `
   --include-role-ablations `
   --only-role-ablations `
   --ablation-repetitions 5 `
-  --allow-external-llm
+  --allow-external-llm `
+  --require-clean-git `
+  --max-approximate-api-cost-usd 4.00 `
+  --output-root results/revision/ablation_confirmatory_v3
 ```
 
-Before the confirmatory run, validate all role paths with one repetition in a
-separate output root. The pilot root must never be reused by the confirmatory
-matrix:
+Before the confirmatory run, validate all four role paths in the charger case
+that exposed repeated polling. This four-episode smoke test uses a separate
+output root that must never be reused by the confirmatory matrix:
 
 ```powershell
 python scripts/run_advance_warning_matrix.py `
+  --case aw_charger_bank_shutdown `
+  --mode selfish `
   --include-role-ablations `
   --only-role-ablations `
   --ablation-repetitions 1 `
   --allow-external-llm `
-  --output-root results/revision/ablation_pilot_v2
+  --output-root results/revision/ablation_smoke_v3
 ```
 
 Complete workbooks are reused unless `--force` is supplied. Repeated workbooks
@@ -310,6 +315,10 @@ Primary Agent contrasts use repeated paired differences against the fixed
 deterministic baseline in each case-mode cell. Because all role-ablation methods
 contain stochastic LLM components, their secondary contrasts use independent-
 sample differences in means rather than pairing arbitrary repetition numbers.
+Role-ablation summaries also report evaluator-acceptance and forced-selection
+rates per Trigger decision. These are kept separate: a feasible plan retained at
+the rerun cap is an operational selection, not evidence that the evaluator
+approved its quality.
 
 The primary interpretations are deliberately separate:
 
@@ -499,7 +508,7 @@ local peak resident memory was 337.2 MB. The API does not expose provider-side
 compute or energy use, so token counts and latency are reported separately from
 local CPU and memory measurements.
 
-### Frozen v2 role-ablation protocol
+### v2 protocol and pre-confirmatory v3 amendment
 
 Before executing the v2 primary Agent repetitions, the secondary ablation
 protocol was frozen in `advance_warning_ablation_protocol_v2.json`. It fixes the
@@ -507,8 +516,33 @@ four configurations, three component-level contrasts, six case-mode cells,
 five repetitions per configuration-cell, safety-first outcomes, 0.001 economic
 tie tolerance, and 10,000 bootstrap iterations. This is 120 secondary episodes.
 The protocol explicitly prohibits redesigning the ablations in response to the
-primary Agent results. A one-repetition-per-cell pilot may validate execution,
-but it is not included in the confirmatory five-repetition analysis.
+primary Agent results. The v2 execution pilot is not included in the
+confirmatory five-repetition analysis.
+
+That pilot exposed execution defects rather than an unfavorable result to tune:
+the rule Trigger lacked the LLM Trigger's evidence-change gate, the LLM Trigger
+could inherit a deterministic numerical fallback, one configured rerun meant one
+total attempt, evaluator-accepted attempts did not outrank rejected attempts, and
+the evaluator prompt assumed a five-rerun cap. The amended and now-frozen
+`advance_warning_ablation_protocol_v3.json` corrects those validity issues while
+leaving the cases, hypotheses, outcomes, four configurations, five repetitions,
+and 120-run sample size unchanged. It also records every role backend and gate
+setting in each run summary. The v2 file and pilot remain as provenance.
+
+The v3 Trigger request is projected onto an explicit public operational
+allowlist. It excludes canonical and physical truth, notice scenario identifiers,
+wording variants, and internal event-configuration metadata. Trend context is
+limited to the five most recent completed intervals, matching the Trigger prompt
+while avoiding irrelevant token growth later in the day.
+
+Under v3, `--max-reruns 1` means one additional attempt after the initial
+pricing/optimization attempt, so each Trigger decision has at most two optimizer
+attempts. A feasible evaluator-accepted candidate is selected before applying
+mode-aligned economic ranking; a rejected result cannot displace it merely by
+showing higher apparent revenue or lower cost. Reaching the rerun cap does not
+automatically convert a rejection into evaluator approval. If all attempts are
+rejected, the runner retains the best feasible candidate and logs the selection
+as forced at the cap, separately from the evaluator's original decision.
 
 ### Isolated v2 role-ablation pilot
 
@@ -535,7 +569,7 @@ clock parser now maps `end of day` to timestep 48, with an exact regression
 test. Recovery interpretations intentionally retain a null expected end because
 the restriction has ended. The affected pilot workbook was not converted into
 confirmatory evidence; all 120 confirmatory episodes will start fresh with the
-corrected normalizer.
+v3 protocol and corrected normalizer.
 
 Descriptively, `full_agentic`, the mathematical-pricing substitution, and
 evaluator removal were each safe in all six pilot cells. The rule-trigger
@@ -543,7 +577,39 @@ substitution was safe in five: in the selfish charger-shutdown cell it made 25
 optimizer calls and ended with a 24.6523 kWh maximum reserve shortfall across 12
 timesteps. These single-run outcomes validate that the contrasts are
 decision-sensitive, but they are not statistical evidence and must not be cited
-as an ablation conclusion. Based on the completed pilot workload, the frozen
-120-run study projects to about 17.0 million tokens, USD 3.72 at the recorded
-rates, and roughly three hours of sequential episode time; allow additional
-margin for retries and API variability.
+as an ablation conclusion. The 25-call rule episode is specifically treated as
+evidence of the missing shared gate, not as evidence against the rule parser.
+The original pilot projected about 17.0 million tokens, USD 3.72 at the recorded
+rates, and roughly three hours of sequential episode time for 120 runs. Because
+v3 enables the one actual pricing rerun allowed by the protocol, the projection
+must be refreshed from the separate four-episode v3 smoke test before
+confirmatory authorization.
+
+### v3 readiness smoke and execution audit
+
+The final pre-confirmatory charger-cell smoke exercised all four role paths, and
+a targeted rule-path rerun validated the final all-bus evaluator-deviation check.
+Every episode completed 48 timesteps with Gurobi and no solver fallback. The
+shared evidence gate reduced the rule substitution from 25 repeated Trigger
+decisions to two genuine decisions; its four optimizer attempts are the initial
+and one allowed repricing at onset and recovery.
+
+The public-payload audit checked 15 LLM Trigger requests. No canonical truth,
+physical truth, notice scenario identifier, wording variant, benchmark split,
+or internal event-configuration key was present; every public notice used only
+the five allowed public fields, and Trigger history never exceeded five
+intervals. Role provenance also confirmed that each comparator changed only its
+named role.
+
+The targeted final rule episode caused zero evaluator approvals and two
+explicitly forced feasible selections, correctly preserving the evaluator's
+rejections when fleet deviations remained large. It was unsafe under hidden
+ex-post truth, while the other three smoke configurations were safe. These are
+execution checks only, not inferential ablation results.
+
+Combining the final role-path measurements gives an expected 120-run workload of
+about 10.2-13.4 million tokens, USD 2.2-2.8, and roughly 1.1-1.9 hours of summed
+episode time before API and solver variability. The proposed confirmatory command
+therefore uses a USD 4.00 episode-boundary ceiling and should be allowed a
+two-to-three-hour wall-time window. The runner also refuses confirmatory
+execution from a dirty Git worktree and records both safeguards in the manifest.

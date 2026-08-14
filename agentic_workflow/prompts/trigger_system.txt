@@ -62,8 +62,8 @@ price_deviation_significant: true if |price_deviation_pct| > 15%
 unexpected_discharging_buses: list of bus_ids currently discharging unplanned
 delay_sign_reversed: pre-computed flag — may not be reliable due to history data limitations, use manual sign check in rules below instead
 delay_removal_active: true if the delay scenario is currently in its removal phase — when true, negative delay_minutes is a signal to restore original schedule, NOT a real sign reversal — delay_removal_active = true is itself a trigger for reoptimization (see Delay removal trigger below)
-Historical deviations (timesteps 0 to t-1)
-Full record of actual vs planned energy (kWh) for each bus at each past timestep
+Historical deviations (up to the five most recent completed timesteps)
+Recent actual vs planned energy (kWh) for each bus at each included timestep
 Each entry includes delay_minutes per bus at that timestep
 Each entry also includes energy_delta_deviation_pct for interval-level history
 Each entry has a reoptimized flag indicating whether that timestep used a re-optimized baseline

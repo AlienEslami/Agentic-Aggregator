@@ -89,6 +89,16 @@ class AcceptSecondAgent(AgentBackend):
         )
 
 
+class RejectEveryAttemptAgent(AcceptSecondAgent):
+    def evaluate(self, context, trigger, pricing, result, *, rerun_count):
+        return EvaluationDecision(
+            accept=False,
+            reasoning=f"reject attempt {rerun_count}",
+            confidence=1,
+            feedback=NULL_FEEDBACK,
+        )
+
+
 def test_isolated_trigger_configurations_resolve_expected_information_paths():
     expected = {
         "oracle_event_trigger": "manual",
@@ -293,6 +303,8 @@ def test_runner_replaces_branching_merging_and_persistence(tmp_path):
     assert summary["status"] == "complete"
     assert summary["timesteps_completed"] == 2
     assert summary["optimizer_calls"] == 1
+    assert summary["evaluator_accepted_optimizer_calls"] == 1
+    assert summary["forced_optimizer_selections"] == 0
     assert summary["llm_total_tokens"] == 0
     # The optimization at timestep 2 changes only future intervals.  It must
     # not retroactively change the just-observed timestep-1 settlement.
@@ -373,11 +385,11 @@ def test_optimizer_never_accepts_an_all_mock_rerun_sequence(tmp_path):
     )
     assert selected.result["is_mock"] is True
     assert selected.evaluation.accept is False
-    assert len(runner.state.attempts) == 2
+    assert len(runner.state.attempts) == 3
     assert not any(row["accepted"] for row in runner.state.attempts)
 
 
-def test_only_selected_best_attempt_remains_marked_accepted(tmp_path):
+def test_evaluator_accepted_attempt_outranks_rejected_higher_revenue(tmp_path):
     state, forecast, spot, states_zip, prices_zip, disturbances = _build_inputs(tmp_path)
     config = WorkflowConfig(
         state_workbook=state,
@@ -433,8 +445,78 @@ def test_only_selected_best_attempt_remains_marked_accepted(tmp_path):
         observation=[],
         disturbance=disturbance,
     )
-    assert selected.attempt == 1
-    assert selected.result["aggregator_revenue"] == 10.0
+    assert selected.attempt == 2
+    assert selected.result["aggregator_revenue"] == 5.0
     accepted = [row for row in runner.state.attempts if row["accepted"]]
     assert len(accepted) == 1
-    assert accepted[0]["attempt"] == 1
+    assert accepted[0]["attempt"] == 2
+
+
+def test_forced_cap_selection_preserves_original_evaluator_rejections(tmp_path):
+    state, forecast, spot, states_zip, prices_zip, disturbances = _build_inputs(tmp_path)
+    config = WorkflowConfig(
+        state_workbook=state,
+        forecast_workbook=forecast,
+        spot_prices_workbook=spot,
+        realtime_states=states_zip,
+        intraday_prices=prices_zip,
+        disturbance_workbook=disturbances,
+        output_workbook=tmp_path / "result.xlsx",
+        scenario_ids=("price_plus_50",),
+        start_timestep=1,
+        end_timestep=2,
+        agent_backend="rule",
+        max_reruns=1,
+    )
+    runner = WorkflowRunner(
+        config,
+        agents=RejectEveryAttemptAgent(),
+        optimizer=DecliningRevenueOptimizer(),
+    )
+    workbook = runner._workbook_inputs(2)
+    price_rows = runner.price_series.read_sheet(2, "Prices")
+    context = {
+        "mode": "selfish",
+        "timestep": 2,
+        "remaining_timesteps": 47,
+        "intraday_prices": {
+            "prices": [
+                {"timestep": int(row.timestep), "spot_market": float(row.spot_market)}
+                for row in price_rows.itertuples()
+            ]
+        },
+    }
+    disturbance = SimpleNamespace(
+        trips=workbook["Trips"],
+        energy_consumption=workbook["Trips"],
+        prices=price_rows,
+        scenarios=[],
+        optimizer_disturbances=[],
+    )
+    trigger = TriggerDecision(
+        action="optimize",
+        reasoning="test",
+        confidence=1,
+        trigger_type="price",
+        flagged_buses=[],
+    )
+
+    selected = runner._optimize(
+        timestep=2,
+        context=context,
+        trigger=trigger,
+        workbook=workbook,
+        observation=[],
+        disturbance=disturbance,
+    )
+
+    assert selected.attempt == 1
+    assert selected.result["aggregator_revenue"] == 10.0
+    assert selected.evaluation.accept is True
+    selected_row = next(row for row in runner.state.attempts if row["accepted"])
+    assert selected_row["attempt"] == 1
+    assert selected_row["evaluator_accepted"] is False
+    assert selected_row["forced_at_rerun_cap"] is True
+    assert selected_row["evaluation_reasoning"] == "reject attempt 0"
+    assert "Rerun cap of 1 reached" in selected_row["selection_reasoning"]
+    assert not any(row["evaluator_accepted"] for row in runner.state.attempts)

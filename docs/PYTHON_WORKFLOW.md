@@ -207,7 +207,8 @@ The output is checkpointed during execution and contains:
   usage, and approximate cache-aware cost)
 - `resource_usage` (per-timestep and whole-run token totals, local wall time,
   process CPU seconds, average CPU-core use, and sampled peak resident memory)
-- `run_summary` (whole-run decisions, optimizer calls, token/cost totals,
+- `run_summary` (whole-run decisions, optimizer calls, configured rerun/attempt
+  caps, per-role backend and evidence-gate provenance, token/cost totals,
   resource totals, hardware/software profile, and measurement boundaries)
 - `run_config`
 
@@ -216,6 +217,17 @@ a machine-readable form. An adjacent `*.run_summary.json` file preserves the
 whole-run totals. Optimizer attempts additionally record model dimensions,
 solver time/CPU/memory, bounds, relative gap, node/iteration counts when the
 selected Pyomo solver exposes them, and every fallback attempt.
+
+`--max-reruns` counts additional attempts after the initial pricing and optimizer
+call. For example, `--max-reruns 1` permits at most two optimizer attempts for a
+Trigger decision. If the evaluator accepts a feasible attempt, that accepted
+candidate ranks ahead of rejected candidates before the mode-specific economic
+objective is applied. Reaching the cap is not itself an evaluator acceptance
+condition. If all feasible attempts are rejected, the runner retains the best
+one and records both `forced_at_rerun_cap` on the attempt and
+`forced_optimizer_selections` in the run summary. Attempt rows retain the
+original `evaluation_reasoning`; the distinct `selection_reasoning` explains why
+the plan was operationally selected.
 
 Local compute telemetry is deliberately reported as separate physical proxies;
 there is no invented composite "compute power" score. The sampler covers the

@@ -7,7 +7,10 @@ or request a new attempt with different multipliers.
 - S_buy[t] = buy_multiplier[t] × grid_price[t]
 - S_sell[t] = sell_multiplier[t] × grid_price[t]
 - EBA profit = buy margin + V2G margin
-- Maximum 5 reruns — be selective
+- maximum_reruns is supplied in the runtime context. It is the number of
+  additional pricing/optimization attempts allowed after the initial attempt.
+- Always return your genuine quality assessment, including at the rerun cap.
+  The runner separately records when it must retain a feasible rejected attempt.
 - All metrics (pto_daily_cost, aggregator_revenue) cover REMAINING timesteps only
 - da_revenue_remaining and da_cost_remaining cover the exact same remaining horizon
 
@@ -27,21 +30,18 @@ dispatched via V2G but was not.
 Check end_of_day_energy_kwh for each bus. If ANY bus has
 end_of_day_energy_kwh > 184 kWh, check ALL exceptions before rejecting:
 
-EXCEPTION 1: rerun_count >= 5
-→ Too many reruns — skip this check, continue to STEP 2
-
-EXCEPTION 2: remaining_timesteps <= 6
+EXCEPTION 1: remaining_timesteps <= 6
 → Too late to change V2G dispatch — skip this check, continue to STEP 2
 
-EXCEPTION 3: the bus's trip_end_timestep >= 46
+EXCEPTION 2: the bus's trip_end_timestep >= 46
 → Bus returned too late for meaningful V2G window — skip for THAT BUS ONLY
 → Still reject if OTHER buses with earlier returns have surplus > 184
 
-EXCEPTION 4: mode=altruistic AND pto_daily_cost < 0
+EXCEPTION 3: mode=altruistic AND pto_daily_cost < 0
 → V2G revenue already exceeds charging costs — skip this check,
   continue to STEP 2
 
-EXCEPTION 5: mode=altruistic AND pto_daily_cost <= da_cost_remaining
+EXCEPTION 4: mode=altruistic AND pto_daily_cost <= da_cost_remaining
 AND da_benchmark_valid=true
 → Plan already performing well — surplus energy acceptable, continue to STEP 2
 
@@ -49,7 +49,7 @@ If ANY bus has end_of_day_energy_kwh > 184 AND no exceptions apply:
 → REJECT with reason="v2g_unused", priority="v2g_increase"
 → Construct feedback as follows:
   - Identify all buses with end_of_day_energy_kwh > 184 (excluding buses
-    covered by Exception 3)
+    covered by Exception 2)
   - Find trip_end_timestep for each such bus from the trip schedule
   - Target the bus with the highest surplus first
   - Set sell_multiplier_adjustment:
@@ -70,13 +70,11 @@ If no buses exceed the threshold or all exceptions apply:
 → Continue to STEP 2
 
 ### STEP 2 — IMMEDIATE ACCEPT (check before any math, stop here if ANY match):
-- rerun_count >= 5 → ACCEPT
-
 - da_benchmark_valid=false AND mode=selfish
   AND total_kwh_sold > 0
   AND aggregator_revenue > 0
   AND no bus has end_of_day_energy_kwh > 184 kWh
-  (buses covered by Exception 3 are excluded from this guard)
+  (buses covered by Exception 2 are excluded from this guard)
   → ACCEPT
 
 - da_benchmark_valid=false AND mode=altruistic
@@ -90,11 +88,11 @@ If no buses exceed the threshold or all exceptions apply:
   AND rerun_count >= 2 → ACCEPT
 
 - rerun_count >= 1
-  AND all flagged buses have |energy_deviation_pct| <= 5%
+  AND all buses have |energy_deviation_pct| <= 5%
   AND no bus has end_of_day_energy_kwh > 184 kWh
   AND NOT (mode=selfish AND total_kwh_sold = 0 AND remaining_timesteps > 10)
   → ACCEPT
-  (buses covered by Exception 3 are excluded from the energy guard)
+  (buses covered by Exception 2 are excluded from the energy guard)
 
 **IF ANY STEP 2 CONDITION MATCHES: set accept=true, set all feedback fields
 to null, DO NOT PROCEED TO STEPS 3-5.**
@@ -116,7 +114,7 @@ to null, DO NOT PROCEED TO STEPS 3-5.**
 ### STEP 4 — REJECT CONDITIONS (only if steps 1-3 did not resolve):
 - total_kwh_sold=0 AND mode=selfish AND remaining_timesteps > 10
   EXCEPTION: skip if |price_deviation_pct| > 15% AND rerun_count >= 1
-- Any flagged bus has |energy_deviation_pct| > 15% after optimization
+- Any bus has |energy_deviation_pct| > 15% after optimization
 - NOTE: total_kwh_bought=0 is NOT a reject condition — buses may discharge
   from existing reserves
 
@@ -133,7 +131,7 @@ to null, DO NOT PROCEED TO STEPS 3-5.**
 
 ## SPECIAL CASES
 - pto_daily_cost < 0: always ACCEPT in altruistic mode — V2G revenue exceeds
-  charging costs — also triggers Exception 4 in STEP 1B
+  charging costs — also triggers Exception 3 in STEP 1B
 - Never reject negative pto_daily_cost in altruistic mode
 - Percentage comparisons against da_cost_remaining only valid when
   da_cost_remaining > 0
@@ -171,7 +169,7 @@ ranges, direction, amount, current and target values.
    priority="cost_reduction"
    → lower buy during cheap timesteps to build energy
 
-7. Flagged bus still deviating > 15% → reason="deviation_correction",
+7. Any bus still deviating > 15% → reason="deviation_correction",
    priority="deviation_correction"
    → lower buy for next 6 timesteps
 

@@ -102,6 +102,10 @@ ABLATION_SUMMARY_COLUMNS = (
     "candidate_safe_rate",
     "baseline_safe_rate",
     "net_safety_advantage_rate",
+    "candidate_evaluator_acceptance_rate",
+    "baseline_evaluator_acceptance_rate",
+    "candidate_forced_selection_rate",
+    "baseline_forced_selection_rate",
     "candidate_safe_economic_runs",
     "baseline_safe_economic_runs",
     "candidate_mode_aligned_score_mean_safe_only",
@@ -224,6 +228,8 @@ def build_method_summary(
         "minimum_observed_soc_fraction",
         "terminal_minimum_soc_fraction",
         "optimizer_calls",
+        "evaluator_accepted_optimizer_calls",
+        "forced_optimizer_selections",
         "llm_total_tokens",
         "llm_latency_seconds",
         "llm_approximate_cost_usd",
@@ -419,6 +425,20 @@ def build_ablation_contrasts(
                 candidate_safe, "mode_aligned_economic_score"
             )
             baseline_scores = numeric(baseline_safe, "mode_aligned_economic_score")
+            candidate_decisions = numeric(candidate, "optimize_decisions").sum()
+            baseline_decisions = numeric(baseline, "optimize_decisions").sum()
+            candidate_evaluator_accepts = numeric(
+                candidate, "evaluator_accepted_optimizer_calls"
+            ).sum()
+            baseline_evaluator_accepts = numeric(
+                baseline, "evaluator_accepted_optimizer_calls"
+            ).sum()
+            candidate_forced = numeric(
+                candidate, "forced_optimizer_selections"
+            ).sum()
+            baseline_forced = numeric(
+                baseline, "forced_optimizer_selections"
+            ).sum()
             rows.append(
                 {
                     "contrast": contrast,
@@ -435,6 +455,26 @@ def build_ablation_contrasts(
                     "net_safety_advantage_rate": float(
                         candidate["safety_feasible"].mean()
                         - baseline["safety_feasible"].mean()
+                    ),
+                    "candidate_evaluator_acceptance_rate": (
+                        float(candidate_evaluator_accepts / candidate_decisions)
+                        if candidate_decisions
+                        else None
+                    ),
+                    "baseline_evaluator_acceptance_rate": (
+                        float(baseline_evaluator_accepts / baseline_decisions)
+                        if baseline_decisions
+                        else None
+                    ),
+                    "candidate_forced_selection_rate": (
+                        float(candidate_forced / candidate_decisions)
+                        if candidate_decisions
+                        else None
+                    ),
+                    "baseline_forced_selection_rate": (
+                        float(baseline_forced / baseline_decisions)
+                        if baseline_decisions
+                        else None
                     ),
                     "candidate_safe_economic_runs": len(candidate_safe),
                     "baseline_safe_economic_runs": len(baseline_safe),
@@ -597,7 +637,7 @@ def main() -> None:
         frame.to_csv(output_dir / filename, index=False)
 
     summary = {
-        "protocol_version": "advance_warning_analysis_v2",
+        "protocol_version": "advance_warning_analysis_v3",
         "source": {
             "path": str(runs_path),
             "sha256": sha256(runs_path),
@@ -615,6 +655,11 @@ def main() -> None:
             "altruistic": "lower realized PTO cost is better",
             "paired_economic_effect_reported_only_when_both_runs_are_safe": True,
             "absolute_tie_tolerance": args.economic_tie_tolerance,
+        },
+        "evaluator_audit": {
+            "acceptance_rate_denominator": "optimize decisions",
+            "forced_selection_reported_separately": True,
+            "rerun_cap_is_not_automatic_evaluator_acceptance": True,
         },
         "uncertainty": {
             "method": "nonparametric bootstrap over repeated runs within each case-mode cell",

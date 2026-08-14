@@ -1,14 +1,20 @@
 from __future__ import annotations
 
+from pathlib import Path
 from types import SimpleNamespace
 
 from agentic_workflow.agents import (
     AgentBackend,
+    CompositeAgentBackend,
     EvidenceGatedAgentBackend,
+    HardCheckAgentBackend,
     NoticeOnlyAgentBackend,
     NumericalOnlyAgentBackend,
     OpenAIAgentBackend,
     RuleBasedAgentBackend,
+    build_openai_trigger_payload,
+    create_experiment_backend,
+    describe_agent_roles,
     normalize_trigger_decision,
 )
 from agentic_workflow.models import (
@@ -166,6 +172,149 @@ def test_evidence_gate_calls_trigger_only_for_new_text_or_changed_telemetry():
     context["numerical_event_telemetry"]["unavailable_chargers"] = []
     backend.trigger(context)
     assert counted.trigger_calls == 3
+
+
+def test_role_ablation_factory_changes_only_the_named_role(monkeypatch):
+    class StubOpenAIBackend(RuleBasedAgentBackend):
+        def __init__(self, model, *, allow_deterministic_trigger_fallback=True):
+            self.model = model
+            self.allow_deterministic_trigger_fallback = (
+                allow_deterministic_trigger_fallback
+            )
+            self.call_records = []
+
+    monkeypatch.setattr(
+        "agentic_workflow.agents.OpenAIAgentBackend", StubOpenAIBackend
+    )
+    full = create_experiment_backend("full_agentic", "rule", "test-model")
+    rule_trigger = create_experiment_backend(
+        "rule_parser_trigger_substitution", "rule", "test-model"
+    )
+    mathematical_pricing = create_experiment_backend(
+        "mathematical_pricing_substitution", "rule", "test-model"
+    )
+    evaluator_removal = create_experiment_backend(
+        "evaluator_removal", "rule", "test-model"
+    )
+
+    assert isinstance(full, EvidenceGatedAgentBackend)
+    assert full.backend.allow_deterministic_trigger_fallback is False
+    full_provenance = describe_agent_roles(full)
+    assert full_provenance["trigger"]["evidence_gate"] is True
+    assert full_provenance["pricing"]["evidence_gate"] is False
+    assert full_provenance["evaluator"]["evidence_gate"] is False
+    assert isinstance(rule_trigger, CompositeAgentBackend)
+    assert isinstance(rule_trigger.trigger_backend, EvidenceGatedAgentBackend)
+    assert type(rule_trigger.trigger_backend.backend) is RuleBasedAgentBackend
+    assert rule_trigger.pricing_backend is rule_trigger.evaluator_backend
+    assert isinstance(mathematical_pricing.pricing_backend, RuleBasedAgentBackend)
+    assert isinstance(evaluator_removal.evaluator_backend, HardCheckAgentBackend)
+
+
+def test_agent_role_provenance_records_shared_trigger_gate():
+    backend = CompositeAgentBackend(
+        EvidenceGatedAgentBackend(RuleBasedAgentBackend()),
+        RuleBasedAgentBackend(),
+        HardCheckAgentBackend(),
+    )
+    provenance = describe_agent_roles(backend)
+
+    assert provenance["trigger"] == {
+        "backend": "RuleBasedAgentBackend",
+        "evidence_gate": True,
+    }
+    assert provenance["pricing"]["backend"] == "RuleBasedAgentBackend"
+    assert provenance["pricing"]["evidence_gate"] is False
+    assert provenance["evaluator"]["backend"] == "HardCheckAgentBackend"
+
+
+def test_openai_trigger_payload_excludes_private_experiment_metadata():
+    context = _context()
+    context.update(
+        {
+            "operational_notices": [{"text": "public maintenance message"}],
+            "active_scenarios": [{"scenario_id": "hidden-case-id"}],
+            "event_status": {"energy": {"configured": True}},
+            "canonical": {"updates": {"unavailable_chargers": [8]}},
+            "physical_truth": {"unavailable_chargers": [8]},
+            "wording_variant": "uncertain_chat",
+            "history": [{"timestep": value} for value in range(1, 12)],
+        }
+    )
+
+    payload = build_openai_trigger_payload(context)
+
+    assert payload["operational_notices"] == context["operational_notices"]
+    assert [row["timestep"] for row in payload["history"]] == [7, 8, 9, 10, 11]
+    for private_key in (
+        "active_scenarios",
+        "event_status",
+        "canonical",
+        "physical_truth",
+        "wording_variant",
+    ):
+        assert private_key not in payload
+
+
+def test_openai_evaluator_receives_runtime_rerun_cap():
+    captured = {}
+
+    def fake_parse(system, user_data, schema, *, role):
+        captured.update(user_data)
+        assert role == "evaluator"
+        return EvaluationDecision(
+            accept=True,
+            reasoning="cap received",
+            confidence=1.0,
+            feedback=NULL_FEEDBACK,
+        )
+
+    backend = OpenAIAgentBackend.__new__(OpenAIAgentBackend)
+    backend._parse = fake_parse
+    context = _context()
+    context.update(
+        {
+            "maximum_reruns": 1,
+            "deviations": {},
+            "day_ahead_summary": {},
+            "da_benchmark": {},
+        }
+    )
+    trigger = TriggerDecision(
+        action="optimize",
+        reasoning="test",
+        confidence=1.0,
+        trigger_type="price",
+        flagged_buses=[],
+    )
+    pricing = PricingDecision(
+        buy_multipliers=[1.0] * 44,
+        sell_multipliers=[0.8] * 44,
+        reasoning="test",
+        confidence=1.0,
+    )
+
+    backend.evaluate(
+        context,
+        trigger,
+        pricing,
+        {"energy": [[100.0]], "is_mock": False},
+        rerun_count=0,
+    )
+
+    assert captured["maximum_reruns"] == 1
+
+
+def test_evaluator_prompt_uses_non_vacuous_all_bus_deviation_checks():
+    prompt = (
+        Path(__file__).parents[1]
+        / "agentic_workflow"
+        / "prompts"
+        / "evaluator_system.txt"
+    ).read_text(encoding="utf-8")
+    assert "all buses have |energy_deviation_pct| <= 5%" in prompt
+    assert "Any bus has |energy_deviation_pct| > 15%" in prompt
+    assert "all flagged buses have |energy_deviation_pct| <= 5%" not in prompt
 
 
 def test_trigger_comparison_channels_are_isolated() -> None:

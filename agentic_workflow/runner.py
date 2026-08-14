@@ -7,7 +7,7 @@ from typing import Any
 
 import pandas as pd
 
-from .agents import AgentBackend, create_experiment_backend
+from .agents import AgentBackend, create_experiment_backend, describe_agent_roles
 from .config import WorkflowConfig
 from .context import build_context, build_observation
 from .disturbances import apply_disturbances
@@ -166,6 +166,8 @@ class WorkflowRunner:
             return False
         if incumbent is None or incumbent.result.get("is_mock"):
             return True
+        if candidate.evaluation.accept != incumbent.evaluation.accept:
+            return candidate.evaluation.accept
         if self.config.mode == "selfish":
             candidate_value = candidate.result.get("aggregator_revenue")
             incumbent_value = incumbent.result.get("aggregator_revenue")
@@ -243,7 +245,12 @@ class WorkflowRunner:
                 "total_kwh_bought": result.get("total_kwh_bought"),
                 "total_kwh_sold": result.get("total_kwh_sold"),
                 "accepted": evaluation.accept,
+                "evaluator_accepted": evaluation.accept,
+                "forced_at_rerun_cap": False,
                 "evaluation_reasoning": evaluation.reasoning,
+                "selection_reasoning": (
+                    "Accepted by evaluator." if evaluation.accept else None
+                ),
                 "feedback": evaluation.feedback.model_dump_json(),
             }
         )
@@ -262,7 +269,7 @@ class WorkflowRunner:
         feedback: EvaluationFeedback | None = None
         best: OptimizationCandidate | None = None
         last: OptimizationCandidate | None = None
-        for attempt in range(1, self.config.max_reruns + 1):
+        for attempt in range(1, self.config.max_reruns + 2):
             try:
                 pricing = self.agents.price(
                     context,
@@ -349,7 +356,8 @@ class WorkflowRunner:
                 for attempt_row in reversed(self.state.attempts):
                     if attempt_row["timestep"] == timestep and attempt_row["attempt"] == best.attempt:
                         attempt_row["accepted"] = True
-                        attempt_row["evaluation_reasoning"] = accepted.reasoning
+                        attempt_row["forced_at_rerun_cap"] = True
+                        attempt_row["selection_reasoning"] = accepted.reasoning
                         break
             return best
         if last is None:
@@ -445,6 +453,7 @@ class WorkflowRunner:
                 context_history=self.state.context_history,
                 )
                 context["operational_notices"] = [record.public_dict() for record in notice_records]
+                context["maximum_reruns"] = self.config.max_reruns
                 context["numerical_event_telemetry"] = (
                     {
                         "return_delay_minutes_by_bus": dict(
@@ -617,8 +626,19 @@ class WorkflowRunner:
                 "end_timestep": self.config.end_timestep,
                 "timesteps_completed": len(self.state.logs),
                 "optimizer_calls": len(self.state.attempts),
+                "maximum_pricing_reruns": self.config.max_reruns,
+                "maximum_optimizer_attempts_per_trigger": self.config.max_reruns + 1,
+                "agent_role_provenance": json.dumps(
+                    describe_agent_roles(self.agents), sort_keys=True
+                ),
                 "accepted_optimizer_calls": sum(
                     bool(row.get("accepted")) for row in self.state.attempts
+                ),
+                "evaluator_accepted_optimizer_calls": sum(
+                    bool(row.get("evaluator_accepted")) for row in self.state.attempts
+                ),
+                "forced_optimizer_selections": sum(
+                    bool(row.get("forced_at_rerun_cap")) for row in self.state.attempts
                 ),
                 "optimize_decisions": sum(
                     row.get("action") == "optimize" for row in self.state.logs
