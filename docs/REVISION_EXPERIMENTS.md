@@ -91,6 +91,13 @@ structured-output attempts, exact token counts, approximate API cost, latency,
 CPU time, and peak process memory. Provider-side FLOPs, GPU energy, and carbon
 emissions are not exposed by the API and are not inferred.
 
+Closed-loop workbooks keep compact Agent-call records in the `agent_calls`
+sheet. Excel cells are limited to 32,767 characters, so any longer request or
+response cell is replaced with a row/field/SHA-256 pointer. The adjacent
+`.agent_calls.jsonl` sidecar is the authoritative, lossless transcript; the
+adjacent `.run_summary.json` is the machine-readable run summary. All three
+local output types remain ignored by Git.
+
 Create the paired comparison after both test evaluations finish:
 
 ```powershell
@@ -241,6 +248,9 @@ python scripts/run_advance_warning_matrix.py `
 Complete workbooks are reused unless `--force` is supplied. Repeated workbooks
 remain under ignored `results/`; only CSV/JSON indexes and summaries should be
 copied into paper artifacts after the matrix is complete.
+The run index records the actual solver names and any fallback errors from each
+workbook; installed software alone is not treated as evidence that a licensed
+solver was used.
 
 Create paper-ready paired summaries with:
 
@@ -321,3 +331,27 @@ trials before making an Agent-over-rule economic-superiority claim.
 The 8/16/32 scaling study also still requires physically coherent 16- and
 32-bus workbooks and a declared replication rule for trips, charger ratios,
 depot power, and terminal SOC. A second depot must be a distinct input instance.
+
+### Six-run Agent pilot (preliminary, not confirmatory)
+
+On 2026-08-13, one `agent_trigger_only` repetition was run for each of the three
+advance-warning cases in both modes with `gpt-5.6-luna` at low reasoning effort.
+All six runs completed 48 timesteps, all structured calls were valid, all runs
+met the reserve and 20% SOC safety criteria, and their economic outcomes matched
+the oracle. The six runs used 619,441 total tokens and approximately USD 0.1341.
+
+Relative to the numerical trigger, the Agent was safe in all six cells while
+the numerical method was safe in two. In those two comparable combined-event
+cells, the Agent increased selfish-mode aggregator revenue by approximately
+3.42 and reduced altruistic PTO cost by approximately 11.72. Relative to the
+rule-text method, the Agent was safe in two additional charger-shutdown cells;
+the four cells in which both were safe were economic ties. These are pilot
+observations only: there is one stochastic repetition per case-mode cell, so no
+Agent superiority or uncertainty interval should be claimed yet.
+
+All successful Agent calls were audited from the lossless JSONL sidecars. The
+public notice objects contained only notice/event IDs, source type, report time,
+and synthetic text. No canonical interpretation or hidden physical-event state
+was sent. HiGHS (`appsi_highs`) solved every pilot optimization. The installed
+Gurobi licence could not be used because it is bound to HostID `846d74f2` while
+the current host reports `f47957cb`; this fallback is recorded in the run index.

@@ -11,6 +11,7 @@ from scripts.analyze_advance_warning_matrix import (
 )
 from scripts.run_advance_warning_matrix import (
     build_run_specs,
+    read_solver_provenance,
     validate_external_llm_gate,
     workbook_path,
 )
@@ -59,6 +60,27 @@ def test_external_llm_gate_requires_explicit_authorization_and_key():
         dry_run=False,
         environ={"OPENAI_API_KEY": "test-only-placeholder"},
     )
+
+
+def test_solver_provenance_records_solver_and_fallback(monkeypatch, tmp_path):
+    def fake_read_excel(path, sheet_name):
+        assert sheet_name == "optimization_attempts"
+        return pd.DataFrame(
+            {
+                "solver_name": ["appsi_highs", "appsi_highs"],
+                "solver_fallback_errors": [
+                    '["gurobi: HostID mismatch"]',
+                    '["gurobi: HostID mismatch"]',
+                ],
+            }
+        )
+
+    monkeypatch.setattr(pd, "read_excel", fake_read_excel)
+    provenance = read_solver_provenance(tmp_path / "result.xlsx")
+    assert provenance["solver_names"] == ["appsi_highs"]
+    assert provenance["solver_fallback_errors"] == [
+        '["gurobi: HostID mismatch"]'
+    ]
 
 
 def _run(

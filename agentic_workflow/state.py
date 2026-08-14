@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -38,10 +39,28 @@ AGENT_CALL_COLUMNS = [
     "usage",
     "error",
 ]
+EXCEL_CELL_CHARACTER_LIMIT = 32_767
 
 
 def _json(value: Any) -> str:
     return json.dumps(value, default=str, separators=(",", ":"))
+
+
+def _excel_safe_agent_calls(frame: pd.DataFrame, sidecar_name: str) -> pd.DataFrame:
+    """Replace overlong Excel cells with verifiable JSONL sidecar pointers."""
+
+    safe = frame.copy()
+    for row_index in safe.index:
+        for column in safe.columns:
+            value = safe.at[row_index, column]
+            if not isinstance(value, str) or len(value) <= EXCEL_CELL_CHARACTER_LIMIT:
+                continue
+            digest = hashlib.sha256(value.encode("utf-8")).hexdigest()
+            safe.at[row_index, column] = (
+                f"[Full value: {sidecar_name}, JSONL row {int(row_index) + 1}, "
+                f"field {column}; characters={len(value)}; sha256={digest}]"
+            )
+    return safe
 
 
 @dataclass(slots=True)
@@ -290,6 +309,11 @@ class WorkflowState:
 
     def save(self, path: Path, config: WorkflowConfig) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
+        jsonl_path = path.with_suffix(".agent_calls.jsonl")
+        jsonl_path.write_text(
+            "".join(json.dumps(row, default=str) + "\n" for row in self.agent_calls),
+            encoding="utf-8",
+        )
         config_record = asdict(config)
         for key, value in list(config_record.items()):
             if isinstance(value, Path):
@@ -300,6 +324,9 @@ class WorkflowState:
         agent_calls_frame = pd.DataFrame(self.agent_calls)
         if agent_calls_frame.empty:
             agent_calls_frame = pd.DataFrame(columns=AGENT_CALL_COLUMNS)
+        agent_calls_excel = _excel_safe_agent_calls(
+            agent_calls_frame, jsonl_path.name
+        )
         with pd.ExcelWriter(path, engine="openpyxl") as writer:
             pd.DataFrame(self.logs).to_excel(writer, sheet_name="realtime_log", index=False)
             self.realtime_plan.to_excel(writer, sheet_name="Realtime_plan", index=False)
@@ -308,18 +335,13 @@ class WorkflowState:
                 writer, sheet_name="Forecasted Energy", index=False
             )
             pd.DataFrame(self.attempts).to_excel(writer, sheet_name="optimization_attempts", index=False)
-            agent_calls_frame.to_excel(writer, sheet_name="agent_calls", index=False)
+            agent_calls_excel.to_excel(writer, sheet_name="agent_calls", index=False)
             pd.DataFrame(self.resource_usage).to_excel(writer, sheet_name="resource_usage", index=False)
             pd.DataFrame(self.settlement).to_excel(
                 writer, sheet_name="ex_post_settlement", index=False
             )
             pd.DataFrame([self.run_summary]).to_excel(writer, sheet_name="run_summary", index=False)
             pd.DataFrame(config_rows).to_excel(writer, sheet_name="run_config", index=False)
-        jsonl_path = path.with_suffix(".agent_calls.jsonl")
-        jsonl_path.write_text(
-            "".join(json.dumps(row, default=str) + "\n" for row in self.agent_calls),
-            encoding="utf-8",
-        )
         path.with_suffix(".run_summary.json").write_text(
             json.dumps(self.run_summary, default=str, indent=2), encoding="utf-8"
         )

@@ -172,6 +172,31 @@ def read_run_summary(workbook: Path) -> dict[str, Any]:
     return summary.iloc[0].to_dict()
 
 
+def read_solver_provenance(workbook: Path) -> dict[str, Any]:
+    try:
+        attempts = pd.read_excel(workbook, sheet_name="optimization_attempts")
+    except (ValueError, FileNotFoundError):
+        return {"solver_names": [], "solver_fallback_errors": []}
+    solver_names = (
+        sorted(attempts["solver_name"].dropna().astype(str).unique().tolist())
+        if "solver_name" in attempts
+        else []
+    )
+    fallback_errors = (
+        sorted(
+            value
+            for value in attempts["solver_fallback_errors"].dropna().astype(str).unique()
+            if value not in {"", "[]"}
+        )
+        if "solver_fallback_errors" in attempts
+        else []
+    )
+    return {
+        "solver_names": solver_names,
+        "solver_fallback_errors": fallback_errors,
+    }
+
+
 def workbook_is_complete(workbook: Path, expected_timesteps: int) -> bool:
     if not workbook.exists():
         return False
@@ -245,6 +270,7 @@ def run_row(
         "reused_complete_workbook": reused,
         "workbook": relative_workbook,
         "workbook_sha256": sha256(workbook),
+        **read_solver_provenance(workbook),
         **{column: summary.get(column) for column in SUMMARY_COLUMNS},
     }
 

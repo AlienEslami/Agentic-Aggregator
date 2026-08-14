@@ -276,6 +276,8 @@ def test_runner_replaces_branching_merging_and_persistence(tmp_path):
     assert marker["trigger_type"] == "price"
     assert result.logs[-1]["rerun_count"] == 0
     assert output.exists()
+    assert output.with_suffix(".agent_calls.jsonl").exists()
+    assert output.with_suffix(".run_summary.json").exists()
     sheet_names = pd.ExcelFile(output).sheet_names
     assert "optimization_attempts" in sheet_names
     assert "agent_calls" in sheet_names
@@ -297,6 +299,23 @@ def test_runner_replaces_branching_merging_and_persistence(tmp_path):
     assert summary["realized_pto_cost"] == 0
     settlement = pd.read_excel(output, sheet_name="ex_post_settlement")
     assert settlement["planned_buy_kwh"].tolist() == [0, 0]
+
+
+def test_excel_agent_call_log_points_overlong_cells_to_full_jsonl_sidecar():
+    from agentic_workflow.state import _excel_safe_agent_calls
+
+    long_request = "x" * 40_000
+    frame = pd.DataFrame(
+        [{"request": long_request, "parsed_output": "short"}]
+    )
+    safe = _excel_safe_agent_calls(frame, "result.agent_calls.jsonl")
+
+    assert safe.loc[0, "parsed_output"] == "short"
+    assert "result.agent_calls.jsonl" in safe.loc[0, "request"]
+    assert "JSONL row 1" in safe.loc[0, "request"]
+    assert "characters=40000" in safe.loc[0, "request"]
+    assert "sha256=" in safe.loc[0, "request"]
+    assert frame.loc[0, "request"] == long_request
 
 
 def test_optimizer_never_accepts_an_all_mock_rerun_sequence(tmp_path):
