@@ -117,6 +117,16 @@ def main(argv: list[str] | None = None) -> int:
             "projected_full_day_aggregator_revenue": attempt.get(
                 "projected_full_day_aggregator_revenue"
             ),
+            "optimization_strategy": attempt.get("optimization_strategy"),
+            "lexicographic_priority_applied": attempt.get(
+                "lexicographic_priority_applied"
+            ),
+            "lexicographic_optimality_proven": attempt.get(
+                "lexicographic_optimality_proven"
+            ),
+            "minimum_operational_priority_slack": attempt.get(
+                "minimum_operational_priority_slack"
+            ),
             **interpretation_scores(interpreted, canonical[case]),
         }
         record["mode_aligned_score"] = (
@@ -139,6 +149,14 @@ def main(argv: list[str] | None = None) -> int:
             interpretation_exact_rate=("interpretation_exact", "mean"),
             canonical_compliance_rate=("canonical_priority_satisfied", "mean"),
             compliance_gap_mean=("canonical_priority_compliance_gap", "mean"),
+            minimum_operational_priority_slack_mean=(
+                "minimum_operational_priority_slack",
+                "mean",
+            ),
+            lexicographic_optimality_proven_rate=(
+                "lexicographic_optimality_proven",
+                "mean",
+            ),
             projected_full_day_pto_cost_mean=("projected_full_day_pto_cost", "mean"),
             projected_full_day_aggregator_revenue_mean=(
                 "projected_full_day_aggregator_revenue",

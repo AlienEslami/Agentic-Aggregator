@@ -125,6 +125,15 @@ def main() -> None:
             "order": os.environ.get("RT_SOLVER_ORDER", "gurobi,appsi_highs,highs,cbc,glpk"),
             "time_limit_seconds": os.environ.get("RT_SOLVER_TIME_LIMIT", "60"),
             "mip_gap": os.environ.get("RT_SOLVER_MIP_GAP", "0.02"),
+            "lexicographic_mip_gap": os.environ.get(
+                "RT_LEXICOGRAPHIC_MIP_GAP", "0.0"
+            ),
+            "lexicographic_abs_tolerance": os.environ.get(
+                "RT_LEXICOGRAPHIC_ABS_TOLERANCE", "1e-6"
+            ),
+            "lexicographic_rel_tolerance": os.environ.get(
+                "RT_LEXICOGRAPHIC_REL_TOLERANCE", "1e-8"
+            ),
         },
         "runtime": {
             "python": sys.version,

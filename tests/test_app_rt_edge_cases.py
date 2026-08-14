@@ -4,6 +4,112 @@ import app_rt
 import pytest
 
 
+def _lexicographic_test_context(target_kwh: float) -> dict:
+    return {
+        "buses": [
+            {
+                "bus_id": 1,
+                "bus_kwh": 100.0,
+                "initial_soc_rt": 0.5,
+                "availability_status": "available",
+            }
+        ],
+        "chargers": [
+            {
+                "charger_id": 1,
+                "alpha_by_step": [10.0, 10.0],
+            }
+        ],
+        "trips": [
+            {
+                "trip_id": 1,
+                "planned_bus_id": 1,
+                "energy_per_step": 0.0,
+                "start_rt": 2,
+                "end_rt": 3,
+                "remaining_energy_need": 0.0,
+                "interruption_allowed": True,
+                "active_now": False,
+            }
+        ],
+        "prices": {
+            "buy": [1.0, 1.0],
+            "sell": [0.5, 0.5],
+            "spot": [0.8, 0.8],
+        },
+        "current_timestep": 1,
+        "timestep_hours": 0.5,
+        "v2g_enabled": False,
+        "operational_requirements": [
+            {
+                "priority_id": "TEST-PRIORITY",
+                "objective": "frontload_site_charging",
+                "affected_buses": [1],
+                "timestep_start": 1,
+                "timestep_end": 1,
+                "target_value": target_kwh,
+                "target_unit": "kwh",
+            }
+        ],
+    }
+
+
+def test_soft_priority_uses_lexicographic_stages_without_penalty(monkeypatch):
+    monkeypatch.setenv("RT_SOLVER_ORDER", "appsi_highs,highs")
+    model, metadata = app_rt.solve_rt_rescheduling(
+        _lexicographic_test_context(target_kwh=10.0)
+    )
+
+    assert model is not None
+    assert metadata["optimization_strategy"] == "lexicographic_soft_operational_priority"
+    assert metadata["lexicographic_priority_applied"] is True
+    assert metadata["lexicographic_optimality_proven"] is True
+    assert [stage["stage"] for stage in metadata["lexicographic_stages"]] == [
+        "service_feasibility",
+        "operator_priority_violation",
+        "economic_dispatch",
+    ]
+    assert metadata["minimum_operational_priority_slack"] == pytest.approx(0.0)
+    assert list(model.operational_priority_slack.values())[0].value == pytest.approx(
+        0.0
+    )
+    assert model.w_buy[1].value == pytest.approx(10.0)
+    assert "operational_priority_slack" not in str(model.obj.expr)
+
+
+def test_physically_impossible_soft_priority_returns_minimum_shortfall(monkeypatch):
+    monkeypatch.setenv("RT_SOLVER_ORDER", "appsi_highs,highs")
+    model, metadata = app_rt.solve_rt_rescheduling(
+        _lexicographic_test_context(target_kwh=20.0)
+    )
+
+    assert model is not None
+    assert metadata["lexicographic_optimality_proven"] is True
+    assert metadata["minimum_operational_priority_slack"] == pytest.approx(10.0)
+    assert list(model.operational_priority_slack.values())[0].value == pytest.approx(
+        10.0
+    )
+    assert model.w_buy[1].value == pytest.approx(10.0)
+
+
+def test_no_operator_requirement_keeps_single_stage_baseline(monkeypatch):
+    monkeypatch.setenv("RT_SOLVER_ORDER", "appsi_highs,highs")
+    context = _lexicographic_test_context(target_kwh=10.0)
+    context["operational_requirements"] = []
+
+    model, metadata = app_rt.solve_rt_rescheduling(context)
+
+    assert model is not None
+    assert metadata["optimization_strategy"] == "baseline_weighted_service_and_economic"
+    assert metadata["lexicographic_priority_applied"] is False
+    assert metadata["lexicographic_optimality_proven"] is None
+    assert [stage["stage"] for stage in metadata["lexicographic_stages"]] == [
+        "baseline_weighted_objective"
+    ]
+    assert metadata["solver_telemetry"]["solve_stage_count"] == 1
+    assert model.w_buy[1].value == pytest.approx(0.0)
+
+
 def test_trip_ending_at_current_timestep_is_not_added_to_remaining_horizon():
     input_data = {
         "buses": [{"bus_id": 1, "bus_kwh": 365, "initial_soc": 50}],

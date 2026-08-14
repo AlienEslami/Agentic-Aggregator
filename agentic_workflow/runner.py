@@ -343,6 +343,9 @@ class WorkflowRunner:
                 "solver_lower_bound": solver_telemetry.get("lower_bound"),
                 "solver_upper_bound": solver_telemetry.get("upper_bound"),
                 "solver_relative_gap": solver_telemetry.get("relative_gap"),
+                "solver_solve_stage_count": solver_telemetry.get(
+                    "solve_stage_count"
+                ),
                 "solver_attempts": json.dumps(result.get("solver_attempts", [])),
                 "pto_daily_cost": result.get("pto_daily_cost"),
                 "aggregator_revenue": result.get("aggregator_revenue"),
@@ -407,6 +410,19 @@ class WorkflowRunner:
                 ),
                 "operational_priority_slack": json.dumps(
                     result.get("operational_priority_slack", []), default=str
+                ),
+                "optimization_strategy": result.get("optimization_strategy"),
+                "lexicographic_priority_applied": result.get(
+                    "lexicographic_priority_applied", False
+                ),
+                "lexicographic_optimality_proven": result.get(
+                    "lexicographic_optimality_proven"
+                ),
+                "lexicographic_stages": json.dumps(
+                    result.get("lexicographic_stages", []), default=str
+                ),
+                "minimum_operational_priority_slack": result.get(
+                    "minimum_operational_priority_slack"
                 ),
             }
         )

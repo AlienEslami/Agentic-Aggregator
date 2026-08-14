@@ -783,7 +783,6 @@ def solve_rt_rescheduling(ctx):
     switch_penalty = 25.0
     soc_shortfall_penalty = 8e3
     same_bus_break_penalty = 2e4
-    operational_priority_penalty = 1e4
     e_min_fraction = 0.2
     e_max_fraction = 1.0
     e_end_fraction = 0.2
@@ -956,16 +955,24 @@ def solve_rt_rescheduling(ctx):
         if trip_by_id[i]["active_now"] and initial_active_bus.get(i) in K
     )
 
-    model.obj = pyo.Objective(
+    model.service_feasibility_score = pyo.Expression(
         expr=service_penalty * weighted_unserved
         + interruption_penalty * total_unserved
         + active_break_penalty * active_breaks
         + same_bus_break_penalty * same_bus_breaks
-        + switch_penalty * total_switching
         + soc_shortfall_penalty * total_soc_shortfall
-        + operational_priority_penalty * total_operational_priority_slack
-        + total_buy_cost
-        - total_sell_revenue,
+    )
+    model.operational_priority_violation = pyo.Expression(
+        expr=total_operational_priority_slack
+    )
+    model.economic_dispatch_score = pyo.Expression(
+        expr=switch_penalty * total_switching + total_buy_cost - total_sell_revenue
+    )
+    model.baseline_weighted_score = pyo.Expression(
+        expr=model.service_feasibility_score + model.economic_dispatch_score
+    )
+    model.obj = pyo.Objective(
+        expr=model.baseline_weighted_score,
         sense=pyo.minimize,
     )
 
@@ -976,99 +983,253 @@ def solve_rt_rescheduling(ctx):
         "RT_SOLVER_ORDER", "gurobi,appsi_highs,highs,cbc,glpk"
     )
     solver_names = [name.strip() for name in configured_order.split(",") if name.strip()]
+    lexicographic_mip_gap = float(
+        os.environ.get("RT_LEXICOGRAPHIC_MIP_GAP", "0.0")
+    )
+    lexicographic_abs_tolerance = float(
+        os.environ.get("RT_LEXICOGRAPHIC_ABS_TOLERANCE", "1e-6")
+    )
+    lexicographic_rel_tolerance = float(
+        os.environ.get("RT_LEXICOGRAPHIC_REL_TOLERANCE", "1e-8")
+    )
+    use_lexicographic_priority = bool(operational_requirements)
+    if use_lexicographic_priority:
+        stage_specs = [
+            ("service_feasibility", "service_feasibility_score", True),
+            ("operator_priority_violation", "operational_priority_violation", True),
+            ("economic_dispatch", "economic_dispatch_score", False),
+        ]
+    else:
+        stage_specs = [
+            ("baseline_weighted_objective", "baseline_weighted_score", False)
+        ]
+
+    def configure_solver(solver, solver_name, stage_gap):
+        try:
+            if solver_name == "gurobi":
+                solver.options["TimeLimit"] = time_limit
+                solver.options["MIPGap"] = stage_gap
+            elif solver_name in {"appsi_highs", "highs"}:
+                solver.options["time_limit"] = time_limit
+                solver.options["mip_rel_gap"] = stage_gap
+            elif solver_name == "cbc":
+                solver.options["seconds"] = time_limit
+                solver.options["ratio"] = stage_gap
+            elif solver_name == "glpk":
+                solver.options["tmlim"] = time_limit
+        except Exception:
+            pass
+
+    def aggregate_stage_telemetry(stage_telemetry):
+        if not stage_telemetry:
+            return {}
+        aggregate = dict(stage_telemetry[-1])
+        for key in (
+            "wall_seconds",
+            "process_cpu_seconds",
+            "reported_time_seconds",
+            "reported_user_time_seconds",
+            "reported_system_time_seconds",
+            "branch_and_bound_nodes",
+            "iterations",
+        ):
+            values = [
+                float(item[key])
+                for item in stage_telemetry
+                if item.get(key) is not None
+            ]
+            if values:
+                aggregate[key] = sum(values)
+        for key in ("peak_rss_mb", "peak_rss_delta_mb"):
+            values = [
+                float(item[key])
+                for item in stage_telemetry
+                if item.get(key) is not None
+            ]
+            if values:
+                aggregate[key] = max(values)
+        wall = aggregate.get("wall_seconds")
+        cpu = aggregate.get("process_cpu_seconds")
+        if wall is not None and cpu is not None and float(wall) > 0:
+            aggregate["average_cpu_cores"] = float(cpu) / float(wall)
+        aggregate["solve_stage_count"] = len(stage_telemetry)
+        return aggregate
+
     solver_errors = []
     solver_attempts = []
     available_count = 0
+    last_failure_meta = None
     for solver_name_used in solver_names:
         try:
             solver = pyo.SolverFactory(solver_name_used)
             if solver is None or not solver.available(False):
                 continue
             available_count += 1
-            try:
-                if solver_name_used == "gurobi":
-                    solver.options["TimeLimit"] = time_limit
-                    solver.options["MIPGap"] = mip_gap
-                elif solver_name_used in {"appsi_highs", "highs"}:
-                    solver.options["time_limit"] = time_limit
-                    solver.options["mip_rel_gap"] = mip_gap
-                elif solver_name_used == "cbc":
-                    solver.options["seconds"] = time_limit
-                    solver.options["ratio"] = mip_gap
-                elif solver_name_used == "glpk":
-                    solver.options["tmlim"] = time_limit
-            except Exception:
-                pass
-            try:
-                with ResourceMeter() as solver_meter:
-                    solved = solver.solve(model, tee=solver_tee)
-                measured = solver_meter.metrics or {}
-            except RuntimeError as exc:
-                measured = solver_meter.metrics or {}
-                solver_attempts.append(
-                    {
-                        "solver_name": solver_name_used,
-                        "outcome": "error",
-                        "error": f"{type(exc).__name__}: {exc}",
-                        **measured,
-                    }
+            working_model = model.clone()
+            stage_records = []
+            stage_telemetry = []
+            stage_failed = False
+            for stage_index, (stage_name, expression_name, lock_result) in enumerate(
+                stage_specs, start=1
+            ):
+                expression = getattr(working_model, expression_name)
+                working_model.obj.set_value(expression)
+                is_final_stage = stage_index == len(stage_specs)
+                stage_gap = (
+                    mip_gap
+                    if is_final_stage or not use_lexicographic_priority
+                    else lexicographic_mip_gap
                 )
-                message = str(exc).lower()
-                if "feasible solution was not found" in message or "no feasible solution" in message:
-                    return None, {
+                configure_solver(solver, solver_name_used, stage_gap)
+                measured = {}
+                solver_meter = None
+                try:
+                    with ResourceMeter() as solver_meter:
+                        solved = solver.solve(working_model, tee=solver_tee)
+                    measured = solver_meter.metrics or {}
+                except Exception as exc:
+                    measured = (
+                        getattr(solver_meter, "metrics", None) or measured
+                    )
+                    solver_attempts.append(
+                        {
+                            "solver_name": solver_name_used,
+                            "stage": stage_name,
+                            "stage_index": stage_index,
+                            "outcome": "error",
+                            "error": f"{type(exc).__name__}: {exc}",
+                            **measured,
+                        }
+                    )
+                    solver_errors.append(
+                        f"{solver_name_used}/{stage_name}: {type(exc).__name__}: {exc}"
+                    )
+                    last_failure_meta = {
                         "solver_status": "warning/no_feasible_incumbent",
                         "solver_name": solver_name_used,
-                        "solver_telemetry": measured,
-                        "solver_attempts": solver_attempts,
+                        "solver_telemetry": aggregate_stage_telemetry(stage_telemetry),
                     }
-                solver_errors.append(f"{solver_name_used}: {type(exc).__name__}: {exc}")
-                continue
-            except Exception as exc:
-                measured = solver_meter.metrics or {}
-                solver_attempts.append(
-                    {
+                    stage_failed = True
+                    break
+
+                term = str(solved.solver.termination_condition).lower()
+                status = str(solved.solver.status).lower()
+                telemetry = _extract_solver_telemetry(
+                    solved, working_model, measured
+                )
+                has_incumbent = any(
+                    working_model.e[k, 1].value is not None for k in K
+                )
+                usable = "optimal" in term or "feasible" in term or has_incumbent
+                suffix = (
+                    "/incumbent"
+                    if has_incumbent
+                    and "optimal" not in term
+                    and "feasible" not in term
+                    else ""
+                )
+                objective_value = (
+                    float(pyo.value(expression)) if usable else None
+                )
+                attempt_record = {
+                    "solver_name": solver_name_used,
+                    "stage": stage_name,
+                    "stage_index": stage_index,
+                    "objective_value": objective_value,
+                    "mip_gap_target": stage_gap,
+                    "proven_optimal": "optimal" in term,
+                    "outcome": f"{status}/{term}{suffix}",
+                    **telemetry,
+                }
+                solver_attempts.append(attempt_record)
+                if not usable:
+                    last_failure_meta = {
+                        "solver_status": f"{status}/{term}",
                         "solver_name": solver_name_used,
-                        "outcome": "error",
-                        "error": f"{type(exc).__name__}: {exc}",
-                        **measured,
+                        "solver_telemetry": aggregate_stage_telemetry(
+                            stage_telemetry + [telemetry]
+                        ),
+                    }
+                    stage_failed = True
+                    break
+
+                stage_telemetry.append(telemetry)
+                tolerance = None
+                if lock_result:
+                    tolerance = max(
+                        lexicographic_abs_tolerance,
+                        lexicographic_rel_tolerance * abs(objective_value),
+                    )
+                    lock_name = f"lexicographic_{stage_name}_lock"
+                    working_model.add_component(
+                        lock_name,
+                        pyo.Constraint(expr=expression <= objective_value + tolerance),
+                    )
+                stage_records.append(
+                    {
+                        "stage": stage_name,
+                        "objective_value": objective_value,
+                        "lock_tolerance": tolerance,
+                        "mip_gap_target": stage_gap,
+                        "proven_optimal": "optimal" in term,
+                        "solver_status": f"{status}/{term}{suffix}",
                     }
                 )
-                # An installed solver can still be unusable (for example, an
-                # expired or user-mismatched license). Continue to the next
-                # declared solver so reproducible open-source fallback works.
-                solver_errors.append(f"{solver_name_used}: {type(exc).__name__}: {exc}")
+
+            if stage_failed:
                 continue
-            term = str(solved.solver.termination_condition).lower()
-            status = str(solved.solver.status).lower()
-            solver_telemetry = _extract_solver_telemetry(solved, model, measured)
-            solver_attempts.append(
-                {
-                    "solver_name": solver_name_used,
-                    "outcome": f"{status}/{term}",
-                    **solver_telemetry,
-                }
+
+            final_stage = stage_records[-1]
+            priority_stage = next(
+                (
+                    record
+                    for record in stage_records
+                    if record["stage"] == "operator_priority_violation"
+                ),
+                None,
             )
-            has_incumbent = any(model.e[k, 1].value is not None for k in K)
-            if "optimal" in term or "feasible" in term or has_incumbent:
-                suffix = "/incumbent" if has_incumbent and "optimal" not in term and "feasible" not in term else ""
-                return model, {
-                    "solver_status": f"{status}/{term}{suffix}",
-                    "solver_name": solver_name_used,
-                    "solver_fallback_errors": solver_errors,
-                    "solver_telemetry": solver_telemetry,
-                    "solver_attempts": solver_attempts,
-                }
-            return None, {
-                "solver_status": f"{status}/{term}",
+            return working_model, {
+                "solver_status": final_stage["solver_status"],
                 "solver_name": solver_name_used,
                 "solver_fallback_errors": solver_errors,
-                "solver_telemetry": solver_telemetry,
+                "solver_telemetry": aggregate_stage_telemetry(stage_telemetry),
                 "solver_attempts": solver_attempts,
+                "optimization_strategy": (
+                    "lexicographic_soft_operational_priority"
+                    if use_lexicographic_priority
+                    else "baseline_weighted_service_and_economic"
+                ),
+                "lexicographic_priority_applied": use_lexicographic_priority,
+                "lexicographic_optimality_proven": (
+                    all(record["proven_optimal"] for record in stage_records)
+                    if use_lexicographic_priority
+                    else None
+                ),
+                "lexicographic_stages": stage_records,
+                "minimum_operational_priority_slack": (
+                    priority_stage["objective_value"]
+                    if priority_stage is not None
+                    else None
+                ),
             }
         except Exception as exc:
             solver_errors.append(f"{solver_name_used}: {type(exc).__name__}: {exc}")
     if available_count == 0:
         raise RuntimeError("No supported MILP solver available for app_rt.py")
+    if last_failure_meta is not None:
+        last_failure_meta.update(
+            {
+                "solver_fallback_errors": solver_errors,
+                "solver_attempts": solver_attempts,
+                "optimization_strategy": (
+                    "lexicographic_soft_operational_priority"
+                    if use_lexicographic_priority
+                    else "baseline_weighted_service_and_economic"
+                ),
+                "lexicographic_priority_applied": use_lexicographic_priority,
+            }
+        )
+        return None, last_failure_meta
     raise RuntimeError("All available MILP solvers failed: " + " | ".join(solver_errors))
 
 
@@ -1222,6 +1383,21 @@ def run_optimization(
                     "solver_fallback_errors": solve_meta.get("solver_fallback_errors", []),
                     "solver_telemetry": solve_meta.get("solver_telemetry", {}),
                     "solver_attempts": solve_meta.get("solver_attempts", []),
+                    "optimization_strategy": solve_meta.get(
+                        "optimization_strategy"
+                    ),
+                    "lexicographic_priority_applied": solve_meta.get(
+                        "lexicographic_priority_applied", False
+                    ),
+                    "lexicographic_optimality_proven": solve_meta.get(
+                        "lexicographic_optimality_proven"
+                    ),
+                    "lexicographic_stages": solve_meta.get(
+                        "lexicographic_stages", []
+                    ),
+                    "minimum_operational_priority_slack": solve_meta.get(
+                        "minimum_operational_priority_slack"
+                    ),
                     "remaining_horizon_start": ctx["current_timestep"],
                     "remaining_horizon_end": ctx["current_timestep"] + len(ctx["prices"]["spot"]) - 1,
                 }
@@ -1305,6 +1481,17 @@ def run_optimization(
             "solver_fallback_errors": solve_meta.get("solver_fallback_errors", []),
             "solver_telemetry": solve_meta.get("solver_telemetry", {}),
             "solver_attempts": solve_meta.get("solver_attempts", []),
+            "optimization_strategy": solve_meta.get("optimization_strategy"),
+            "lexicographic_priority_applied": solve_meta.get(
+                "lexicographic_priority_applied", False
+            ),
+            "lexicographic_optimality_proven": solve_meta.get(
+                "lexicographic_optimality_proven"
+            ),
+            "lexicographic_stages": solve_meta.get("lexicographic_stages", []),
+            "minimum_operational_priority_slack": solve_meta.get(
+                "minimum_operational_priority_slack"
+            ),
             "remaining_horizon_start": ctx["current_timestep"],
             "remaining_horizon_end": ctx["current_timestep"] + T - 1,
         }

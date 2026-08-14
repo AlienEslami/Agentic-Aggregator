@@ -185,10 +185,16 @@ the decision timestep plus the proposed remaining schedule. A negative
 remaining-horizon PTO cost is no longer an automatic acceptance. Canonical priority
 compliance is reported before economics, and economics are compared among compliant
 schedules. When the first candidate misses an interpreted priority, the single rerun
-passes that structured priority to the optimizer as a high-penalty soft requirement.
-This asks for the least-cost compliant schedule when compliance is physically
-possible, while an explicit slack variable preserves feasibility and records an
-unattainable target rather than crashing the episode. The dedicated commands are:
+passes that structured priority to the optimizer as a soft requirement. The rerun
+uses three sequential objective tiers: first retain the best attainable trip-service
+and SOC-quality score, second minimize operator-priority shortfall, and third minimize
+switching and energy cost without worsening the first two tiers. There is no
+artificial monetary penalty coefficient. Each earlier-stage optimum is locked within
+a disclosed numerical tolerance before the next solve; stage objectives, solver
+status, tolerance, and whether optimality was proven are logged. This asks for the
+least-cost compliant schedule when compliance is physically possible, while an
+explicit slack variable preserves feasibility and records an unattainable target
+rather than crashing the episode. The dedicated commands are:
 
 ```powershell
 python scripts/run_evaluator_ablation.py --output-root results/revision/evaluator_ablation_v1 --dry-run

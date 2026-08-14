@@ -164,6 +164,9 @@ time limit and output with environment variables:
 ```bash
 export RT_SOLVER_TIME_LIMIT=60
 export RT_SOLVER_MIP_GAP=0.02
+export RT_LEXICOGRAPHIC_MIP_GAP=0.0
+export RT_LEXICOGRAPHIC_ABS_TOLERANCE=1e-6
+export RT_LEXICOGRAPHIC_REL_TOLERANCE=1e-8
 export RT_SOLVER_TEE=false
 export RT_SOLVER_ORDER=gurobi,appsi_highs,highs,cbc,glpk
 ```
@@ -171,6 +174,15 @@ export RT_SOLVER_ORDER=gurobi,appsi_highs,highs,cbc,glpk
 The solver order is explicit and auditable. If an installed solver is unusable
 (for example, because its license belongs to a different OS user), the optimizer
 records the failure and continues to the next declared solver.
+
+Ordinary real-time optimizations retain the original single weighted objective.
+When an Evaluator rerun supplies a soft operational requirement, the optimizer
+instead solves three objective tiers in sequence: service/SOC quality, minimum
+operator-priority slack, and economic dispatch plus switching. The first two
+stages use the stricter lexicographic gap and are locked within the configured
+absolute or relative tolerance before the next stage. This avoids assigning an
+artificial currency value to violating an operator request. The workbook records
+all stage objective values, tolerances, statuses, and optimality flags.
 
 Gurobi is recommended for long early-day remaining horizons. HiGHS is included
 for open-source replication and is effective for shorter horizons, but some
