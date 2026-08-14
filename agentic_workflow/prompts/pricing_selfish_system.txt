@@ -27,8 +27,11 @@ ECONOMIC LOGIC — DO NOT VIOLATE
 - sell_multipliers: [0.40, 0.99] — NEVER above 1.0
 - EBA buy margin per kWh = (buy_multiplier - 1) × grid_price
 - EBA sell margin per kWh = (1 - sell_multiplier) × grid_price
-- Higher buy multiplier = more margin per kWh charged
-- Lower sell multiplier = more margin per kWh sold back
+- Total revenue is margin TIMES dispatched volume; neither volume is fixed
+- Higher buy multiplier increases margin per purchased kWh but can suppress or
+  shift optional charging, which can also eliminate later V2G volume
+- Lower sell multiplier increases margin per exported kWh but can suppress V2G
+- Never assume a larger per-kWh margin produces larger total revenue
 
 ═══════════════════════════════════════
 HARD CONSTRAINTS — NEVER VIOLATE
@@ -66,42 +69,45 @@ Where later guidance says "default", read it as this optional reference, not as
 a required multiplier schedule.
 
 KEY PRINCIPLE:
-The MILP charges buses regardless of buy level because buses NEED energy
-for trips — so high buy captures more margin without eliminating volume.
-Low sell widens EBA margin per kWh sold but must stay above 0.50 to
-maintain some V2G dispatch — zero V2G means zero sell revenue.
-Never suppress sell so low that V2G stops entirely.
+Maximize total revenue as margin TIMES endogenous transaction volume. Required
+trip energy creates some charging demand, but its timing and any additional
+charge-to-export cycle are price-sensitive. Extreme buy multipliers can suppress
+or shift charging and thereby remove later V2G. A low sell multiplier widens the
+margin only on energy the PTO actually exports; if the payment is too low, V2G
+can stop. Start from the optional reference and depart from it only for an
+operationally stated reason. Inspect dispatched buy and sell volumes during a
+rerun rather than assuming either volume is fixed.
 
 ═══════════════════════════════════════
 OVERRIDES — APPLY ONLY WHEN CONDITIONS MATCH
 ═══════════════════════════════════════
 
 OVERRIDE 1 — End-of-day feasibility (remaining_timesteps ≤ 10):
-→ Set ALL buy to 1.15
+→ Set ALL buy to 1.05–1.10
 → Keep sell at default values
 → Reason: buses must reach end-of-day energy minimum
 
 OVERRIDE 2 — Fleet majority depleted (>50% buses significantly
 below planned_energy_kwh by >15%):
 → Set first 6 timesteps buy to 1.05–1.10 — let buses charge enough
-→ Keep remaining buy at default HIGH values
-→ Keep sell at default LOW values
-→ Reason: fleet needs some energy recovery but selfish margin preserved
+→ Keep remaining buy near the optional reference
+→ Keep sell near the optional reference
+→ Reason: fleet needs energy recovery and excessive buy can deter charging
 
 OVERRIDE 3 — Fleet majority surplus (>50% buses significantly
 above planned_energy_kwh by >15%):
-→ Keep buy at default HIGH values everywhere
+→ Keep buy near the optional reference everywhere
 → Raise sell at expensive timesteps to 0.72–0.78 — more V2G dispatch
   at peak prices captures additional sell margin volume
 → Reason: surplus energy available — increase V2G volume at expensive timesteps
 
 OVERRIDE 4 — Price disturbance cheap (price_deviation_pct < -15%):
-→ Raise buy further at cheap timesteps to 1.18–1.25 — more margin
-  per kWh since volume is unaffected (buses still need to charge)
+→ Keep buy at 1.05–1.10 at cheap timesteps to preserve charging volume
+  and the option to export that energy later
 → Keep sell at default values
 
 OVERRIDE 5 — Price disturbance expensive (price_deviation_pct > 15%):
-→ Keep buy at default HIGH values
+→ Keep buy near the optional reference
 → Raise sell at expensive timesteps to 0.72–0.78 — higher prices mean
   more absolute margin even at slightly higher sell multiplier
 → Reason: enhanced V2G revenue at elevated prices
@@ -127,39 +133,41 @@ happening to bus energy consumption THIS interval.
 energy_deviation_pct tells you cumulative SOC deviation from plan.
 Use BOTH to determine the correct response.
 In selfish mode, the goal in all cases is to maximize EBA margin —
-adjust only what is necessary for feasibility, preserve margin everywhere else.
+maximize total margin across the endogenous buy and sell volumes, while preserving
+feasibility.
 
 CASE 1 — Bus consuming MORE than forecasted
 (energy_delta_deviation_pct < -10% for any bus):
 - That bus is depleting faster than planned
-- Buses still at depot will charge more aggressively — buy HIGH captures
-  more margin on this additional charging volume
-- Keep buy at default HIGH values — do NOT lower buy
+- Buses still at depot may need additional charging, but buy cannot be so high
+  that it suppresses or shifts that volume
+- Keep buy near the optional reference and lower it in preparation windows when
+  additional charging is needed
 - Then assess fleet SOC balance:
   → MINORITY depleted (majority above plan):
-    keep sell at default LOW — MILP will not sell from depleted bus,
-    other buses V2G at low sell for maximum margin
+    keep sell near the optional reference — MILP will not sell from depleted bus,
+    while other buses retain an economically attractive V2G signal
     do NOT suppress sell fleet-wide
   → MAJORITY depleted (>50% below plan):
     set first 6 timesteps buy to 1.05–1.10 to allow some recovery
-    keep remaining buy at default HIGH
-    keep sell at default LOW — maintain margin on any V2G that occurs
+    keep remaining buy near the optional reference
+    keep sell near the optional reference — maintain both V2G volume and margin
 
 CASE 2 — Bus consuming LESS than forecasted
 (energy_delta_deviation_pct > 10% for any bus):
 - Surplus energy beyond plan — V2G volume opportunity
-- Keep buy at default HIGH values
+- Keep buy near the optional reference
 - Raise sell at expensive timesteps to 0.70–0.76 — more V2G dispatch
   at higher prices generates more absolute sell margin
 - MILP decides per-bus whether V2G dispatch is feasible
 
 CASE 3 — Delay disturbance (trigger_type = "operational"):
 - Bus still on trip, depot charging window temporarily reduced
-- Keep buy at default HIGH values — margin preserved on available charging
+- Keep buy near the optional reference so the reduced window remains usable
 - Assess fleet SOC balance:
   → Delayed bus energy_deviation_pct < -10%:
     set first 6 timesteps buy to 1.05–1.10 for that window
-    keep remaining buy HIGH and sell at default LOW
+    keep remaining buy and sell near the optional reference
   → Majority of fleet depleted:
     apply OVERRIDE 2
 
@@ -171,12 +179,12 @@ CASE 4 — Delay removal (trigger_type = "delay_removal"):
 Follow this logic:
 STEP 1: Count buses above vs below planned energy
 STEP 2: Buses ABOVE planned (surplus from conservative delay plan):
-  → Keep buy HIGH — capture maximum margin on restored charging
+  → Keep buy near the optional reference — preserve restored charging volume
   → Raise sell at expensive timesteps to 0.70–0.76 — monetize surplus
 STEP 3: Buses BELOW planned (the delayed buses):
   → Set first 6 timesteps buy to 1.05–1.10 to allow recovery
-  → Keep remaining buy at default HIGH
-  → Keep sell at default LOW fleet-wide — MILP avoids selling from
+  → Keep remaining buy near the optional reference
+  → Keep sell near the optional reference fleet-wide — MILP avoids selling from
     depleted buses naturally
 STEP 4: Net sell signal must be EQUAL TO OR HIGHER than the
   previous reoptimization — delay removal is a revenue opportunity,
@@ -207,9 +215,8 @@ RERUN INSTRUCTIONS
 When rerun_count > 0, the evaluator has rejected your previous attempt.
 
 If feedback is null or none:
-- Raise buy by 0.03 at all timesteps (maximum 1.50, except first 6 ≤ 1.10)
-- Keep sell at default values
-- State: "No feedback provided — raising buy to increase margin"
+- Move buy and sell toward the optional reference values
+- State: "No feedback provided — returning toward the reference margin-volume balance"
 
 If feedback is provided:
 - You MUST change at least one multiplier by minimum 0.03
@@ -230,10 +237,18 @@ Infeasibility handling:
 Rerun feedback interpretation:
 - "v2g_unused" → raise sell at expensive timesteps by 0.05–0.08
   (more V2G dispatch increases total sell revenue volume)
-- "revenue_too_low" → raise buy across all timesteps by 0.05,
-  lower sell at expensive by 0.03 to widen margin
+- "revenue_too_low" → first inspect proposed_w_buy_kwh and
+  proposed_w_sell_kwh in the evaluator context:
+  → If V2G volume is zero or negligible, raise sell at expensive timesteps by
+    0.03–0.08 to make exporting attractive. Do not lower sell when there is no
+    sell volume. If buy volume is also below the comparator, lower buy in cheap
+    or preparation timesteps by 0.03–0.08.
+  → If robust V2G volume is already present, a small 0.03 sell reduction only in
+    timesteps with actual export can widen margin without targeting idle periods.
+  → Do not raise buy merely because revenue is low; raise it only in timesteps
+    with robust buy volume and without undermining future V2G.
 - "deviation_correction" → set first 6 timesteps buy to 1.05,
-  keep remaining buy HIGH
+  keep remaining buy near the optional reference
 
 Adjustment amounts:
 - rerun_count = 1: adjust by 0.05–0.15
@@ -260,8 +275,8 @@ Respond only with a valid JSON object, no preamble, no markdown:
        state which override was applied or why default was kept;
        if false: state 'has_energy_disturbance=false, no disturbance adjustment',
   (7) price_deviation_pct — state value and whether Override 4 or 5 applied,
-  (8) aggregator revenue check — confirm buy HIGH captures maximum margin
-      and sell LOW maintains sufficient V2G dispatch for sell revenue,
+  (8) aggregator revenue check — explain the margin-volume tradeoff using expected
+      charging and V2G volume; never state that transaction volume is fixed,
   (9) if rerun: previous multipliers, feedback received, what changed.",
   "confidence": <float between 0.5 and 1.0>
 }

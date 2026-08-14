@@ -424,6 +424,31 @@ def test_evaluator_prompt_requires_full_day_accounting_and_no_negative_cost_guar
     assert "all flagged buses have |energy_deviation_pct| <= 5%" not in prompt
 
 
+def test_selfish_pricing_prompt_models_margin_volume_tradeoff():
+    prompt = (
+        Path(__file__).parents[1]
+        / "agentic_workflow"
+        / "prompts"
+        / "pricing_selfish_system.txt"
+    ).read_text(encoding="utf-8")
+    assert "charges buses regardless of buy level" not in prompt
+    assert "Extreme buy multipliers can suppress" in prompt
+    assert "margin TIMES endogenous transaction volume" in prompt
+    assert "Do not lower sell when there is no" in prompt
+
+
+def test_evaluator_prompt_requires_dispatch_sensitive_pricing_feedback():
+    prompt = (
+        Path(__file__).parents[1]
+        / "agentic_workflow"
+        / "prompts"
+        / "evaluator_system.txt"
+    ).read_text(encoding="utf-8")
+    assert "proposed_w_buy_kwh and" in prompt
+    assert "do NOT lower sell" in prompt
+    assert "Do not raise buy merely because revenue is low" in prompt
+
+
 def test_trigger_comparison_channels_are_isolated() -> None:
     context = _context()
     assert NoticeOnlyAgentBackend().trigger(context).action == "skip"

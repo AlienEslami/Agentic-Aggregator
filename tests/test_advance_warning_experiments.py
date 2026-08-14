@@ -73,6 +73,24 @@ def test_isolated_ablation_pilot_has_no_primary_workbooks():
     } == set(ROLE_ABLATION_CONFIGURATIONS)
 
 
+def test_isolated_ablation_pilot_can_select_only_full_agentic():
+    specs = build_run_specs(
+        cases=["aw_route6_late_return", "aw_combined_evening"],
+        modes=["selfish"],
+        include_role_ablations=True,
+        ablation_repetitions=5,
+        role_ablation_configurations=["full_agentic"],
+        include_primary_deterministic=False,
+    )
+    assert len(specs) == 10
+    assert {spec.configuration for spec in specs} == {"full_agentic"}
+    assert {spec.case for spec in specs} == {
+        "aw_route6_late_return",
+        "aw_combined_evening",
+    }
+    assert {spec.repetition for spec in specs} == set(range(1, 6))
+
+
 def test_stochastic_only_force_never_reuses_agent_but_keeps_fixed(monkeypatch, tmp_path):
     monkeypatch.setattr(
         "scripts.run_advance_warning_matrix.workbook_is_complete",

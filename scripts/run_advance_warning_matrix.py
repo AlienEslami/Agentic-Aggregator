@@ -97,6 +97,7 @@ def build_run_specs(
     agent_repetitions: int = 5,
     include_role_ablations: bool = False,
     ablation_repetitions: int = 5,
+    role_ablation_configurations: Iterable[str] = ROLE_ABLATION_CONFIGURATIONS,
     include_fixed: bool = False,
     include_primary_deterministic: bool = True,
 ) -> list[RunSpec]:
@@ -104,6 +105,21 @@ def build_run_specs(
         raise ValueError("agent_repetitions must be positive")
     if ablation_repetitions < 1:
         raise ValueError("ablation_repetitions must be positive")
+
+    selected_role_ablations = unique_in_order(role_ablation_configurations)
+    unsupported_role_ablations = set(selected_role_ablations) - set(
+        ROLE_ABLATION_CONFIGURATIONS
+    )
+    if unsupported_role_ablations:
+        raise ValueError(
+            "Unsupported role-ablation configurations: "
+            f"{sorted(unsupported_role_ablations)!r}"
+        )
+    if include_role_ablations and not selected_role_ablations:
+        raise ValueError(
+            "role_ablation_configurations cannot be empty when role ablations "
+            "are enabled"
+        )
 
     configurations = (
         list(PRIMARY_DETERMINISTIC_CONFIGURATIONS)
@@ -142,7 +158,7 @@ def build_run_specs(
                         )
                     )
             if include_role_ablations:
-                for configuration in ROLE_ABLATION_CONFIGURATIONS:
+                for configuration in selected_role_ablations:
                     for repetition in range(1, ablation_repetitions + 1):
                         specs.append(
                             RunSpec(
@@ -454,7 +470,13 @@ def write_manifest(
                 "agent_vs_numerical",
                 "agent_vs_oracle",
             ],
-            "secondary_role_ablations": list(ROLE_ABLATION_CONFIGURATIONS),
+            "secondary_role_ablations": list(
+                unique_in_order(
+                    spec.configuration
+                    for spec in specs
+                    if spec.run_family == "secondary_role_ablation"
+                )
+            ),
             "operational_feasibility_first": True,
         },
         "external_llm": {
@@ -526,6 +548,16 @@ def main() -> None:
     parser.add_argument("--agent-repetitions", type=int, default=5)
     parser.add_argument("--include-role-ablations", action="store_true")
     parser.add_argument(
+        "--role-ablation-configuration",
+        action="append",
+        choices=ROLE_ABLATION_CONFIGURATIONS,
+        default=[],
+        help=(
+            "Limit role-ablation execution to the selected configuration. Repeat "
+            "the option to select more than one; defaults to all four."
+        ),
+    )
+    parser.add_argument(
         "--only-role-ablations",
         action="store_true",
         help=(
@@ -576,6 +608,10 @@ def main() -> None:
 
     if args.only_role_ablations and not args.include_role_ablations:
         raise SystemExit("--only-role-ablations requires --include-role-ablations")
+    if args.role_ablation_configuration and not args.include_role_ablations:
+        raise SystemExit(
+            "--role-ablation-configuration requires --include-role-ablations"
+        )
     if args.require_clean_git and not git_worktree_is_clean():
         raise SystemExit("Refusing execution because the Git worktree is not clean")
     if (
@@ -605,6 +641,9 @@ def main() -> None:
         agent_repetitions=args.agent_repetitions,
         include_role_ablations=args.include_role_ablations,
         ablation_repetitions=args.ablation_repetitions,
+        role_ablation_configurations=(
+            args.role_ablation_configuration or ROLE_ABLATION_CONFIGURATIONS
+        ),
         include_fixed=args.include_fixed,
         include_primary_deterministic=not args.only_role_ablations,
     )
