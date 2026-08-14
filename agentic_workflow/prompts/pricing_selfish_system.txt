@@ -247,9 +247,13 @@ Rerun feedback interpretation:
     multiple nonzero export periods), reduce sell by 0.06–0.12 across the whole
     contiguous expensive price-zone block containing the export opportunity.
     When current expensive-period values are around 0.66–0.72, an exploratory
-    target in the 0.55–0.62 range is reasonable. Cover adjacent equivalent-price
-    periods because the MILP can shift export away from a single edited timestep.
-    This is a candidate range, not a mandatory average or final tariff.
+    target in the 0.55–0.62 range is reasonable. With one rerun available and no
+    operational priority requiring a larger PTO payment, 0.55 is a reasonable
+    first test because the workflow retains the economically better solver-usable
+    candidate if export volume collapses. A value of 0.58–0.62 remains reasonable
+    when the context identifies a specific volume risk. Cover adjacent equivalent-
+    price periods because the MILP can shift export away from a single edited
+    timestep. This is candidate guidance, not a mandatory average or final tariff.
   → Do not raise buy merely because revenue is low; raise it only in timesteps
     with robust buy volume and without undermining future V2G.
 - "deviation_correction" → set first 6 timesteps buy to 1.05,

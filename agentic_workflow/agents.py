@@ -566,11 +566,22 @@ class OpenAIAgentBackend(AgentBackend):
                 "actual_lengths": actual_lengths,
                 "method": "truncate_or_extend_last_value",
             }
-        return normalize_pricing_decision(
+        normalized = normalize_pricing_decision(
             decision,
             context["mode"],
             expected_length,
         )
+        effective, feedback_guard = enforce_evaluator_pricing_feedback(
+            normalized,
+            feedback=feedback,
+            mode=context["mode"],
+            planning_start_timestep=int(
+                context.get("planning_start_timestep") or context["timestep"]
+            ),
+        )
+        if feedback_guard is not None:
+            self.call_records[-1]["post_parse_feedback_enforcement"] = feedback_guard
+        return effective
 
     def evaluate(
         self,
@@ -1661,6 +1672,78 @@ def normalize_pricing_decision(
         reasoning=decision.reasoning,
         confidence=decision.confidence,
     )
+
+
+def enforce_evaluator_pricing_feedback(
+    decision: PricingDecision,
+    *,
+    feedback: EvaluationFeedback | None,
+    mode: str,
+    planning_start_timestep: int,
+) -> tuple[PricingDecision, dict[str, Any] | None]:
+    """Make a rerun's numeric arrays honor its explicit evaluator adjustment.
+
+    The Evaluator chooses the side, executable window, direction, and target. This
+    guard only repairs a schema-valid Pricing response whose numbers contradict that
+    structured instruction (for example, reasoning says 0.72 -> 0.75 but the array
+    remains unchanged). More aggressive Agent changes in the requested direction are
+    preserved.
+    """
+
+    if feedback is None:
+        return decision, None
+
+    buy = list(decision.buy_multipliers)
+    sell = list(decision.sell_multipliers)
+    applied: list[dict[str, Any]] = []
+    for side, adjustment in (
+        ("buy", feedback.buy_multiplier_adjustment),
+        ("sell", feedback.sell_multiplier_adjustment),
+    ):
+        if adjustment is None:
+            continue
+        values = buy if side == "buy" else sell
+        first = max(0, adjustment.timestep_start - planning_start_timestep)
+        last = min(
+            len(values), adjustment.timestep_end - planning_start_timestep + 1
+        )
+        changed_timesteps: list[int] = []
+        for index in range(first, max(first, last)):
+            before = values[index]
+            if adjustment.direction == "raise" and before < adjustment.target_value:
+                values[index] = adjustment.target_value
+            elif adjustment.direction == "lower" and before > adjustment.target_value:
+                values[index] = adjustment.target_value
+            if values[index] != before:
+                changed_timesteps.append(planning_start_timestep + index)
+        if changed_timesteps:
+            applied.append(
+                {
+                    "side": side,
+                    "direction": adjustment.direction,
+                    "target_value": adjustment.target_value,
+                    "changed_timesteps": changed_timesteps,
+                }
+            )
+
+    if not applied:
+        return decision, None
+    repaired = PricingDecision(
+        buy_multipliers=buy,
+        sell_multipliers=sell,
+        reasoning=(
+            decision.reasoning
+            + " Deterministic feedback-compliance guard applied the Evaluator's "
+            "explicit structured multiplier target where the numeric array did not."
+        ),
+        confidence=decision.confidence,
+    )
+    effective = normalize_pricing_decision(repaired, mode, len(buy))
+    return effective, {
+        "kind": "evaluator_feedback_compliance",
+        "method": "enforce_explicit_direction_and_target_only",
+        "adjustments": applied,
+    }
 
 
 def create_agent_backend(

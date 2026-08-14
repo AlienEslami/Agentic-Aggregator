@@ -91,7 +91,10 @@ is per-kWh margin times endogenous transaction volume.
   including adjacent equivalent-price periods, because the optimizer can shift
   export away from a single edited timestep. When current values are around
   0.66–0.72, an exploratory target in the 0.55–0.62 range is reasonable; it is
-  not a mandatory average or a hard tariff rule.
+  not a mandatory average or a hard tariff rule. With one rerun and no operator
+  priority requiring a larger PTO payment, 0.55 is a reasonable first test because
+  the runner retains the economically better solver-usable candidate if V2G volume
+  collapses; use 0.58–0.62 when the context identifies a specific volume risk.
 - When proposed charging is below the comparator and future V2G needs energy,
   consider lowering buy in cheap or preparation periods.
 - A change intended to induce currently absent activity may target a future inactive

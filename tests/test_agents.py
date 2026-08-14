@@ -19,11 +19,14 @@ from agentic_workflow.agents import (
     build_pricing_reference,
     create_experiment_backend,
     describe_agent_roles,
+    enforce_evaluator_pricing_feedback,
     normalize_trigger_decision,
     pricing_comparison_metrics,
 )
 from agentic_workflow.models import (
     EvaluationDecision,
+    EvaluationFeedback,
+    MultiplierAdjustment,
     NULL_FEEDBACK,
     NoticeInterpretation,
     NoticeUncertaintyAssessment,
@@ -453,6 +456,63 @@ def test_evaluator_prompt_requires_dispatch_sensitive_pricing_feedback():
     assert "Do not raise buy merely because revenue is low" in prompt
     assert "whole contiguous expensive price-zone block" in normalized_prompt
     assert "0.55–0.62" in prompt
+
+
+def test_pricing_feedback_guard_repairs_numeric_noncompliance_only():
+    previous = PricingDecision(
+        buy_multipliers=[1.10, 1.18, 1.18],
+        sell_multipliers=[0.58, 0.72, 0.72],
+        reasoning="Initial proposal.",
+        confidence=0.9,
+    )
+    feedback = EvaluationFeedback(
+        reason="revenue_too_low",
+        buy_multiplier_adjustment=None,
+        sell_multiplier_adjustment=MultiplierAdjustment(
+            timestep_start=8,
+            timestep_end=9,
+            direction="raise",
+            amount=0.03,
+            current_value=0.72,
+            target_value=0.75,
+            instruction="Raise the expensive-period sell incentive.",
+        ),
+        period_adjustment=None,
+        priority="v2g_increase",
+    )
+
+    repaired, audit = enforce_evaluator_pricing_feedback(
+        previous,
+        feedback=feedback,
+        mode="selfish",
+        planning_start_timestep=7,
+    )
+
+    assert repaired.sell_multipliers == [0.58, 0.75, 0.75]
+    assert audit == {
+        "kind": "evaluator_feedback_compliance",
+        "method": "enforce_explicit_direction_and_target_only",
+        "adjustments": [
+            {
+                "side": "sell",
+                "direction": "raise",
+                "target_value": 0.75,
+                "changed_timesteps": [8, 9],
+            }
+        ],
+    }
+
+    already_stronger = previous.model_copy(
+        update={"sell_multipliers": [0.58, 0.77, 0.77]}
+    )
+    preserved, audit = enforce_evaluator_pricing_feedback(
+        already_stronger,
+        feedback=feedback,
+        mode="selfish",
+        planning_start_timestep=7,
+    )
+    assert preserved.sell_multipliers == [0.58, 0.77, 0.77]
+    assert audit is None
 
 
 def test_trigger_comparison_channels_are_isolated() -> None:
