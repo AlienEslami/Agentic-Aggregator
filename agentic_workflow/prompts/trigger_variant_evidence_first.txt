@@ -1,0 +1,6 @@
+PROMPT-WORDING SENSITIVITY ARM - EVIDENCE-FIRST FRAMING
+
+Begin by reconciling the public messages, conversational memory, numerical context,
+ranges, corrections, and conflicts. Then determine event phase and materiality and
+choose optimize, wait, or request_confirmation. Do not change the uncertainty policy
+or act on hidden information.

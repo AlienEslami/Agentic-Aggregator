@@ -37,7 +37,7 @@ ABLATION_COMPARATORS = (
     ),
     (
         "llm_pricing_contribution",
-        "mathematical_pricing_substitution",
+        "deterministic_pricing_substitution",
         "What changes when LLM pricing is replaced by the deterministic price-zone heuristic?",
     ),
     (
@@ -221,6 +221,10 @@ def annotate_runs(
         raise ValueError("matrix_runs.csv is missing columns: " + ", ".join(sorted(missing)))
 
     result = frame.copy()
+    result["recorded_configuration"] = result["configuration"]
+    result["configuration"] = result["configuration"].replace(
+        {"mathematical_pricing_substitution": "deterministic_pricing_substitution"}
+    )
     complete = result["status"].astype(str).eq("complete")
     shortfall = numeric(result, "maximum_reserve_shortfall_kwh")
     violations = numeric(result, "reserve_violation_timesteps")
@@ -233,6 +237,9 @@ def annotate_runs(
         & minimum_soc.ge(minimum_soc_fraction - reserve_tolerance_kwh)
         & terminal_soc.ge(minimum_soc_fraction - reserve_tolerance_kwh)
     )
+    # Compatibility aliases keep frozen v3 analysis columns readable while all
+    # new tables use the more precise operational-feasibility terminology.
+    result["operationally_feasible"] = result["safety_feasible"]
     result["economic_metric"] = np.where(
         result["mode"].eq("selfish"),
         "realized_aggregator_revenue",

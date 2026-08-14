@@ -104,7 +104,12 @@ class WorkflowRunner:
             list(self.day_ahead.summary.get("sell_multipliers") or []),
         )
         self.agents = agents or create_experiment_backend(
-            config.experiment_configuration, config.agent_backend, config.model
+            config.experiment_configuration,
+            config.agent_backend,
+            config.model,
+            trigger_prompt_variant=config.trigger_prompt_variant,
+            trigger_confidence_threshold=config.trigger_confidence_threshold,
+            pricing_guidance_variant=config.pricing_guidance_variant,
         )
         self._agent_call_cursor = 0
         self.optimizer = optimizer or create_optimizer_backend(
@@ -138,6 +143,9 @@ class WorkflowRunner:
         )
         return {
             "configuration": configuration,
+            "trigger_prompt_variant": self.config.trigger_prompt_variant,
+            "trigger_confidence_threshold": self.config.trigger_confidence_threshold,
+            "pricing_guidance_variant": self.config.pricing_guidance_variant,
             "trigger_input": trigger_input,
             "evaluator_input": evaluator_input,
             "hidden_physical_truth_sent_to_llm": False,
@@ -820,6 +828,13 @@ class WorkflowRunner:
                     "minimum_soc_fraction": 0.20,
                 }
                 context["maximum_reruns"] = self.config.max_reruns
+                context["trigger_prompt_variant"] = self.config.trigger_prompt_variant
+                context["trigger_confidence_threshold"] = (
+                    self.config.trigger_confidence_threshold
+                )
+                context["pricing_guidance_variant"] = (
+                    self.config.pricing_guidance_variant
+                )
                 context["numerical_event_telemetry"] = (
                     {
                         "return_delay_minutes_by_bus": dict(
@@ -1126,7 +1141,9 @@ class WorkflowRunner:
             "rule_parser_trigger_substitution": "rule",
             "full_agentic": "llm",
             "mathematical_pricing_substitution": "llm",
+            "deterministic_pricing_substitution": "llm",
             "evaluator_removal": "llm",
+            "pricing_agent_only": "rule",
             "agent_evaluator_raw_text": "manual",
             "rule_text_evaluator": "manual",
             "structured_evaluator_oracle": "manual",

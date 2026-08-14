@@ -1,0 +1,66 @@
+{
+  "protocol_version": "revision_sensitivity_v1",
+  "status": "implemented_and_prespecified_not_yet_executed",
+  "objective": "Test whether the revised conclusions depend materially on prompt wording, a Trigger deployment threshold, or optional Pricing reference spread.",
+  "one_factor_at_a_time": true,
+  "common_controls": {
+    "model": "gpt-5.6-luna",
+    "reasoning_effort": "low",
+    "solver_order": ["gurobi"],
+    "solver_fallback_permitted_in_final_results": false,
+    "solver_time_limit_seconds": 60,
+    "solver_mip_gap": 0.02,
+    "repetitions_per_stochastic_arm": 5,
+    "canonical_hidden_truth_sent_to_openai": false,
+    "raw_outputs_and_usage_logged": true
+  },
+  "trigger_prompt_wording": {
+    "dataset": "frozen held-out trigger v3 test split",
+    "variants": ["baseline", "action_first", "evidence_first"],
+    "fixed_confidence_threshold": 0.7,
+    "primary_outcomes": [
+      "effective action accuracy",
+      "false optimization rate",
+      "recommended-action accuracy"
+    ],
+    "secondary_outcomes": [
+      "phase accuracy",
+      "exact update accuracy",
+      "tokens, cost, and latency"
+    ]
+  },
+  "trigger_confidence_threshold": {
+    "dataset": "frozen held-out trigger v3 test split",
+    "fixed_prompt_variant": "baseline",
+    "levels": {"low": 0.5, "base": 0.7, "high": 0.9},
+    "interpretation": "The reported confidence is an uncalibrated deployment score, not a calibrated probability.",
+    "primary_outcomes": [
+      "effective action accuracy",
+      "false optimization rate",
+      "missed optimization rate"
+    ]
+  },
+  "pricing_guidance": {
+    "configuration": "pricing_agent_only",
+    "case": "aw_combined_evening",
+    "modes": ["selfish", "altruistic"],
+    "variants": ["narrow", "base", "wide"],
+    "temporal_spread_factors": {"narrow": 0.5, "base": 1.0, "wide": 1.5},
+    "fixed_upstream_trigger": "frozen rule interpretation of the same public text",
+    "fixed_evaluator": "hard solver and operational-feasibility checks",
+    "hard_economic_bounds_changed": false,
+    "agent_average_enforced": false,
+    "primary_outcomes": [
+      "operational feasibility",
+      "realized mode-aligned full-day economics",
+      "chosen-reference arithmetic-mean gap",
+      "centered temporal-shape difference"
+    ]
+  },
+  "reporting": {
+    "report_every_arm": true,
+    "do_not_select_a_preferred_setting_from_noise": true,
+    "do_not_pool_selfish_and_altruistic_modes": true,
+    "preserve_all_failed_and_successful_structured_calls": true
+  }
+}

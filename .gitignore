@@ -47,6 +47,7 @@ htmlcov/
 # Local config
 .env
 .env.*
+!.env.example
 .python-version
 
 # Logs

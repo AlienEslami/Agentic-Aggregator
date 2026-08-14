@@ -1,0 +1,51 @@
+{
+  "protocol_version": "information_and_evaluator_ablation_v2",
+  "status": "implemented_not_yet_executed",
+  "supersedes": "inputs/revision/information_and_evaluator_ablation_protocol_v1.json",
+  "change_reason": "Replace the arbitrary currency penalty with staged lexicographic soft-priority optimization.",
+  "common_upstream_roles": {
+    "trigger": "canonical structured notice fixed across all evaluator arms",
+    "pricing": "deterministic price-zone pricing fixed across all evaluator arms"
+  },
+  "methods": {
+    "agent_evaluator_raw_text": "LLM interprets raw public operator text; deterministic code scores the schedule",
+    "rule_text_evaluator": "frozen parser interprets the same public text; deterministic code scores the schedule",
+    "structured_evaluator_oracle": "receives canonical structured priority as a labelled upper bound",
+    "evaluator_removal_control": "uses solver and feasibility checks but ignores the qualitative priority"
+  },
+  "hidden_canonical_priority_sent_to_llm": false,
+  "planning_and_accounting": {
+    "causal_interval_settlement": "settle interval t and optimize only t+1 through 48",
+    "economics": "realized settled prefix plus candidate remaining schedule",
+    "negative_remaining_cost_auto_acceptance": false,
+    "solver_order": ["gurobi"],
+    "solver_fallback_permitted_in_final_results": false,
+    "solver_time_limit_seconds": 60,
+    "solver_mip_gap": 0.02
+  },
+  "rerun_mechanism": {
+    "name": "lexicographic_soft_operational_priority",
+    "stages": [
+      "minimize service and SOC violations",
+      "hold the first-stage optimum and minimize operator-priority slack",
+      "hold both earlier optima and optimize the mode-aligned economic objective"
+    ],
+    "arbitrary_currency_penalty": false,
+    "unattainable_priority_behavior": "retain feasibility and report minimum priority slack",
+    "maximum_reruns": 1
+  },
+  "comparison_order": [
+    "optimizer usability and operational feasibility",
+    "canonical operator-priority compliance",
+    "minimum operator-priority slack",
+    "projected full-day economics among compliant schedules",
+    "incremental full-day cost of compliance",
+    "regret relative to the structured oracle",
+    "tokens, API cost, latency, CPU, memory, and solver telemetry"
+  ],
+  "repetitions": {
+    "agent_evaluator_raw_text": 5,
+    "deterministic_arms": 1,
+    "planned_runs": 48
+  }
+}

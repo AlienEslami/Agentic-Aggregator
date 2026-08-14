@@ -19,7 +19,9 @@ ExperimentConfiguration = Literal[
     "full_agentic",
     "rule_parser_trigger_substitution",
     "mathematical_pricing_substitution",
+    "deterministic_pricing_substitution",
     "evaluator_removal",
+    "pricing_agent_only",
     "agent_evaluator_raw_text",
     "rule_text_evaluator",
     "structured_evaluator_oracle",
@@ -60,6 +62,9 @@ class WorkflowConfig:
     optimizer_backend: OptimizerBackendName = "direct"
     optimizer_url: str = "http://127.0.0.1:5002"
     model: str = DEFAULT_MODEL
+    trigger_prompt_variant: str = "baseline"
+    trigger_confidence_threshold: float = 0.0
+    pricing_guidance_variant: str = "base"
     max_reruns: int = 3
     state_source: StateSourceName = "plan"
     checkpoint_every: int = 1
@@ -92,5 +97,14 @@ class WorkflowConfig:
             raise ValueError("end_timestep must be in [start_timestep, 48]")
         if self.max_reruns < 0:
             raise ValueError("max_reruns must be nonnegative")
+        from .experiment_controls import (
+            validate_pricing_guidance_variant,
+            validate_trigger_confidence_threshold,
+            validate_trigger_prompt_variant,
+        )
+
+        validate_trigger_prompt_variant(self.trigger_prompt_variant)
+        validate_trigger_confidence_threshold(self.trigger_confidence_threshold)
+        validate_pricing_guidance_variant(self.pricing_guidance_variant)
         if self.checkpoint_every < 1:
             raise ValueError("checkpoint_every must be positive")

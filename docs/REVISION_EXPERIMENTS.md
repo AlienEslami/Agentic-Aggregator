@@ -295,8 +295,8 @@ The v2 disturbances were selected by a declared Gurobi calibration sweep, not
 by Agent outcomes. The selected late-return range is 60-90 minutes (90-minute
 conservative update), and the selected charger outage is EVSE 6-8 from
 03:30-05:00. In each changed case, the selected setting is the strongest tested
-setting for which the structured advance-information oracle remains safe while
-the delayed numerical trigger is unsafe. Reproduce the sweep with:
+setting for which the structured advance-information oracle remains operationally
+feasible while the delayed numerical trigger is operationally infeasible. Reproduce the sweep with:
 
 ```powershell
 python scripts/calibrate_advance_warning_cases.py --force
@@ -399,12 +399,12 @@ python scripts/analyze_advance_warning_matrix.py
 ```
 
 The analysis produces run-level, method-summary, primary-contrast, and
-role-ablation CSV files plus a JSON protocol summary. A run is safety-feasible
+role-ablation CSV files plus a JSON protocol summary. A run is operationally feasible
 only if it completes, has no reserve-violation timesteps, has no material reserve
 shortfall, and maintains the 20% minimum and terminal SOC thresholds. Economic
-effects are reported only for pairs in which both methods are safety-feasible.
+effects are reported only for pairs in which both methods are operationally feasible.
 In selfish mode, a positive paired effect means greater aggregator revenue; in
-altruistic mode, it means lower PTO cost. This prevents an unsafe schedule from
+altruistic mode, it means lower PTO cost. This prevents an operationally infeasible schedule from
 appearing superior merely because it bought less energy or earned more revenue.
 Absolute mode-aligned differences no greater than 0.001 are reported as economic
 ties, preventing solver-scale floating-point noise from being labeled a win or
@@ -476,9 +476,14 @@ share physical truth.
 The deterministic oracle/rule/numerical matrix has been validated in both modes;
 generated results remain ignored. Run repeated nondeterministic Agent Trigger
 trials before making an Agent-over-rule economic-superiority claim.
-The 8/16/32 scaling study also still requires physically coherent 16- and
-32-bus workbooks and a declared replication rule for trips, charger ratios,
-depot power, and terminal SOC. A second depot must be a distinct input instance.
+The 8/16/32 scaling and second-depot implementation is now prespecified in
+`scaling_and_second_depot_protocol_v1.json`. Generated workbooks remain ignored
+local artifacts. `build_scaling_inputs.py` applies a declared replication rule
+for buses, trips, charger ratio, depot power, day-ahead exchange, and terminal
+SOC, while constructing a distinct Depot B from different route-energy and
+price inputs. `run_scaling_study.py` separates LLM, optimizer, solver, workflow,
+memory, feasibility, and economic measurements. Final repeated execution is
+pending explicit external-LLM authorization.
 
 ### Six-run Agent pilot (historical pre-calibration result)
 
@@ -489,15 +494,15 @@ v2 protocol and must not be combined with new confirmatory repetitions.
 On 2026-08-13, one `agent_trigger_only` repetition was run for each of the three
 advance-warning cases in both modes with `gpt-5.6-luna` at low reasoning effort.
 All six runs completed 48 timesteps, all structured calls were valid, all runs
-met the reserve and 20% SOC safety criteria, and their economic outcomes matched
+met the reserve and 20% SOC operational-feasibility criteria, and their economic outcomes matched
 the oracle. The six runs used 619,441 total tokens and approximately USD 0.1341.
 
-Relative to the numerical trigger, the Agent was safe in all six cells while
-the numerical method was safe in two. In those two comparable combined-event
+Relative to the numerical trigger, the Agent was operationally feasible in all six cells while
+the numerical method was operationally feasible in two. In those two comparable combined-event
 cells, the Agent increased selfish-mode aggregator revenue by approximately
 3.42 and reduced altruistic PTO cost by approximately 11.72. Relative to the
-rule-text method, the Agent was safe in two additional charger-shutdown cells;
-the four cells in which both were safe were economic ties. These are pilot
+rule-text method, the Agent was operationally feasible in two additional charger-shutdown cells;
+the four cells in which both were operationally feasible were economic ties. These are pilot
 observations only: there is one stochastic repetition per case-mode cell, so no
 Agent superiority or uncertainty interval should be claimed yet.
 
@@ -518,24 +523,24 @@ optimization attempts recorded Gurobi, and no solver fallback was used. The
 matrix includes the three single-run deterministic comparators and five
 independent Agent Trigger repetitions in each of the six case-mode cells.
 
-The Agent was safety-feasible in 22 of 30 repetitions. This headline rate must
+The Agent was operationally feasible in 22 of 30 repetitions. This headline rate must
 not be read as a pure Trigger-accuracy score. In the selfish route-delay cell,
-the Agent, oracle, rule-text, and numerical methods were all unsafe; all five
+the Agent, oracle, rule-text, and numerical methods were all operationally infeasible; all five
 Agent repetitions exactly matched the oracle actions and parameter updates. In
-the altruistic charger-bank cell, the Agent was safe in two of five repetitions,
+the altruistic charger-bank cell, the Agent was operationally feasible in two of five repetitions,
 but those two outputs interpreted the notice window one interval more
 conservatively than the canonical record. The canonical oracle, rule-text, and
-numerical schedules were all unsafe in that cell. Accordingly, the conservative
+numerical schedules were all operationally infeasible in that cell. Accordingly, the conservative
 Agent outcomes are reported as interpretation variability, not as evidence that
 the Agent correctly outperformed the oracle.
 
-Against the numerical trigger, the Agent was the only safe method in 12 of 30
-paired repetitions; both were safe in 10 and neither was safe in eight. In the
-ten jointly safe combined-event comparisons, selfish-mode revenue was tied; in
+Against the numerical trigger, the Agent was the only operationally feasible method in 12 of 30
+paired repetitions; both were operationally feasible in 10 and neither was operationally feasible in eight. In the
+ten jointly feasible combined-event comparisons, selfish-mode revenue was tied; in
 altruistic mode the Agent reduced PTO cost by a mean of approximately 7.03, with
 three wins and two ties. Against the rule-text method, the Agent was the only
-safe method in seven paired repetitions, both were safe in 15, and neither was
-safe in eight. Jointly safe rule-text comparisons produced ten economic ties
+operationally feasible method in seven paired repetitions, both were operationally feasible in 15, and neither was
+operationally feasible in eight. Jointly feasible rule-text comparisons produced ten economic ties
 and five Agent losses, all in the altruistic combined case. These results support
 separate conclusions: advance text can improve on waiting for sensor detection,
 while the present five-run evidence does not establish general LLM superiority
@@ -554,14 +559,14 @@ summary have SHA-256 digests
 On 2026-08-14, the three deterministic trigger methods were rerun for all three
 cases and both modes after freezing the deterministic clock conversion and the
 calibrated case settings. All 18 runs completed 48 timesteps with Gurobi 13.0.2,
-and no solver fallback was recorded. The structured oracle was safe in all six
+and no solver fallback was recorded. The structured oracle was operationally feasible in all six
 case-mode cells, the rule-text method in four, and the causal numerical trigger
 in three.
 
-The numerical trigger was unsafe in the selfish 90-minute late-return case
+The numerical trigger was operationally infeasible in the selfish 90-minute late-return case
 (1.764 kWh maximum reserve shortfall) and in both three-charger outage modes
-(63.12 and 216.38 kWh). The oracle was safe in each of those cells because it
-could act on confirmed advance information. All methods were safe in the
+(63.12 and 216.38 kWh). The oracle was operationally feasible in each of those cells because it
+could act on confirmed advance information. All methods were operationally feasible in the
 combined case. In its altruistic cell, structured advance information reduced
 PTO cost by 11.7242 relative to delayed numerical detection; selfish revenue was
 an economic tie. The frozen rule failed to convert the coreferential phrase
@@ -582,17 +587,17 @@ The 150 structured model requests were all schema-valid; the audit found no
 canonical/hidden-truth fields in requests and no deterministic clock-window
 errors.
 
-Against the numerical trigger, the Agent was the only safe method in 15 of 30
+Against the numerical trigger, the Agent was the only operationally feasible method in 15 of 30
 pairs: all five selfish late-return pairs and all ten charger-outage pairs. Both
-were safe in the other 15 pairs. In the jointly safe altruistic combined cell,
+were operationally feasible in the other 15 pairs. In the jointly feasible altruistic combined cell,
 the Agent reduced PTO cost by a mean of 2.3448, with one win and four ties. In
 the altruistic late-return cell, however, the numerical trigger reduced PTO cost
 by 7.7740 relative to the advance Agent schedule. Thus the v2 evidence supports
 a safety benefit from advance unstructured information in selected cases, not a
 universal economic benefit.
 
-Against the frozen rule-text method, the Agent was the only safe method in all
-ten charger pairs. In jointly safe comparisons, 16 were economic ties and four
+Against the frozen rule-text method, the Agent was the only operationally feasible method in all
+ten charger pairs. In jointly feasible comparisons, 16 were economic ties and four
 were Agent losses, all in the altruistic combined case. Four of five Agent runs
 in that cell reoptimized at physical onset after independent deviation and
 unexpected-discharge flags fired, losing 11.7242 of PTO-cost performance versus
@@ -671,8 +676,8 @@ confirmatory evidence; all 120 confirmatory episodes will start fresh with the
 v3 protocol and corrected normalizer.
 
 Descriptively, `full_agentic`, the mathematical-pricing substitution, and
-evaluator removal were each safe in all six pilot cells. The rule-trigger
-substitution was safe in five: in the selfish charger-shutdown cell it made 25
+evaluator removal were each operationally feasible in all six pilot cells. The rule-trigger
+substitution was operationally feasible in five: in the selfish charger-shutdown cell it made 25
 optimizer calls and ended with a 24.6523 kWh maximum reserve shortfall across 12
 timesteps. These single-run outcomes validate that the contrasts are
 decision-sensitive, but they are not statistical evidence and must not be cited
@@ -702,8 +707,8 @@ named role.
 
 The targeted final rule episode caused zero evaluator approvals and two
 explicitly forced feasible selections, correctly preserving the evaluator's
-rejections when fleet deviations remained large. It was unsafe under hidden
-ex-post truth, while the other three smoke configurations were safe. These are
+rejections when fleet deviations remained large. It was operationally infeasible under the
+realized physical event, while the other three smoke configurations were operationally feasible. These are
 execution checks only, not inferential ablation results.
 
 Combining the final role-path measurements gives an expected 120-run workload of
@@ -774,3 +779,81 @@ requests, with no failed request. Approximate API cost was USD 2.1037. Summed
 episode wall time was 2.222 hours and summed local process CPU time was 4.521
 hours. The full workflow was the most expensive configuration, averaging about
 123,450 tokens and USD 0.0246 per episode.
+
+### Post-v3 final-method protocols
+
+The completed v3 matrix remains immutable historical evidence. It is not pooled
+with results from the corrected workflow. Future role-level results use
+`advance_warning_ablation_protocol_v4.json`, which freezes executable-horizon
+alignment (`t+1,...,48`), best-candidate retention, projected full-day economics,
+the `deterministic_pricing_substitution` label, and operational-feasibility-first
+reporting. This is a fresh 120-episode matrix rather than an overwrite of v3.
+
+The controlled Evaluator study now uses
+`information_and_evaluator_ablation_protocol_v2.json`. A missed qualitative
+operator priority does not receive an arbitrary currency penalty. The single
+rerun uses three objective stages: service/SOC quality, minimum operator-priority
+slack, and then mode-aligned economics while preserving the earlier optima. The
+protocol schedules 48 episodes: five LLM-Evaluator repetitions and one run for
+each deterministic arm in every case-mode cell.
+
+### One-factor sensitivity study
+
+`revision_sensitivity_protocol_v1.json` and
+`run_revision_sensitivity.py` implement three Trigger prompt-wording arms,
+low/base/high Trigger confidence thresholds (0.50/0.70/0.90), and
+narrow/base/wide optional Pricing reference spreads. Only one factor changes at
+a time. The confidence is explicitly treated as an uncalibrated model-reported
+deployment score. Pricing sensitivity changes only the optional reference
+spread; it does not enforce the Agent's average or alter hard economic bounds.
+The default design contains 25 Trigger benchmark repetitions and 30 Pricing-only
+closed-loop episodes. `analyze_revision_sensitivity.py` keeps arms and modes
+separate and bootstraps complete repetitions.
+
+### Scaling, second depot, and reproducibility completion
+
+`build_scaling_inputs.py` creates ignored 8-, 16-, and 32-bus Depot A instances
+and a distinct eight-bus Depot B. `run_scaling_study.py` compares the frozen
+rule-text event trigger with the full workflow, uses one optimizer attempt per
+genuine event decision, locks final runs to Gurobi with no fallback, and reports
+solver and LLM time separately. Generated Excel files are never tracked.
+
+Exact top-level package versions are frozen in `requirements-lock.txt`; experiment
+manifests record the commit, dirty-worktree state, package versions, prompt and
+input hashes, API defaults, solver settings, and hardware. The API seed is not
+set; repeated calls quantify nondeterminism. `validate_revision_package.py`
+performs automated asset and information-boundary checks, while
+`independent_validation_checklist_v1.md` reserves the synthetic-text mapping and
+no-leakage sign-off for a second author.
+
+### Final execution handoff
+
+The implementation checks above do not authorize or launch external model
+calls. After the code is committed, use fresh output roots and execute the
+prespecified studies in this order. The USD values are episode-boundary stop
+ceilings, not expected costs; change them only through an explicitly recorded
+authorization.
+
+```powershell
+# 1. Corrected role ablation: 120 episodes
+python scripts/run_advance_warning_matrix.py --output-root results/revision/ablation_confirmatory_v4 --include-role-ablations --only-role-ablations --ablation-repetitions 5 --allow-external-llm --require-clean-git --max-approximate-api-cost-usd 4.00
+python scripts/analyze_advance_warning_matrix.py --runs results/revision/ablation_confirmatory_v4/matrix_runs.csv --output-dir results/revision/ablation_confirmatory_v4/analysis
+
+# 2. Controlled Evaluator ablation: 48 episodes
+python scripts/run_evaluator_ablation.py --output-root results/revision/evaluator_ablation_v2 --agent-repetitions 5 --allow-external-llm --require-clean-git
+python scripts/analyze_evaluator_ablation.py --input-root results/revision/evaluator_ablation_v2 --output-root results/revision/evaluator_ablation_v2/analysis
+
+# 3. One-factor sensitivity: 55 runs
+python scripts/run_revision_sensitivity.py --output-root results/revision/sensitivity_v1 --repetitions 5 --allow-external-llm --require-clean-git --max-approximate-api-cost-usd 4.00
+python scripts/analyze_revision_sensitivity.py --runs results/revision/sensitivity_v1/sensitivity_runs.csv --output-dir results/revision/sensitivity_v1/analysis
+
+# 4. Fleet scaling and Depot B: 48 episodes
+python scripts/build_scaling_inputs.py
+python scripts/run_scaling_study.py --output-root results/revision/scaling_v1 --repetitions 3 --allow-external-llm --require-clean-git --max-approximate-api-cost-usd 2.00
+python scripts/analyze_scaling_study.py --runs results/revision/scaling_v1/scaling_runs.csv --output-dir results/revision/scaling_v1/analysis
+```
+
+Final evidence excludes any episode with solver fallback. The runner manifests
+record Git status, protocol/input hashes, solver settings, model, payload scope,
+and usage. A second author should complete
+`independent_validation_checklist_v1.md` before manuscript claims are frozen.

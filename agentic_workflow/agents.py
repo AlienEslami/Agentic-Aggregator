@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import time
@@ -28,6 +29,12 @@ from .models import (
     TriggerDecision,
 )
 from .evaluation import assess_priority, frozen_priority_parse, priority_feedback
+from .experiment_controls import (
+    spread_reference,
+    validate_pricing_guidance_variant,
+    validate_trigger_confidence_threshold,
+    validate_trigger_prompt_variant,
+)
 from .notices import normalize_notice_clock_timesteps
 
 
@@ -74,7 +81,9 @@ PRICING_ZONE_REFERENCES: dict[str, dict[str, dict[str, float]]] = {
 }
 
 
-def build_pricing_reference(context: dict[str, Any]) -> dict[str, Any]:
+def build_pricing_reference(
+    context: dict[str, Any], guidance_variant: str | None = None
+) -> dict[str, Any]:
     """Build optional, horizon-matched context from the deterministic policy.
 
     The reference is disclosed to the Pricing Agent and used for reporting.  It
@@ -85,7 +94,14 @@ def build_pricing_reference(context: dict[str, Any]) -> dict[str, Any]:
     mode = str(context["mode"])
     if mode not in PRICING_ZONE_REFERENCES:
         raise ValueError(f"Unsupported pricing mode: {mode}")
-    zone_values = PRICING_ZONE_REFERENCES[mode]
+    guidance_variant = validate_pricing_guidance_variant(
+        guidance_variant or str(context.get("pricing_guidance_variant") or "base")
+    )
+    base_zone_values = PRICING_ZONE_REFERENCES[mode]
+    nominal_zone_values = {
+        side: spread_reference(values, guidance_variant)
+        for side, values in base_zone_values.items()
+    }
     rows = list((context.get("intraday_prices") or {}).get("prices") or [])
     remaining = int(context.get("remaining_timesteps") or len(rows))
     rows = rows[:remaining]
@@ -94,14 +110,32 @@ def build_pricing_reference(context: dict[str, Any]) -> dict[str, Any]:
     zones: list[str] = []
     for index, row in enumerate(rows):
         zone = str(row.get("price_zone") or "transition")
-        if zone not in zone_values["buy"]:
+        if zone not in base_zone_values["buy"]:
             zone = "transition"
-        buy_value = zone_values["buy"][zone]
+        buy_value = base_zone_values["buy"][zone]
         if mode == "selfish" and index < 6:
             buy_value = min(buy_value, 1.10)
         buy.append(float(buy_value))
-        sell.append(float(zone_values["sell"][zone]))
+        sell.append(float(base_zone_values["sell"][zone]))
         zones.append(zone)
+
+    spread_factor = {
+        "narrow": 0.5,
+        "base": 1.0,
+        "wide": 1.5,
+    }[guidance_variant]
+
+    def spread_horizon(values: list[float]) -> list[float]:
+        if not values:
+            return []
+        center = sum(values) / len(values)
+        return [round(center + spread_factor * (value - center), 6) for value in values]
+
+    # Center on the actual remaining horizon, not on three equally weighted
+    # abstract zones. This keeps the disclosed arithmetic mean identical when
+    # the horizon contains unequal counts of cheap/transition/expensive periods.
+    buy = spread_horizon(buy)
+    sell = spread_horizon(sell)
 
     def summary(values: list[float]) -> dict[str, float | None]:
         return {
@@ -112,6 +146,10 @@ def build_pricing_reference(context: dict[str, Any]) -> dict[str, Any]:
 
     return {
         "status": "optional_context_not_constraint",
+        "guidance_variant": guidance_variant,
+        "temporal_spread_factor": spread_factor,
+        "current_horizon_average_preserved_across_variants": True,
+        "hard_economic_bounds_changed": False,
         "guidance": (
             "This deterministic reference is supplied for context. One reasonable "
             "option is to keep a similar average while redistributing markups over "
@@ -119,7 +157,7 @@ def build_pricing_reference(context: dict[str, Any]) -> dict[str, Any]:
             "them; explain any substantial difference."
         ),
         "mode": mode,
-        "zone_reference": zone_values,
+        "nominal_zone_reference": nominal_zone_values,
         "current_horizon": {
             "price_zones": zones,
             "buy_multipliers": buy,
@@ -257,6 +295,9 @@ class OpenAIAgentBackend(AgentBackend):
         model: str = DEFAULT_MODEL,
         *,
         allow_deterministic_trigger_fallback: bool = True,
+        trigger_prompt_variant: str = "baseline",
+        trigger_confidence_threshold: float = 0.0,
+        pricing_guidance_variant: str = "base",
     ):
         try:
             from openai import OpenAI
@@ -271,6 +312,15 @@ class OpenAIAgentBackend(AgentBackend):
         self.call_records: list[dict[str, Any]] = []
         self.allow_deterministic_trigger_fallback = (
             allow_deterministic_trigger_fallback
+        )
+        self.trigger_prompt_variant = validate_trigger_prompt_variant(
+            trigger_prompt_variant
+        )
+        self.trigger_confidence_threshold = validate_trigger_confidence_threshold(
+            trigger_confidence_threshold
+        )
+        self.pricing_guidance_variant = validate_pricing_guidance_variant(
+            pricing_guidance_variant
         )
 
     def _parse(
@@ -300,6 +350,20 @@ class OpenAIAgentBackend(AgentBackend):
                 "schema": schema.__name__,
                 "attempt": attempt,
                 "request": user_data,
+                "system_prompt_sha256": hashlib.sha256(
+                    system.encode("utf-8")
+                ).hexdigest(),
+                "experiment_controls": {
+                    "trigger_prompt_variant": getattr(
+                        self, "trigger_prompt_variant", "baseline"
+                    ),
+                    "trigger_confidence_threshold": getattr(
+                        self, "trigger_confidence_threshold", 0.0
+                    ),
+                    "pricing_guidance_variant": getattr(
+                        self, "pricing_guidance_variant", "base"
+                    ),
+                },
             }
             try:
                 completion = self.client.chat.completions.parse(**request)
@@ -408,8 +472,16 @@ class OpenAIAgentBackend(AgentBackend):
         raise RuntimeError("Structured-output retries exhausted") from last_error
 
     def trigger(self, context: dict[str, Any]) -> TriggerDecision:
+        system_prompt = _prompt("trigger_system.txt")
+        trigger_prompt_variant = getattr(
+            self, "trigger_prompt_variant", "baseline"
+        )
+        if trigger_prompt_variant != "baseline":
+            system_prompt += "\n\n" + _prompt(
+                f"trigger_variant_{trigger_prompt_variant}.txt"
+            )
         structured = self._parse(
-            _prompt("trigger_system.txt"),
+            system_prompt,
             build_openai_trigger_payload(context),
             StructuredTriggerDecision,
             role="trigger",
@@ -427,6 +499,9 @@ class OpenAIAgentBackend(AgentBackend):
             normalized_decision,
             context,
             allow_numerical_fallback=self.allow_deterministic_trigger_fallback,
+        )
+        effective = apply_trigger_confidence_threshold(
+            effective, getattr(self, "trigger_confidence_threshold", 0.0)
         )
         self.last_raw_trigger = decision
         self.last_trigger_guard_applied = decision.model_dump() != effective.model_dump()
@@ -469,7 +544,9 @@ class OpenAIAgentBackend(AgentBackend):
             "rerun_count": rerun_count,
             "previous_multipliers": previous.model_dump() if previous else None,
             "evaluator_feedback": feedback.model_dump() if feedback else None,
-            "pricing_reference_guidance": build_pricing_reference(context),
+            "pricing_reference_guidance": build_pricing_reference(
+                context, getattr(self, "pricing_guidance_variant", "base")
+            ),
         }
         decision = self._parse(
             system_prompt,
@@ -1396,6 +1473,15 @@ def describe_agent_roles(backend: AgentBackend) -> dict[str, dict[str, Any]]:
             description.update(
                 {
                     "model": resolved.model,
+                    "trigger_prompt_variant": getattr(
+                        resolved, "trigger_prompt_variant", "baseline"
+                    ),
+                    "trigger_confidence_threshold": (
+                        getattr(resolved, "trigger_confidence_threshold", 0.0)
+                    ),
+                    "pricing_guidance_variant": getattr(
+                        resolved, "pricing_guidance_variant", "base"
+                    ),
                     "deterministic_numerical_trigger_fallback": (
                         resolved.allow_deterministic_trigger_fallback
                     ),
@@ -1522,6 +1608,29 @@ def normalize_trigger_decision(
     return decision
 
 
+def apply_trigger_confidence_threshold(
+    decision: TriggerDecision, threshold: float
+) -> TriggerDecision:
+    """Apply a logged deployment threshold without changing interpretation fields."""
+
+    threshold = validate_trigger_confidence_threshold(threshold)
+    if decision.action != "optimize" or decision.confidence >= threshold:
+        return decision
+    return decision.model_copy(
+        update={
+            "action": "skip",
+            "trigger_type": "none",
+            "flagged_buses": [],
+            "reasoning": (
+                f"Confidence-threshold policy held the proposed optimization: "
+                f"reported confidence {decision.confidence:.3f} is below the "
+                f"prespecified threshold {threshold:.3f}. The notice interpretation "
+                "is retained for audit and confirmation."
+            ),
+        }
+    )
+
+
 def normalize_pricing_decision(
     decision: PricingDecision | StructuredPricingDecision,
     mode: str,
@@ -1554,20 +1663,62 @@ def normalize_pricing_decision(
     )
 
 
-def create_agent_backend(name: str, model: str) -> AgentBackend:
+def create_agent_backend(
+    name: str,
+    model: str,
+    *,
+    trigger_prompt_variant: str = "baseline",
+    trigger_confidence_threshold: float = 0.0,
+    pricing_guidance_variant: str = "base",
+) -> AgentBackend:
     resolved = name
     if name == "auto":
         resolved = "openai" if os.environ.get("OPENAI_API_KEY") else "rule"
     if resolved == "openai":
-        return OpenAIAgentBackend(model=model)
+        return OpenAIAgentBackend(
+            model=model,
+            trigger_prompt_variant=trigger_prompt_variant,
+            trigger_confidence_threshold=trigger_confidence_threshold,
+            pricing_guidance_variant=pricing_guidance_variant,
+        )
     if resolved == "rule":
         return RuleBasedAgentBackend()
     raise ValueError(f"Unsupported agent backend: {name}")
 
 
-def create_experiment_backend(configuration: str, legacy_backend: str, model: str) -> AgentBackend:
+def create_experiment_backend(
+    configuration: str,
+    legacy_backend: str,
+    model: str,
+    *,
+    trigger_prompt_variant: str = "baseline",
+    trigger_confidence_threshold: float = 0.0,
+    pricing_guidance_variant: str = "base",
+) -> AgentBackend:
+    def llm_backend() -> OpenAIAgentBackend:
+        backend = OpenAIAgentBackend(
+            model=model,
+            allow_deterministic_trigger_fallback=False,
+        )
+        backend.trigger_prompt_variant = validate_trigger_prompt_variant(
+            trigger_prompt_variant
+        )
+        backend.trigger_confidence_threshold = validate_trigger_confidence_threshold(
+            trigger_confidence_threshold
+        )
+        backend.pricing_guidance_variant = validate_pricing_guidance_variant(
+            pricing_guidance_variant
+        )
+        return backend
+
     if configuration == "legacy":
-        return create_agent_backend(legacy_backend, model)
+        return create_agent_backend(
+            legacy_backend,
+            model,
+            trigger_prompt_variant=trigger_prompt_variant,
+            trigger_confidence_threshold=trigger_confidence_threshold,
+            pricing_guidance_variant=pricing_guidance_variant,
+        )
     rule = RuleBasedAgentBackend()
     if configuration == "fixed_da_plan":
         return FixedPlanAgentBackend()
@@ -1582,12 +1733,12 @@ def create_experiment_backend(configuration: str, legacy_backend: str, model: st
     if configuration == "full_deterministic":
         return rule
     if configuration == "agent_trigger_only":
-        trigger_llm = EvidenceGatedAgentBackend(
-            OpenAIAgentBackend(
-                model=model, allow_deterministic_trigger_fallback=False
-            )
-        )
+        trigger_llm = EvidenceGatedAgentBackend(llm_backend())
         return CompositeAgentBackend(trigger_llm, rule, rule)
+    if configuration == "pricing_agent_only":
+        return CompositeAgentBackend(
+            NoticeOnlyAgentBackend(), llm_backend(), HardCheckAgentBackend()
+        )
     if configuration in {
         "agent_evaluator_raw_text",
         "rule_text_evaluator",
@@ -1598,9 +1749,7 @@ def create_experiment_backend(configuration: str, legacy_backend: str, model: st
         pricing = RuleBasedAgentBackend()
         if configuration == "agent_evaluator_raw_text":
             evaluator: AgentBackend = LLMPriorityEvaluatorBackend(
-                OpenAIAgentBackend(
-                    model=model, allow_deterministic_trigger_fallback=False
-                )
+                llm_backend()
             )
         elif configuration == "rule_text_evaluator":
             evaluator = RuleTextPriorityEvaluatorBackend()
@@ -1609,16 +1758,15 @@ def create_experiment_backend(configuration: str, legacy_backend: str, model: st
         else:
             evaluator = HardCheckAgentBackend()
         return CompositeAgentBackend(trigger, pricing, evaluator)
-    llm = EvidenceGatedAgentBackend(
-        OpenAIAgentBackend(
-            model=model, allow_deterministic_trigger_fallback=False
-        )
-    )
+    llm = EvidenceGatedAgentBackend(llm_backend())
     if configuration == "full_agentic":
         return llm
     if configuration == "rule_parser_trigger_substitution":
         return CompositeAgentBackend(EvidenceGatedAgentBackend(rule), llm, llm)
-    if configuration == "mathematical_pricing_substitution":
+    if configuration in {
+        "mathematical_pricing_substitution",
+        "deterministic_pricing_substitution",
+    }:
         return CompositeAgentBackend(llm, rule, llm)
     if configuration == "evaluator_removal":
         return CompositeAgentBackend(llm, llm, HardCheckAgentBackend())

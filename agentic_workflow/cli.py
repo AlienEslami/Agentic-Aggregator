@@ -4,6 +4,10 @@ import argparse
 from pathlib import Path
 
 from .config import DEFAULT_MODEL, WorkflowConfig
+from .experiment_controls import (
+    PRICING_GUIDANCE_VARIANTS,
+    TRIGGER_PROMPT_VARIANTS,
+)
 from .runner import WorkflowRunner
 
 
@@ -52,7 +56,9 @@ def build_parser() -> argparse.ArgumentParser:
             "full_agentic",
             "rule_parser_trigger_substitution",
             "mathematical_pricing_substitution",
+            "deterministic_pricing_substitution",
             "evaluator_removal",
+            "pricing_agent_only",
             "agent_evaluator_raw_text",
             "rule_text_evaluator",
             "structured_evaluator_oracle",
@@ -78,6 +84,30 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--optimizer-backend", choices=("direct", "http"), default="direct")
     parser.add_argument("--optimizer-url", default="http://127.0.0.1:5002")
     parser.add_argument("--model", default=DEFAULT_MODEL)
+    parser.add_argument(
+        "--trigger-prompt-variant",
+        choices=TRIGGER_PROMPT_VARIANTS,
+        default="baseline",
+        help="Frozen Trigger system-prompt wording arm.",
+    )
+    parser.add_argument(
+        "--trigger-confidence-threshold",
+        type=float,
+        default=0.0,
+        help=(
+            "Post-output deployment threshold in [0,1]. An otherwise actionable "
+            "LLM Trigger decision below it is held for confirmation."
+        ),
+    )
+    parser.add_argument(
+        "--pricing-guidance-variant",
+        choices=PRICING_GUIDANCE_VARIANTS,
+        default="base",
+        help=(
+            "Narrow/base/wide optional deterministic Pricing reference; hard "
+            "economic bounds do not change."
+        ),
+    )
     parser.add_argument(
         "--max-reruns",
         type=int,
@@ -114,6 +144,9 @@ def main(argv: list[str] | None = None) -> int:
         optimizer_backend=args.optimizer_backend,
         optimizer_url=args.optimizer_url,
         model=args.model,
+        trigger_prompt_variant=args.trigger_prompt_variant,
+        trigger_confidence_threshold=args.trigger_confidence_threshold,
+        pricing_guidance_variant=args.pricing_guidance_variant,
         max_reruns=args.max_reruns,
         state_source=args.state_source,
         checkpoint_every=args.checkpoint_every,

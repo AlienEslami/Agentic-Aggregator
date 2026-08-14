@@ -6,6 +6,7 @@ import importlib.metadata
 import json
 import os
 import platform
+import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -53,6 +54,13 @@ def main() -> None:
         ROOT / "inputs" / "revision" / "advance_warning_notices_v1.json",
         ROOT / "inputs" / "revision" / "advance_warning_physical_events_v1.json",
         ROOT / "inputs" / "revision" / "advance_warning_manifest_v1.json",
+        ROOT / "inputs" / "revision" / "advance_warning_ablation_protocol_v4.json",
+        ROOT / "inputs" / "revision" / "information_and_evaluator_ablation_protocol_v2.json",
+        ROOT / "inputs" / "revision" / "revision_sensitivity_protocol_v1.json",
+        ROOT / "inputs" / "revision" / "scaling_and_second_depot_protocol_v1.json",
+        ROOT / "inputs" / "revision" / "independent_validation_checklist_v1.md",
+        ROOT / "requirements-lock.txt",
+        ROOT / "requirements-dev-lock.txt",
         ROOT / "agentic_workflow" / "notices.py",
         ROOT / "agentic_workflow" / "trigger_evaluation.py",
         ROOT / "agentic_workflow" / "uncertainty.py",
@@ -70,17 +78,50 @@ def main() -> None:
         ROOT / "scripts" / "run_closed_loop_trigger_comparison.py",
         ROOT / "scripts" / "run_advance_warning_matrix.py",
         ROOT / "scripts" / "analyze_advance_warning_matrix.py",
+        ROOT / "scripts" / "run_revision_sensitivity.py",
+        ROOT / "scripts" / "analyze_revision_sensitivity.py",
+        ROOT / "scripts" / "build_scaling_inputs.py",
+        ROOT / "scripts" / "run_scaling_study.py",
+        ROOT / "scripts" / "analyze_scaling_study.py",
+        ROOT / "scripts" / "validate_revision_package.py",
         ROOT / "app.py",
         ROOT / "app_rt.py",
     ]
     packages = {}
-    for name in ("openai", "pydantic", "pandas", "pyomo", "highspy", "openpyxl"):
+    for name in (
+        "flask",
+        "gurobipy",
+        "highspy",
+        "httpx",
+        "numpy",
+        "openai",
+        "openpyxl",
+        "pandas",
+        "pydantic",
+        "pyomo",
+    ):
         try:
             packages[name] = importlib.metadata.version(name)
         except importlib.metadata.PackageNotFoundError:
             packages[name] = None
+    try:
+        git_commit = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=ROOT, check=True,
+            capture_output=True, text=True
+        ).stdout.strip()
+        git_dirty = bool(
+            subprocess.run(
+                ["git", "status", "--porcelain"], cwd=ROOT, check=True,
+                capture_output=True, text=True
+            ).stdout.strip()
+        )
+    except (OSError, subprocess.CalledProcessError):
+        git_commit = None
+        git_dirty = None
     manifest = {
         "created_utc": datetime.now(timezone.utc).isoformat(),
+        "git_commit": git_commit,
+        "git_worktree_dirty": git_dirty,
         "configuration": args.configuration,
         "model": args.model,
         "notice_scenarios": args.notice_scenario,
@@ -140,6 +181,14 @@ def main() -> None:
             "platform": platform.platform(),
             "processor": platform.processor(),
             "packages": packages,
+        },
+        "dependency_locks": {
+            str(path.relative_to(ROOT)): sha256(path)
+            for path in (
+                ROOT / "requirements-lock.txt",
+                ROOT / "requirements-dev-lock.txt",
+            )
+            if path.exists()
         },
         "files": {
             str(path.relative_to(ROOT)).replace("\\", "/"): sha256(path)

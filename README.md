@@ -159,7 +159,8 @@ The frozen held-out Trigger v3 results and their interpretation limits are in
 [`docs/TRIGGER_V3_RESULTS.md`](docs/TRIGGER_V3_RESULTS.md).
 
 Paired operational comparisons use a hidden common physical-event layer and
-causal ex-post settlement. The three decision-sensitive cases are (i) an
+causal interval settlement: interval `t` is settled first, so a decision made
+at `t` can affect only intervals `t+1` onward. The three decision-sensitive cases are (i) an
 advance driver report of a late return, (ii) an advance maintenance chat for a
 charger-bank isolation, and (iii) a fragmented combined late-return/charger
 restriction with a later correction. Report time, physical onset, and first

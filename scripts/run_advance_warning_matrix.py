@@ -32,7 +32,7 @@ PHYSICAL_INPUT = (
     ROOT / "inputs" / "revision" / "advance_warning_physical_events_v1.json"
 )
 ABLATION_PROTOCOL_PATH = (
-    ROOT / "inputs" / "revision" / "advance_warning_ablation_protocol_v3.json"
+    ROOT / "inputs" / "revision" / "advance_warning_ablation_protocol_v4.json"
 )
 PRIMARY_DETERMINISTIC_CONFIGURATIONS = (
     "oracle_event_trigger",
@@ -43,7 +43,7 @@ PRIMARY_AGENT_CONFIGURATION = "agent_trigger_only"
 ROLE_ABLATION_CONFIGURATIONS = (
     "full_agentic",
     "rule_parser_trigger_substitution",
-    "mathematical_pricing_substitution",
+    "deterministic_pricing_substitution",
     "evaluator_removal",
 )
 LLM_CONFIGURATIONS = frozenset(
@@ -57,7 +57,7 @@ METHOD_LABELS = {
     "agent_trigger_only": "agent",
     "full_agentic": "full_agentic",
     "rule_parser_trigger_substitution": "rule_trigger_ablation",
-    "mathematical_pricing_substitution": "deterministic_price_zone_ablation",
+    "deterministic_pricing_substitution": "deterministic_price_zone_ablation",
     "evaluator_removal": "evaluator_ablation",
 }
 
@@ -207,6 +207,16 @@ def read_solver_provenance(workbook: Path) -> dict[str, Any]:
         "solver_names": solver_names,
         "solver_fallback_errors": fallback_errors,
     }
+
+
+def require_gurobi_only(provenance: dict[str, Any], workbook: Path) -> None:
+    names = provenance.get("solver_names") or []
+    errors = provenance.get("solver_fallback_errors") or []
+    if names != ["gurobi"] or errors:
+        raise ValueError(
+            "Final evidence requires Gurobi with no fallback; refusing to index "
+            f"{workbook} (solver_names={names!r}, fallback_errors={errors!r})"
+        )
 
 
 def workbook_is_complete(workbook: Path, expected_timesteps: int) -> bool:
@@ -388,6 +398,8 @@ def run_row(
         relative_workbook = workbook.relative_to(ROOT).as_posix()
     except ValueError:
         relative_workbook = str(workbook)
+    provenance = read_solver_provenance(workbook)
+    require_gurobi_only(provenance, workbook)
     return {
         "run_id": spec.run_id,
         "run_family": spec.run_family,
@@ -403,7 +415,7 @@ def run_row(
         "reused_complete_workbook": reused,
         "workbook": relative_workbook,
         "workbook_sha256": sha256(workbook),
-        **read_solver_provenance(workbook),
+        **provenance,
         **{column: summary.get(column) for column in SUMMARY_COLUMNS},
     }
 
@@ -425,7 +437,7 @@ def write_manifest(
     rows: list[dict[str, Any]],
 ) -> None:
     manifest = {
-        "protocol_version": "advance_warning_matrix_v3",
+        "protocol_version": "advance_warning_matrix_v4",
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "git_commit": git_revision(),
         "git_worktree_clean": git_worktree_is_clean(),
@@ -443,7 +455,7 @@ def write_manifest(
                 "agent_vs_oracle",
             ],
             "secondary_role_ablations": list(ROLE_ABLATION_CONFIGURATIONS),
-            "safety_first": True,
+            "operational_feasibility_first": True,
         },
         "external_llm": {
             "scheduled": any(spec.uses_external_llm for spec in specs),
@@ -455,6 +467,12 @@ def write_manifest(
             "api_key_recorded": False,
             "model": args.model,
         },
+        "solver_settings": {
+            "order": args.solver_order,
+            "time_limit_seconds": args.solver_time_limit,
+            "mip_gap": args.solver_mip_gap,
+            "fallback_permitted_in_final_results": False,
+        },
         "inputs": {
             "notice_file": "inputs/revision/advance_warning_notices_v1.json",
             "notice_sha256": current_input_fingerprints()["notice_sha256"],
@@ -465,7 +483,7 @@ def write_manifest(
                 "physical_event_sha256"
             ],
             "ablation_protocol_file": (
-                "inputs/revision/advance_warning_ablation_protocol_v3.json"
+                "inputs/revision/advance_warning_ablation_protocol_v4.json"
             ),
             "ablation_protocol_sha256": current_input_fingerprints()[
                 "ablation_protocol_sha256"
@@ -501,6 +519,9 @@ def main() -> None:
     parser.add_argument("--start", type=int, default=1)
     parser.add_argument("--end", type=int, default=48)
     parser.add_argument("--model", default="gpt-5.6-luna")
+    parser.add_argument("--solver-order", default="gurobi")
+    parser.add_argument("--solver-time-limit", type=float, default=60.0)
+    parser.add_argument("--solver-mip-gap", type=float, default=0.02)
     parser.add_argument("--include-agent", action="store_true")
     parser.add_argument("--agent-repetitions", type=int, default=5)
     parser.add_argument("--include-role-ablations", action="store_true")
@@ -562,6 +583,12 @@ def main() -> None:
         and args.max_approximate_api_cost_usd <= 0
     ):
         raise SystemExit("--max-approximate-api-cost-usd must be positive")
+    if args.solver_order.strip().lower() != "gurobi":
+        raise SystemExit("Final v4 matrix requires --solver-order gurobi")
+    if args.solver_time_limit <= 0:
+        raise SystemExit("--solver-time-limit must be positive")
+    if not 0 <= args.solver_mip_gap < 1:
+        raise SystemExit("--solver-mip-gap must be in [0,1)")
 
     try:
         validate_ablation_protocol()
@@ -642,6 +669,14 @@ def main() -> None:
         if not reused:
             workbook.parent.mkdir(parents=True, exist_ok=True)
             try:
+                environment = os.environ.copy()
+                environment.update(
+                    {
+                        "RT_SOLVER_ORDER": args.solver_order,
+                        "RT_SOLVER_TIME_LIMIT": str(args.solver_time_limit),
+                        "RT_SOLVER_MIP_GAP": str(args.solver_mip_gap),
+                    }
+                )
                 subprocess.run(
                     command_for(
                         configuration=spec.configuration,
@@ -655,6 +690,7 @@ def main() -> None:
                     ),
                     cwd=ROOT,
                     check=True,
+                    env=environment,
                 )
             except subprocess.CalledProcessError:
                 failures.append(spec.run_id)

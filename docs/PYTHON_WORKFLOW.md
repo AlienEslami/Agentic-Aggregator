@@ -119,6 +119,22 @@ The system prompts in `agentic_workflow/prompts/` were extracted verbatim from
 `workflows/real_time_final.json`. Python builds clean JSON user messages instead
 of evaluating n8n template expressions.
 
+Reviewer-facing sensitivity runs can select a frozen Trigger wording overlay,
+a post-output Trigger confidence threshold, and an optional Pricing guidance
+spread:
+
+```powershell
+python -m agentic_workflow `
+  <common input arguments> `
+  --trigger-prompt-variant evidence_first `
+  --trigger-confidence-threshold 0.70 `
+  --pricing-guidance-variant wide
+```
+
+These controls are recorded in role provenance and every OpenAI call record.
+Pricing guidance remains optional; narrow/base/wide changes temporal reference
+spread without changing the hard economic guards.
+
 ## Optimizers and solver selection
 
 `app.py` is the day-ahead/core PTO optimizer restored from the project

@@ -14,6 +14,7 @@ if str(ROOT) not in sys.path:
 
 from agentic_workflow.agents import create_agent_backend
 from agentic_workflow.config import DEFAULT_MODEL
+from agentic_workflow.experiment_controls import TRIGGER_PROMPT_VARIANTS
 from agentic_workflow.notices import NoticeSeries
 from agentic_workflow.telemetry import summarize_agent_calls
 from agentic_workflow.trigger_evaluation import evaluate_notice_sequences
@@ -32,7 +33,19 @@ def _metrics(frame: pd.DataFrame) -> dict[str, float]:
         if (column.startswith("raw_") or column.startswith("effective_"))
         and column.endswith("_correct")
     ]
-    return {column: float(frame[column].mean()) for column in columns}
+    metrics = {column: float(frame[column].mean()) for column in columns}
+    if {"reference_action", "raw_action", "effective_action"}.issubset(frame.columns):
+        reference_optimize = frame["reference_action"].eq("optimize")
+        for prefix in ("raw", "effective"):
+            optimized = frame[f"{prefix}_action"].eq("optimize")
+            metrics[f"{prefix}_optimize_rate"] = float(optimized.mean())
+            metrics[f"{prefix}_false_optimization_rate"] = float(
+                (optimized & ~reference_optimize).mean()
+            )
+            metrics[f"{prefix}_missed_optimization_rate"] = float(
+                (~optimized & reference_optimize).mean()
+            )
+    return metrics
 
 
 def main() -> None:
@@ -47,6 +60,14 @@ def main() -> None:
     parser.add_argument("--output-dir", type=Path, default=Path("results/revision"))
     parser.add_argument("--backend", choices=("openai", "rule"), default="openai")
     parser.add_argument("--model", default=DEFAULT_MODEL)
+    parser.add_argument(
+        "--trigger-prompt-variant",
+        choices=TRIGGER_PROMPT_VARIANTS,
+        default="baseline",
+    )
+    parser.add_argument(
+        "--trigger-confidence-threshold", type=float, default=0.0
+    )
     parser.add_argument("--mode", choices=("selfish", "altruistic"), default="selfish")
     parser.add_argument("--scenario", action="append", dest="scenario_ids")
     parser.add_argument(
@@ -73,7 +94,12 @@ def main() -> None:
         and (not selected_variants or record.wording_variant in selected_variants)
         and (args.split == "all" or record.benchmark_split == args.split)
     ]
-    backend = create_agent_backend(args.backend, args.model)
+    backend = create_agent_backend(
+        args.backend,
+        args.model,
+        trigger_prompt_variant=args.trigger_prompt_variant,
+        trigger_confidence_threshold=args.trigger_confidence_threshold,
+    )
     rows, calls = evaluate_notice_sequences(records, backend, mode=args.mode)
     if not rows:
         raise ValueError("No canonical notice records matched the requested filters")
@@ -92,6 +118,12 @@ def main() -> None:
         "backend": args.backend,
         "model": args.model,
         "mode": args.mode,
+        "trigger_prompt_variant": args.trigger_prompt_variant,
+        "trigger_confidence_threshold": args.trigger_confidence_threshold,
+        "confidence_interpretation": (
+            "model-reported confidence is treated as an uncalibrated deployment "
+            "score; low/base/high thresholds are sensitivity arms"
+        ),
         "n_decisions": len(frame),
         "n_sequences": int(frame[["scenario_id", "wording_variant"]].drop_duplicates().shape[0]),
         "guard_rate": float(frame["guard_applied"].mean()),

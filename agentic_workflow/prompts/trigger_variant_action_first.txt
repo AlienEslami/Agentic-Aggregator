@@ -1,0 +1,6 @@
+PROMPT-WORDING SENSITIVITY ARM - ACTION-FIRST FRAMING
+
+Begin by deciding whether the current public evidence warrants optimize, wait, or
+request_confirmation. Then populate the event phase, affected assets, time window,
+ranges, selected operational values, and rationale so that they support that action.
+Do not change the uncertainty policy or act on hidden information.

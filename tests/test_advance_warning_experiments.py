@@ -15,6 +15,7 @@ from scripts.run_advance_warning_matrix import (
     ROLE_ABLATION_CONFIGURATIONS,
     build_run_specs,
     read_solver_provenance,
+    require_gurobi_only,
     should_reuse_workbook,
     validate_ablation_protocol,
     validate_external_llm_gate,
@@ -22,6 +23,18 @@ from scripts.run_advance_warning_matrix import (
     validate_resume_fingerprints,
     workbook_path,
 )
+
+
+def test_final_matrix_rejects_solver_fallback(tmp_path):
+    workbook = tmp_path / "run.xlsx"
+    require_gurobi_only(
+        {"solver_names": ["gurobi"], "solver_fallback_errors": []}, workbook
+    )
+    with pytest.raises(ValueError, match="requires Gurobi with no fallback"):
+        require_gurobi_only(
+            {"solver_names": ["appsi_highs", "gurobi"], "solver_fallback_errors": []},
+            workbook,
+        )
 
 
 def test_matrix_design_separates_primary_and_secondary_repetitions(tmp_path):
@@ -84,13 +97,13 @@ def test_stochastic_only_force_never_reuses_agent_but_keeps_fixed(monkeypatch, t
 def test_ablation_protocol_is_frozen_and_matches_runner():
     protocol = validate_ablation_protocol()
     assert ABLATION_PROTOCOL_PATH.exists()
-    assert protocol["status"] == "amended_and_frozen_before_confirmatory_role_ablation"
+    assert protocol["status"] == "implemented_and_prespecified_pending_confirmatory_execution"
     assert tuple(protocol["design"]["configurations"]) == ROLE_ABLATION_CONFIGURATIONS
     assert protocol["design"]["planned_runs"] == 120
     assert protocol["controls"]["shared_trigger_evidence_change_gate"] is True
     assert protocol["controls"]["maximum_pricing_reruns"] == 1
     assert protocol["controls"]["maximum_optimizer_attempts_per_trigger"] == 2
-    assert protocol["reporting"]["do_not_redesign_after_v3_freeze"] is True
+    assert protocol["reporting"]["v3_outputs_excluded_from_v4_inference"] is True
 
 
 def test_resume_rejects_changed_frozen_inputs(monkeypatch, tmp_path):
