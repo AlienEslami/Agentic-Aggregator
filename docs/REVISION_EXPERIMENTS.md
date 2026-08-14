@@ -155,6 +155,20 @@ universal percentage (Luo et al., https://arxiv.org/abs/1801.02783; Mousavi et
 al., https://arxiv.org/abs/2209.05658; Hematiboroujeni et al.,
 https://arxiv.org/abs/2603.20226).
 
+For prompt parity, the Pricing Agent now receives that deterministic schedule,
+its range, and its arithmetic mean calculated over the same remaining horizon.
+The disclosure is explicitly optional guidance: one possible choice is to keep
+a similar average while moving markups across time, but the Agent may choose a
+different overall level when it gives an operational reason. No average-matching
+constraint or post-processing projection is applied. This distinction is logged
+per optimizer attempt. The arithmetic-mean gap measures a change in overall
+markup level; mean-centered temporal absolute error measures redistribution over
+time after removing that level difference; dispatch-weighted chosen multipliers
+report the markups attached to the proposed energy transactions. Consequently,
+an economic gain can be described as temporal adaptation only when the reported
+average gap is small. Otherwise it is attributed to the complete pricing policy,
+which combines markup level and timing.
+
 ### Post-confirmatory evaluator and reporting improvements
 
 The follow-up controlled Evaluator study is specified in

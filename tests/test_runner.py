@@ -499,6 +499,9 @@ def test_better_earlier_schedule_outranks_worse_evaluator_accepted_rerun(tmp_pat
     assert accepted[0]["retained_better_candidate"] is True
     assert "better mode-aligned economic objective" in accepted[0]["selection_reasoning"]
     assert all("proposed_w_buy_kwh" in row for row in runner.state.attempts)
+    assert all(row["reference_is_guidance_only"] for row in runner.state.attempts)
+    assert all("buy_arithmetic_mean_gap" in row for row in runner.state.attempts)
+    assert all("buy_centered_temporal_mae" in row for row in runner.state.attempts)
 
 
 def test_forced_cap_selection_preserves_original_evaluator_rejections(tmp_path):

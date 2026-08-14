@@ -7,7 +7,12 @@ from typing import Any
 
 import pandas as pd
 
-from .agents import AgentBackend, create_experiment_backend, describe_agent_roles
+from .agents import (
+    AgentBackend,
+    create_experiment_backend,
+    describe_agent_roles,
+    pricing_comparison_metrics,
+)
 from .config import WorkflowConfig
 from .context import build_context, build_observation, planned_row_for_observation
 from .disturbances import apply_disturbances
@@ -297,6 +302,7 @@ class WorkflowRunner:
                 "buy_multipliers": json.dumps(pricing.buy_multipliers),
                 "sell_multipliers": json.dumps(pricing.sell_multipliers),
                 "pricing_reasoning": pricing.reasoning,
+                **(result.get("pricing_comparison") or {}),
                 "is_mock": result.get("is_mock"),
                 "solver_status": result.get("solver_status"),
                 "solver_name": result.get("solver_name"),
@@ -560,6 +566,9 @@ class WorkflowRunner:
             result["optimizer_telemetry"] = optimizer_telemetry
             result["optimizer_latency_seconds"] = optimizer_telemetry.get("wall_seconds")
             self._attach_full_day_projection(context, result)
+            result["pricing_comparison"] = pricing_comparison_metrics(
+                context, pricing, result
+            )
             try:
                 evaluation = self.agents.evaluate(
                     context,

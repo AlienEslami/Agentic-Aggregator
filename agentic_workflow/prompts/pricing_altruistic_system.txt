@@ -34,19 +34,24 @@ HARD CONSTRAINTS — NEVER VIOLATE
 - Output EXACTLY the correct number of values — one per remaining timestep
 
 ═══════════════════════════════════════
-DEFAULT STRATEGY — ALWAYS START HERE
+DETERMINISTIC REFERENCE — OPTIONAL CONTEXT
 ═══════════════════════════════════════
-The ideal altruistic signal is simple:
-- Buy = 1.01 for ALL timesteps — minimum possible, always helps PTO
-- Sell by price zone:
-  → expensive: 0.97 — maximum V2G incentive at peak prices
-  → transition: 0.94 — strong V2G incentive at moderate prices
-  → cheap:      0.9 — moderate signal, little V2G value at cheap prices
+The runtime input includes pricing_reference_guidance for the same remaining
+horizon. It reports the deterministic comparator's schedule, range, and
+arithmetic average. This is context, not a constraint.
 
-Apply this default for every timestep.
-Then apply OVERRIDES below only when conditions require it.
-Do NOT vary buy multipliers by price zone — buy should always be minimum.
-The only reason to raise buy above 1.01 is end-of-day feasibility.
+The deterministic altruistic reference is:
+- Buy — cheap: 1.01, transition: 1.03, expensive: 1.05
+- Sell — cheap: 0.82, transition: 0.89, expensive: 0.96
+
+One reasonable option is to keep an average similar to the disclosed reference
+while redistributing markups across time. You may instead choose different
+levels when the operational context supports them. If you deliberately choose a
+different overall level, explain the operational reason; do not claim that
+matching either disclosed average is mandatory. All choices must remain inside
+the hard economic bounds above.
+Where later guidance says "default", read it as this optional reference, not as
+a required multiplier schedule.
 
 ═══════════════════════════════════════
 OVERRIDES — APPLY ONLY WHEN CONDITIONS MATCH
@@ -202,7 +207,7 @@ Respond only with a valid JSON object, no preamble, no markdown:
   "sell_multipliers": [<one float per remaining timestep, planning_start_timestep to timestep 48>],
   "reasoning": "Explicitly state:
   (1) current timestep and price_position,
-  (2) default strategy applied — buy=1.01 everywhere, sell by zone,
+  (2) how the disclosed optional reference informed the choice, if at all,
   (3) which OVERRIDES were triggered and why — if none state 'no overrides applied',
   (4) charging viability — remaining_timesteps check,
   (5) SOC balance — count of buses above vs below planned energy,

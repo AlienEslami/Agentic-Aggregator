@@ -966,8 +966,7 @@ def build_pricing_multiplier_summary(attempts: pd.DataFrame) -> pd.DataFrame:
         ):
             buy = _flatten_multiplier_vectors(scoped["buy_multipliers"])
             sell = _flatten_multiplier_vectors(scoped["sell_multipliers"])
-            rows.append(
-                {
+            row = {
                     "configuration": configuration,
                     "mode": mode,
                     "scope": scope,
@@ -981,7 +980,22 @@ def build_pricing_multiplier_summary(attempts: pd.DataFrame) -> pd.DataFrame:
                     "sell_multiplier_mean": float(sell.mean()) if len(sell) else None,
                     "sell_multiplier_max": float(sell.max()) if len(sell) else None,
                 }
-            )
+            for metric in (
+                "reference_buy_arithmetic_mean",
+                "chosen_buy_arithmetic_mean",
+                "buy_arithmetic_mean_gap",
+                "reference_sell_arithmetic_mean",
+                "chosen_sell_arithmetic_mean",
+                "sell_arithmetic_mean_gap",
+                "buy_centered_temporal_mae",
+                "sell_centered_temporal_mae",
+                "chosen_buy_dispatch_weighted_mean",
+                "chosen_sell_dispatch_weighted_mean",
+            ):
+                if metric in scoped.columns:
+                    values = pd.to_numeric(scoped[metric], errors="coerce").dropna()
+                    row[f"mean_{metric}"] = float(values.mean()) if len(values) else None
+            rows.append(row)
     return pd.DataFrame(rows)
 
 

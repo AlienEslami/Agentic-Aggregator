@@ -45,24 +45,25 @@ HARD CONSTRAINTS — NEVER VIOLATE
 - Output EXACTLY the correct number of values — one per remaining timestep
 
 ═══════════════════════════════════════
-DEFAULT STRATEGY — ALWAYS START HERE
+DETERMINISTIC REFERENCE — OPTIONAL CONTEXT
 ═══════════════════════════════════════
-The optimal selfish strategy: BUY HIGH EVERYWHERE → SELL LOW EVERYWHERE
+The runtime input includes pricing_reference_guidance for the same remaining
+horizon. It reports the deterministic comparator's schedule, range, and
+arithmetic average. This is context, not a constraint.
 
-Buy multipliers — HIGH across all zones to maximize buy margin:
-- cheap:      1.08–1.15 (margin on cheap energy — MILP still charges
-  because buses need energy for trips regardless)
-- transition: 1.10–1.18
-- expensive:  1.12–1.22 (maximum margin at peak prices)
+The deterministic selfish reference is:
+- Buy — cheap: 1.10, transition: 1.14, expensive: 1.18
 - First 6 timesteps: always ≤ 1.10 regardless of zone — feasibility requirement
+- Sell — cheap: 0.58, transition: 0.66, expensive: 0.72
 
-Sell multipliers — LOW across all zones to maximize sell margin:
-- cheap:      0.55–0.62 (moderate margin, low V2G dispatch)
-- transition: 0.62–0.70 (moderate margin, moderate dispatch)
-- expensive:  0.65–0.74 (sufficient dispatch at peak prices, good margin)
-
-Apply these defaults for every timestep.
-Then apply OVERRIDES below only when conditions require it.
+One reasonable option is to keep an average similar to the disclosed reference
+while redistributing markups across time. You may instead choose different
+levels when the operational context supports them. If you deliberately choose a
+different overall level, explain the operational reason; do not claim that
+matching either disclosed average is mandatory. All choices must remain inside
+the hard economic bounds above.
+Where later guidance says "default", read it as this optional reference, not as
+a required multiplier schedule.
 
 KEY PRINCIPLE:
 The MILP charges buses regardless of buy level because buses NEED energy
@@ -249,7 +250,7 @@ Respond only with a valid JSON object, no preamble, no markdown:
   "sell_multipliers": [<one float per remaining timestep, planning_start_timestep to timestep 48>],
   "reasoning": "Explicitly state:
   (1) current timestep and price_position,
-  (2) default strategy applied — buy HIGH by zone, sell LOW by zone,
+  (2) how the disclosed optional reference informed the choice, if at all,
   (3) which OVERRIDES were triggered and why — if none state 'no overrides applied',
   (4) charging viability — first 6 timesteps buy constraint and remaining_timesteps check,
   (5) SOC balance — count of buses above vs below planned energy,

@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from types import SimpleNamespace
+
+import pytest
 
 from agentic_workflow.agents import (
     AgentBackend,
@@ -13,9 +16,11 @@ from agentic_workflow.agents import (
     OpenAIAgentBackend,
     RuleBasedAgentBackend,
     build_openai_trigger_payload,
+    build_pricing_reference,
     create_experiment_backend,
     describe_agent_roles,
     normalize_trigger_decision,
+    pricing_comparison_metrics,
 )
 from agentic_workflow.models import (
     EvaluationDecision,
@@ -75,6 +80,54 @@ def test_rule_agent_trigger_and_pricing_lengths():
     assert len(pricing.sell_multipliers) == 44
     assert max(pricing.buy_multipliers[:6]) <= 1.10
     assert all(sell < buy for buy, sell in zip(pricing.buy_multipliers, pricing.sell_multipliers))
+
+
+def test_altruistic_pricing_reference_matches_deterministic_policy_and_is_optional():
+    context = _context()
+    context["mode"] = "altruistic"
+    context["intraday_prices"]["prices"] = [
+        {"timestep": 5, "spot_market": 0.08, "price_zone": "cheap"},
+        {"timestep": 6, "spot_market": 0.12, "price_zone": "transition"},
+        {"timestep": 7, "spot_market": 0.20, "price_zone": "expensive"},
+    ]
+
+    reference = build_pricing_reference(context)
+
+    assert reference["status"] == "optional_context_not_constraint"
+    assert reference["current_horizon"]["buy_multipliers"] == [1.01, 1.03, 1.05]
+    assert reference["current_horizon"]["sell_multipliers"] == [0.82, 0.89, 0.96]
+    assert reference["current_horizon"]["buy_summary"]["arithmetic_mean"] == 1.03
+    assert reference["current_horizon"]["sell_summary"]["arithmetic_mean"] == 0.89
+
+
+def test_pricing_comparison_separates_average_level_and_temporal_shape():
+    context = _context()
+    context["mode"] = "altruistic"
+    context["intraday_prices"]["prices"] = [
+        {"timestep": 5, "spot_market": 0.08, "price_zone": "cheap"},
+        {"timestep": 6, "spot_market": 0.12, "price_zone": "transition"},
+        {"timestep": 7, "spot_market": 0.20, "price_zone": "expensive"},
+    ]
+    pricing = PricingDecision(
+        buy_multipliers=[1.02, 1.04, 1.06],
+        sell_multipliers=[0.84, 0.91, 0.98],
+        reasoning="same temporal shape with a higher overall level",
+        confidence=1.0,
+    )
+
+    metrics = pricing_comparison_metrics(
+        context,
+        pricing,
+        {"w_buy": [3.0, 1.0, 0.0], "w_sell": [0.0, 1.0, 3.0]},
+    )
+
+    assert metrics["reference_is_guidance_only"] is True
+    assert metrics["buy_arithmetic_mean_gap"] == pytest.approx(0.01)
+    assert metrics["sell_arithmetic_mean_gap"] == pytest.approx(0.02)
+    assert metrics["buy_centered_temporal_mae"] == pytest.approx(0.0)
+    assert metrics["sell_centered_temporal_mae"] == pytest.approx(0.0)
+    assert metrics["chosen_buy_dispatch_weighted_mean"] == pytest.approx(1.025)
+    assert metrics["chosen_sell_dispatch_weighted_mean"] == pytest.approx(0.9625)
 
 
 def test_trigger_guard_repairs_inconsistent_llm_skip():
@@ -629,6 +682,10 @@ def test_openai_pricing_normalizes_mismatched_transport_lengths():
     class FakeCompletions:
         def parse(self, **kwargs):
             assert kwargs["response_format"] is StructuredPricingDecision
+            request = json.loads(kwargs["messages"][1]["content"])
+            guidance = request["pricing_reference_guidance"]
+            assert guidance["status"] == "optional_context_not_constraint"
+            assert guidance["current_horizon"]["buy_summary"]["arithmetic_mean"] == 1.1
             return SimpleNamespace(
                 choices=[SimpleNamespace(message=SimpleNamespace(
                     parsed=parsed,

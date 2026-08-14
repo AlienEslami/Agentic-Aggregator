@@ -62,6 +62,149 @@ def _prompt(name: str) -> str:
     return (PROMPT_DIR / name).read_text(encoding="utf-8")
 
 
+PRICING_ZONE_REFERENCES: dict[str, dict[str, dict[str, float]]] = {
+    "selfish": {
+        "buy": {"cheap": 1.10, "transition": 1.14, "expensive": 1.18},
+        "sell": {"cheap": 0.58, "transition": 0.66, "expensive": 0.72},
+    },
+    "altruistic": {
+        "buy": {"cheap": 1.01, "transition": 1.03, "expensive": 1.05},
+        "sell": {"cheap": 0.82, "transition": 0.89, "expensive": 0.96},
+    },
+}
+
+
+def build_pricing_reference(context: dict[str, Any]) -> dict[str, Any]:
+    """Build optional, horizon-matched context from the deterministic policy.
+
+    The reference is disclosed to the Pricing Agent and used for reporting.  It
+    is deliberately not used by ``normalize_pricing_decision``: the Agent keeps
+    the freedom to choose any multipliers inside the existing economic bounds.
+    """
+
+    mode = str(context["mode"])
+    if mode not in PRICING_ZONE_REFERENCES:
+        raise ValueError(f"Unsupported pricing mode: {mode}")
+    zone_values = PRICING_ZONE_REFERENCES[mode]
+    rows = list((context.get("intraday_prices") or {}).get("prices") or [])
+    remaining = int(context.get("remaining_timesteps") or len(rows))
+    rows = rows[:remaining]
+    buy: list[float] = []
+    sell: list[float] = []
+    zones: list[str] = []
+    for index, row in enumerate(rows):
+        zone = str(row.get("price_zone") or "transition")
+        if zone not in zone_values["buy"]:
+            zone = "transition"
+        buy_value = zone_values["buy"][zone]
+        if mode == "selfish" and index < 6:
+            buy_value = min(buy_value, 1.10)
+        buy.append(float(buy_value))
+        sell.append(float(zone_values["sell"][zone]))
+        zones.append(zone)
+
+    def summary(values: list[float]) -> dict[str, float | None]:
+        return {
+            "minimum": min(values) if values else None,
+            "arithmetic_mean": sum(values) / len(values) if values else None,
+            "maximum": max(values) if values else None,
+        }
+
+    return {
+        "status": "optional_context_not_constraint",
+        "guidance": (
+            "This deterministic reference is supplied for context. One reasonable "
+            "option is to keep a similar average while redistributing markups over "
+            "time. Different levels are allowed when the operational context supports "
+            "them; explain any substantial difference."
+        ),
+        "mode": mode,
+        "zone_reference": zone_values,
+        "current_horizon": {
+            "price_zones": zones,
+            "buy_multipliers": buy,
+            "sell_multipliers": sell,
+            "buy_summary": summary(buy),
+            "sell_summary": summary(sell),
+        },
+    }
+
+
+def pricing_comparison_metrics(
+    context: dict[str, Any],
+    pricing: PricingDecision,
+    result: dict[str, Any] | None = None,
+) -> dict[str, float | bool | str | None]:
+    """Separate overall markup level from temporal redistribution for reporting."""
+
+    reference = build_pricing_reference(context)
+    reference_horizon = reference["current_horizon"]
+    reference_buy = list(reference_horizon["buy_multipliers"])
+    reference_sell = list(reference_horizon["sell_multipliers"])
+    chosen_buy = list(pricing.buy_multipliers)
+    chosen_sell = list(pricing.sell_multipliers)
+
+    def mean(values: list[float]) -> float | None:
+        return sum(values) / len(values) if values else None
+
+    def centered_mae(chosen: list[float], baseline: list[float]) -> float | None:
+        count = min(len(chosen), len(baseline))
+        if count == 0:
+            return None
+        chosen = chosen[:count]
+        baseline = baseline[:count]
+        chosen_mean = float(mean(chosen))
+        baseline_mean = float(mean(baseline))
+        return sum(
+            abs((chosen[index] - chosen_mean) - (baseline[index] - baseline_mean))
+            for index in range(count)
+        ) / count
+
+    def dispatch_weighted_mean(
+        values: list[float], volumes: list[Any]
+    ) -> float | None:
+        count = min(len(values), len(volumes))
+        if count == 0:
+            return None
+        weights = [max(0.0, float(value or 0.0)) for value in volumes[:count]]
+        total = sum(weights)
+        if total <= 0:
+            return None
+        return sum(values[index] * weights[index] for index in range(count)) / total
+
+    reference_buy_mean = mean(reference_buy)
+    reference_sell_mean = mean(reference_sell)
+    chosen_buy_mean = mean(chosen_buy)
+    chosen_sell_mean = mean(chosen_sell)
+    result = result or {}
+    return {
+        "reference_is_guidance_only": True,
+        "reference_policy": "deterministic_zone_policy_same_remaining_horizon",
+        "reference_buy_arithmetic_mean": reference_buy_mean,
+        "chosen_buy_arithmetic_mean": chosen_buy_mean,
+        "buy_arithmetic_mean_gap": (
+            chosen_buy_mean - reference_buy_mean
+            if chosen_buy_mean is not None and reference_buy_mean is not None
+            else None
+        ),
+        "reference_sell_arithmetic_mean": reference_sell_mean,
+        "chosen_sell_arithmetic_mean": chosen_sell_mean,
+        "sell_arithmetic_mean_gap": (
+            chosen_sell_mean - reference_sell_mean
+            if chosen_sell_mean is not None and reference_sell_mean is not None
+            else None
+        ),
+        "buy_centered_temporal_mae": centered_mae(chosen_buy, reference_buy),
+        "sell_centered_temporal_mae": centered_mae(chosen_sell, reference_sell),
+        "chosen_buy_dispatch_weighted_mean": dispatch_weighted_mean(
+            chosen_buy, list(result.get("w_buy") or [])
+        ),
+        "chosen_sell_dispatch_weighted_mean": dispatch_weighted_mean(
+            chosen_sell, list(result.get("w_sell") or [])
+        ),
+    }
+
+
 def build_openai_trigger_payload(context: dict[str, Any]) -> dict[str, Any]:
     """Project runtime state onto the public operational Trigger interface."""
 
@@ -326,6 +469,7 @@ class OpenAIAgentBackend(AgentBackend):
             "rerun_count": rerun_count,
             "previous_multipliers": previous.model_dump() if previous else None,
             "evaluator_feedback": feedback.model_dump() if feedback else None,
+            "pricing_reference_guidance": build_pricing_reference(context),
         }
         decision = self._parse(
             system_prompt,
@@ -726,20 +870,9 @@ class RuleBasedAgentBackend(AgentBackend):
     ) -> PricingDecision:
         mode = context["mode"]
         rows = context["intraday_prices"]["prices"]
-        buy: list[float] = []
-        sell: list[float] = []
-        for index, row in enumerate(rows):
-            zone = row.get("price_zone", "transition")
-            if mode == "selfish":
-                buy_value = {"cheap": 1.10, "transition": 1.14, "expensive": 1.18}[zone]
-                sell_value = {"cheap": 0.58, "transition": 0.66, "expensive": 0.72}[zone]
-                if index < 6:
-                    buy_value = min(buy_value, 1.10)
-            else:
-                buy_value = {"cheap": 1.01, "transition": 1.03, "expensive": 1.05}[zone]
-                sell_value = {"cheap": 0.82, "transition": 0.89, "expensive": 0.96}[zone]
-            buy.append(buy_value)
-            sell.append(sell_value)
+        reference = build_pricing_reference(context)["current_horizon"]
+        buy = list(reference["buy_multipliers"])
+        sell = list(reference["sell_multipliers"])
         if previous and rerun_count > 0:
             buy = list(previous.buy_multipliers)
             sell = list(previous.sell_multipliers)
