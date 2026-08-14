@@ -782,12 +782,12 @@ hours. The full workflow was the most expensive configuration, averaging about
 
 ### Post-v3 final-method protocols
 
-The completed v3 matrix remains immutable historical evidence. It is not pooled
-with results from the corrected workflow. Future role-level results use
-`advance_warning_ablation_protocol_v4.json`, which freezes executable-horizon
-alignment (`t+1,...,48`), best-candidate retention, projected full-day economics,
-the `deterministic_pricing_substitution` label, and operational-feasibility-first
-reporting. This is a fresh 120-episode matrix rather than an overwrite of v3.
+The completed v3 and v4 matrices remain immutable historical evidence. They are
+not pooled with results from the final workflow. Final role-level results use
+`advance_warning_ablation_protocol_v5.json`, which retains the v4 causal and
+accounting corrections and freezes the margin-times-volume pricing guidance plus
+the narrow Evaluator-feedback compliance guard. The v5-v8 pricing pilots are
+development evidence and are excluded from the final 120-episode analysis.
 
 The controlled Evaluator study now uses
 `information_and_evaluator_ablation_protocol_v2.json`. A missed qualitative
@@ -835,9 +835,9 @@ ceilings, not expected costs; change them only through an explicitly recorded
 authorization.
 
 ```powershell
-# 1. Corrected role ablation: 120 episodes
-python scripts/run_advance_warning_matrix.py --output-root results/revision/ablation_confirmatory_v4 --include-role-ablations --only-role-ablations --ablation-repetitions 5 --allow-external-llm --require-clean-git --max-approximate-api-cost-usd 4.00
-python scripts/analyze_advance_warning_matrix.py --runs results/revision/ablation_confirmatory_v4/matrix_runs.csv --output-dir results/revision/ablation_confirmatory_v4/analysis
+# 1. Final role ablation: 120 episodes
+python scripts/run_advance_warning_matrix.py --output-root results/revision/ablation_final_v5 --include-role-ablations --only-role-ablations --ablation-repetitions 5 --allow-external-llm --require-clean-git --max-approximate-api-cost-usd 4.00
+python scripts/analyze_advance_warning_matrix.py --runs results/revision/ablation_final_v5/matrix_runs.csv --output-dir results/revision/ablation_final_v5/analysis
 
 # 2. Controlled Evaluator ablation: 48 episodes
 python scripts/run_evaluator_ablation.py --output-root results/revision/evaluator_ablation_v2 --agent-repetitions 5 --allow-external-llm --require-clean-git

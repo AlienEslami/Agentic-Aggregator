@@ -32,8 +32,17 @@ PHYSICAL_INPUT = (
     ROOT / "inputs" / "revision" / "advance_warning_physical_events_v1.json"
 )
 ABLATION_PROTOCOL_PATH = (
-    ROOT / "inputs" / "revision" / "advance_warning_ablation_protocol_v4.json"
+    ROOT / "inputs" / "revision" / "advance_warning_ablation_protocol_v5.json"
 )
+PROMPT_INPUTS = {
+    name: ROOT / "agentic_workflow" / "prompts" / name
+    for name in (
+        "trigger_system.txt",
+        "pricing_selfish_system.txt",
+        "pricing_altruistic_system.txt",
+        "evaluator_system.txt",
+    )
+}
 PRIMARY_DETERMINISTIC_CONFIGURATIONS = (
     "oracle_event_trigger",
     "numerical_event_trigger",
@@ -295,6 +304,21 @@ def validate_ablation_protocol() -> dict[str, Any]:
             "Frozen rerun controls are inconsistent: maximum optimizer attempts "
             "must equal maximum pricing reruns plus the initial attempt"
         )
+    recorded_prompt_hashes = controls.get("prompt_sha256") or {}
+    current_prompt_hashes = {
+        name: sha256(path) for name, path in PROMPT_INPUTS.items()
+    }
+    if recorded_prompt_hashes != current_prompt_hashes:
+        raise ValueError(
+            "Frozen prompt hashes do not match the current prompt files: "
+            + json.dumps(
+                {
+                    "recorded": recorded_prompt_hashes,
+                    "current": current_prompt_hashes,
+                },
+                sort_keys=True,
+            )
+        )
     return protocol
 
 
@@ -303,6 +327,10 @@ def current_input_fingerprints() -> dict[str, str]:
         "notice_sha256": sha256(NOTICE_INPUT),
         "physical_event_sha256": sha256(PHYSICAL_INPUT),
         "ablation_protocol_sha256": sha256(ABLATION_PROTOCOL_PATH),
+        **{
+            f"prompt_{name}_sha256": sha256(path)
+            for name, path in PROMPT_INPUTS.items()
+        },
     }
 
 
@@ -452,8 +480,9 @@ def write_manifest(
     args: argparse.Namespace,
     rows: list[dict[str, Any]],
 ) -> None:
+    input_fingerprints = current_input_fingerprints()
     manifest = {
-        "protocol_version": "advance_warning_matrix_v4",
+        "protocol_version": "advance_warning_matrix_v5",
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "git_commit": git_revision(),
         "git_worktree_clean": git_worktree_is_clean(),
@@ -497,19 +526,17 @@ def write_manifest(
         },
         "inputs": {
             "notice_file": "inputs/revision/advance_warning_notices_v1.json",
-            "notice_sha256": current_input_fingerprints()["notice_sha256"],
             "physical_event_file": (
                 "inputs/revision/advance_warning_physical_events_v1.json"
             ),
-            "physical_event_sha256": current_input_fingerprints()[
-                "physical_event_sha256"
-            ],
             "ablation_protocol_file": (
-                "inputs/revision/advance_warning_ablation_protocol_v4.json"
+                "inputs/revision/advance_warning_ablation_protocol_v5.json"
             ),
-            "ablation_protocol_sha256": current_input_fingerprints()[
-                "ablation_protocol_sha256"
-            ],
+            **input_fingerprints,
+            "prompt_sha256": {
+                name: input_fingerprints[f"prompt_{name}_sha256"]
+                for name in PROMPT_INPUTS
+            },
         },
         "planned_runs": len(specs),
         "indexed_completed_runs": len(rows),
@@ -620,7 +647,7 @@ def main() -> None:
     ):
         raise SystemExit("--max-approximate-api-cost-usd must be positive")
     if args.solver_order.strip().lower() != "gurobi":
-        raise SystemExit("Final v4 matrix requires --solver-order gurobi")
+        raise SystemExit("Final v5 matrix requires --solver-order gurobi")
     if args.solver_time_limit <= 0:
         raise SystemExit("--solver-time-limit must be positive")
     if not 0 <= args.solver_mip_gap < 1:

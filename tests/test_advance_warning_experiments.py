@@ -116,13 +116,16 @@ def test_stochastic_only_force_never_reuses_agent_but_keeps_fixed(monkeypatch, t
 def test_ablation_protocol_is_frozen_and_matches_runner():
     protocol = validate_ablation_protocol()
     assert ABLATION_PROTOCOL_PATH.exists()
-    assert protocol["status"] == "implemented_and_prespecified_pending_confirmatory_execution"
+    assert protocol["status"] == (
+        "implemented_and_frozen_after_exploratory_tuning_pending_final_execution"
+    )
     assert tuple(protocol["design"]["configurations"]) == ROLE_ABLATION_CONFIGURATIONS
     assert protocol["design"]["planned_runs"] == 120
     assert protocol["controls"]["shared_trigger_evidence_change_gate"] is True
     assert protocol["controls"]["maximum_pricing_reruns"] == 1
     assert protocol["controls"]["maximum_optimizer_attempts_per_trigger"] == 2
-    assert protocol["reporting"]["v3_outputs_excluded_from_v4_inference"] is True
+    assert protocol["reporting"]["v3_and_v4_outputs_excluded_from_v5_inference"] is True
+    assert protocol["reporting"]["pricing_prompt_pilots_excluded_from_v5_inference"] is True
 
 
 def test_resume_rejects_changed_frozen_inputs(monkeypatch, tmp_path):

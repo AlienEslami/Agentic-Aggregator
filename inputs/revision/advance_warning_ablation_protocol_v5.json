@@ -1,0 +1,109 @@
+{
+  "protocol_version": "advance_warning_ablation_v5",
+  "status": "implemented_and_frozen_after_exploratory_tuning_pending_final_execution",
+  "frozen_date_utc": "2026-08-14",
+  "prompt_freeze_commit": "99ec41497b9a310625db7ba5d5bf5dd45b5a7191",
+  "supersedes_for_future_runs": "inputs/revision/advance_warning_ablation_protocol_v4.json",
+  "historical_result_policy": "The v3 and v4 matrices remain immutable provenance. Pricing-prompt pilots v5-v8 are development evidence and are not pooled with the final v5-protocol matrix.",
+  "change_reason": [
+    "correct the false assumption that transaction volume is invariant to buy and sell multipliers",
+    "make selfish pricing and evaluator feedback conditional on observed charging and V2G volume",
+    "cover equivalent adjacent price periods because the MILP can shift dispatch between them",
+    "enforce an Evaluator's explicit structured adjustment when the Pricing Agent's numeric array contradicts its own explanation",
+    "retain the best solver-usable schedule so a one-rerun incentive test cannot replace a better candidate"
+  ],
+  "design": {
+    "candidate_configuration": "full_agentic",
+    "configurations": [
+      "full_agentic",
+      "rule_parser_trigger_substitution",
+      "deterministic_pricing_substitution",
+      "evaluator_removal"
+    ],
+    "cases": [
+      "aw_route6_late_return",
+      "aw_charger_bank_shutdown",
+      "aw_combined_evening"
+    ],
+    "modes": ["selfish", "altruistic"],
+    "notice_variant": "uncertain_chat",
+    "repetitions_per_configuration_case_mode": 5,
+    "case_mode_cells": 6,
+    "planned_runs": 120,
+    "experimental_unit": "one complete 48-timestep closed-loop episode",
+    "analysis": "descriptive difference in repeated-episode means within each case-mode cell; development pilots are excluded"
+  },
+  "contrasts": [
+    {
+      "name": "llm_trigger_contribution",
+      "candidate": "full_agentic",
+      "baseline": "rule_parser_trigger_substitution",
+      "single_component_changed": "Replace only the LLM Trigger interpreter with the frozen text parser."
+    },
+    {
+      "name": "llm_pricing_contribution",
+      "candidate": "full_agentic",
+      "baseline": "deterministic_pricing_substitution",
+      "single_component_changed": "Replace only LLM pricing with the deterministic price-zone heuristic."
+    },
+    {
+      "name": "llm_evaluator_contribution",
+      "candidate": "full_agentic",
+      "baseline": "evaluator_removal",
+      "single_component_changed": "Remove only the LLM evaluator while retaining solver and feasibility checks."
+    }
+  ],
+  "controls": {
+    "common_hidden_physical_truth": true,
+    "canonical_hidden_truth_sent_to_llm": false,
+    "causal_interval_settlement": "settle interval t before the decision and optimize t+1 through 48",
+    "same_workbooks_tariffs_solver_and_case_inputs": true,
+    "v2g_enabled_in_every_arm": true,
+    "shared_trigger_evidence_change_gate": true,
+    "llm_deterministic_numerical_trigger_fallback": false,
+    "maximum_pricing_reruns": 1,
+    "maximum_optimizer_attempts_per_trigger": 2,
+    "candidate_selection": "best solver-usable mode-aligned projected-full-day result; acceptance breaks objective ties only",
+    "feedback_compliance_guard": "enforce only the Evaluator's explicit structured side, direction, executable window, and target when a rerun array is numerically noncompliant",
+    "trigger_prompt_variant": "baseline",
+    "trigger_confidence_threshold": 0.0,
+    "pricing_guidance_variant": "base",
+    "pricing_guidance_is_optional": true,
+    "pricing_hard_bounds_changed_by_guidance": false,
+    "prompt_sha256": {
+      "trigger_system.txt": "ab19e952cb147b0693a7bee9ea23403cbefd3a1ca28a006cb069facce1e0dbba",
+      "pricing_selfish_system.txt": "cd36c75d95e425dea89c76ae1e71d3bd636908b3edf98bfa16050402659fcfe1",
+      "pricing_altruistic_system.txt": "209eedbedb93cd9c3b09600879a3cdde3b1277432efd153e498fa24364c1abe4",
+      "evaluator_system.txt": "a352806ad30ef69522c06e68e049d48e584bac32d0076ac3ddd7f87c14bea7ba"
+    },
+    "model": "gpt-5.6-luna",
+    "reasoning_effort": "low",
+    "solver_order": ["gurobi"],
+    "solver_fallback_permitted_in_final_results": false,
+    "solver_time_limit_seconds": 60,
+    "solver_mip_gap": 0.02,
+    "confirmatory_requires_clean_git": true
+  },
+  "outcomes": {
+    "operational_feasibility_first": true,
+    "complete_48_timesteps_required": true,
+    "maximum_reserve_shortfall_kwh": 0.000001,
+    "reserve_violation_timesteps": 0,
+    "minimum_observed_soc_fraction": 0.2,
+    "terminal_minimum_soc_fraction": 0.2,
+    "economic_comparison_only_for_operationally_feasible_runs": true,
+    "selfish_score": "realized aggregator revenue; higher is better",
+    "altruistic_score": "negative realized full-day PTO cost; higher is better",
+    "economic_tie_tolerance": 0.001,
+    "bootstrap_iterations": 10000
+  },
+  "reporting": {
+    "report_each_case_mode_contrast": true,
+    "report_operational_feasibility_before_economics": true,
+    "report_tokens_api_cost_latency_cpu_memory_and_solver_telemetry": true,
+    "do_not_pool_case_modes": true,
+    "v3_and_v4_outputs_excluded_from_v5_inference": true,
+    "pricing_prompt_pilots_excluded_from_v5_inference": true,
+    "v5_output_root_must_be_fresh": true
+  }
+}
