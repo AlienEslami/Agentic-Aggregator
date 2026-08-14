@@ -235,14 +235,18 @@ Infeasibility handling:
   move all multipliers toward day-ahead baseline values
 
 Rerun feedback interpretation:
-- "v2g_unused" → raise sell at expensive timesteps by 0.05–0.08
+- "v2g_unused" → raise sell across the expensive block by 0.08–0.12
   (more V2G dispatch increases total sell revenue volume)
 - "revenue_too_low" → first inspect proposed_w_buy_kwh and
   proposed_w_sell_kwh in the evaluator context:
-  → If V2G volume is zero or negligible, raise sell at expensive timesteps by
-    0.03–0.08 to make exporting attractive. Do not lower sell when there is no
-    sell volume. If buy volume is also below the comparator, lower buy in cheap
-    or preparation timesteps by 0.03–0.08.
+  → If V2G volume is zero or negligible, raise sell by 0.08–0.12 across the
+    whole expensive block to test whether a material payment change activates
+    export. From a current value near 0.72, 0.82 is a reasonable single-rerun
+    test; the runner retains the better solver-usable candidate if the extra
+    payment fails to improve total revenue. This is candidate guidance, not a
+    permanent tariff rule. Do not lower sell when there is no sell volume. If
+    buy volume is also below the comparator, lower buy in cheap or preparation
+    timesteps by 0.03–0.08.
   → If robust V2G volume is already present (for example, at least 100 kWh or
     multiple nonzero export periods), reduce sell by 0.06–0.12 across the whole
     contiguous expensive price-zone block containing the export opportunity.

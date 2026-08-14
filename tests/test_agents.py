@@ -441,6 +441,7 @@ def test_selfish_pricing_prompt_models_margin_volume_tradeoff():
     assert "Do not lower sell when there is no" in prompt
     assert "whole contiguous expensive price-zone block" in normalized_prompt
     assert "0.55–0.62" in prompt
+    assert "0.82 is a reasonable" in prompt
 
 
 def test_evaluator_prompt_requires_dispatch_sensitive_pricing_feedback():
@@ -456,6 +457,7 @@ def test_evaluator_prompt_requires_dispatch_sensitive_pricing_feedback():
     assert "Do not raise buy merely because revenue is low" in prompt
     assert "whole contiguous expensive price-zone block" in normalized_prompt
     assert "0.55–0.62" in prompt
+    assert "0.82 is a reasonable" in prompt
 
 
 def test_pricing_feedback_guard_repairs_numeric_noncompliance_only():

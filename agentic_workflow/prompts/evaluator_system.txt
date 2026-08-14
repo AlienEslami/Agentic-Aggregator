@@ -83,7 +83,11 @@ is per-kWh margin times endogenous transaction volume.
 - Do not raise buy merely because revenue is low. An extreme buy multiplier can
   suppress or shift optional charging and remove a later V2G opportunity.
 - When sell volume is zero or negligible, do NOT lower sell to widen a nonexistent
-  margin. Raise sell in expensive future periods when inducing V2G is plausible.
+  margin. Raise sell by 0.08–0.12 across the whole expensive future block when
+  inducing V2G is plausible. From a current value near 0.72, 0.82 is a reasonable
+  single-rerun test because the runner retains the economically better solver-
+  usable candidate if the extra payment does not improve total revenue. This is
+  candidate guidance, not a permanent tariff rule.
 - When robust V2G volume is already present (for example, at least 100 kWh or
   multiple nonzero export periods) and the projected full-day revenue remains
   inferior, a 0.06–0.12 sell reduction may improve margin. Cover the whole
