@@ -267,6 +267,11 @@ python scripts/run_advance_warning_matrix.py `
 Complete workbooks are reused unless `--force` is supplied. Repeated workbooks
 remain under ignored `results/`; only CSV/JSON indexes and summaries should be
 copied into paper artifacts after the matrix is complete.
+Use `--force-stochastic` when a frozen input revision requires fresh Agent or
+ablation episodes but the deterministic comparators have already been rerun and
+audited. The matrix manifest records SHA-256 hashes of the notice, hidden
+physical-event, and ablation-protocol files; a later resume refuses to reuse
+fingerprinted workbooks after any of those inputs changes.
 The run index records the actual solver names and any fallback errors from each
 workbook; installed software alone is not treated as evidence that a licensed
 solver was used.
@@ -447,3 +452,48 @@ These deterministic results establish that the revised cases are feasible and
 decision-sensitive. They do not establish Agent performance: the next
 confirmatory step is five new Agent repetitions per case-mode cell using only
 the v2 inputs, followed by the frozen safety-first paired analysis.
+
+### Calibrated v2 five-repetition Agent matrix
+
+On 2026-08-14, five fresh `agent_trigger_only` repetitions were executed in
+each of the six case-mode cells. All 30 Agent episodes completed, used only
+Gurobi with no fallback, and satisfied the reserve and 20% SOC safety rules.
+The 150 structured model requests were all schema-valid; the audit found no
+canonical/hidden-truth fields in requests and no deterministic clock-window
+errors.
+
+Against the numerical trigger, the Agent was the only safe method in 15 of 30
+pairs: all five selfish late-return pairs and all ten charger-outage pairs. Both
+were safe in the other 15 pairs. In the jointly safe altruistic combined cell,
+the Agent reduced PTO cost by a mean of 2.3448, with one win and four ties. In
+the altruistic late-return cell, however, the numerical trigger reduced PTO cost
+by 7.7740 relative to the advance Agent schedule. Thus the v2 evidence supports
+a safety benefit from advance unstructured information in selected cases, not a
+universal economic benefit.
+
+Against the frozen rule-text method, the Agent was the only safe method in all
+ten charger pairs. In jointly safe comparisons, 16 were economic ties and four
+were Agent losses, all in the altruistic combined case. Four of five Agent runs
+in that cell reoptimized at physical onset after independent deviation and
+unexpected-discharge flags fired, losing 11.7242 of PTO-cost performance versus
+the advance oracle/rule schedule; the fifth was an economic tie but contained a
+return-delay carry-forward interpretation error. These outcomes are retained as
+limitations rather than tuned away after observation.
+
+The 30 Agent episodes used 3,105,530 tokens and approximately USD 0.6601 at the
+frozen rates. Summed provider latency was 660.1 seconds; summed episode wall time
+was 966.1 seconds and summed local process CPU time was 1,420.6 seconds. Mean
+local peak resident memory was 337.2 MB. The API does not expose provider-side
+compute or energy use, so token counts and latency are reported separately from
+local CPU and memory measurements.
+
+### Frozen v2 role-ablation protocol
+
+Before executing the v2 primary Agent repetitions, the secondary ablation
+protocol was frozen in `advance_warning_ablation_protocol_v2.json`. It fixes the
+four configurations, three component-level contrasts, six case-mode cells,
+five repetitions per configuration-cell, safety-first outcomes, 0.001 economic
+tie tolerance, and 10,000 bootstrap iterations. This is 120 secondary episodes.
+The protocol explicitly prohibits redesigning the ablations in response to the
+primary Agent results. A one-repetition-per-cell pilot may validate execution,
+but it is not included in the confirmatory five-repetition analysis.

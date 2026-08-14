@@ -1,0 +1,148 @@
+{
+  "protocol_version": "advance_warning_v2_agent_5rep_v1",
+  "run_date_utc": "2026-08-14",
+  "git_commit_at_execution_base": "7f21cc899fd7fdb74a68f6f338d2ad07327a0472",
+  "design": {
+    "cases": [
+      "aw_route6_late_return",
+      "aw_charger_bank_shutdown",
+      "aw_combined_evening"
+    ],
+    "modes": ["selfish", "altruistic"],
+    "agent_repetitions_per_case_mode": 5,
+    "fresh_agent_episodes": 30,
+    "deterministic_comparator_runs": 18,
+    "indexed_runs": 48,
+    "model": "gpt-5.6-luna",
+    "reasoning_effort": "low"
+  },
+  "execution_audit": {
+    "complete_agent_runs": 30,
+    "safety_feasible_agent_runs": 30,
+    "agent_runs_recording_only_gurobi": 30,
+    "agent_runs_with_solver_fallback": 0,
+    "structured_request_attempts": 150,
+    "schema_valid_requests": 150,
+    "failed_request_attempts": 0,
+    "hidden_truth_key_hits_in_requests": 0,
+    "public_notice_metadata_violations": 0,
+    "explicit_clock_window_errors": 0,
+    "deterministic_trigger_guard_applications": 22
+  },
+  "agent_safety_by_cell": [
+    {"case": "aw_route6_late_return", "mode": "selfish", "safe": 5, "runs": 5},
+    {"case": "aw_route6_late_return", "mode": "altruistic", "safe": 5, "runs": 5},
+    {"case": "aw_charger_bank_shutdown", "mode": "selfish", "safe": 5, "runs": 5},
+    {"case": "aw_charger_bank_shutdown", "mode": "altruistic", "safe": 5, "runs": 5},
+    {"case": "aw_combined_evening", "mode": "selfish", "safe": 5, "runs": 5},
+    {"case": "aw_combined_evening", "mode": "altruistic", "safe": 5, "runs": 5}
+  ],
+  "aggregate_pair_outcomes": {
+    "agent_vs_numerical": {
+      "pairs": 30,
+      "agent_only_safe": 15,
+      "numerical_only_safe": 0,
+      "both_safe": 15,
+      "neither_safe": 0,
+      "economic_wins": 1,
+      "economic_ties": 9,
+      "economic_losses": 5
+    },
+    "agent_vs_rule_text": {
+      "pairs": 30,
+      "agent_only_safe": 10,
+      "rule_only_safe": 0,
+      "both_safe": 20,
+      "neither_safe": 0,
+      "economic_wins": 0,
+      "economic_ties": 16,
+      "economic_losses": 4
+    },
+    "agent_vs_oracle": {
+      "pairs": 30,
+      "agent_only_safe": 0,
+      "oracle_only_safe": 0,
+      "both_safe": 30,
+      "neither_safe": 0,
+      "economic_wins": 0,
+      "economic_ties": 26,
+      "economic_losses": 4
+    }
+  },
+  "cell_economic_results": [
+    {
+      "contrast": "agent_vs_numerical",
+      "case": "aw_combined_evening",
+      "mode": "altruistic",
+      "both_safe_pairs": 5,
+      "mean_pto_cost_reduction": 2.3448306,
+      "bootstrap_ci95": [0.0, 7.0344918],
+      "wins": 1,
+      "ties": 4,
+      "losses": 0
+    },
+    {
+      "contrast": "agent_vs_numerical",
+      "case": "aw_route6_late_return",
+      "mode": "altruistic",
+      "both_safe_pairs": 5,
+      "mean_pto_cost_reduction": -7.773984,
+      "bootstrap_ci95": [-7.773984, -7.773984],
+      "wins": 0,
+      "ties": 0,
+      "losses": 5
+    },
+    {
+      "contrast": "agent_vs_rule_text",
+      "case": "aw_combined_evening",
+      "mode": "altruistic",
+      "both_safe_pairs": 5,
+      "mean_pto_cost_reduction": -9.379324,
+      "bootstrap_ci95": [-11.72415, -4.689663],
+      "wins": 0,
+      "ties": 1,
+      "losses": 4
+    }
+  ],
+  "model_and_local_resource_usage": {
+    "input_tokens": 3035723,
+    "cached_input_tokens": 793872,
+    "cache_write_tokens": 2241401,
+    "uncached_input_tokens": 450,
+    "output_tokens": 69807,
+    "reasoning_tokens": 15532,
+    "total_tokens": 3105530,
+    "approximate_api_cost_usd": 0.66008609,
+    "provider_latency_seconds": 660.077465,
+    "summed_episode_wall_seconds": 966.13032,
+    "summed_local_process_cpu_seconds": 1420.578125,
+    "mean_local_average_cpu_cores": 1.2537361,
+    "mean_local_cpu_percent_total_capacity": 7.8358501,
+    "mean_local_peak_rss_mb": 337.1535667,
+    "maximum_local_peak_rss_mb": 402.773,
+    "provider_compute_not_exposed_by_api": true
+  },
+  "interpretation_caveats": [
+    "All 30 Agent runs were safe, but this does not imply an economic win in every jointly safe cell.",
+    "The Agent was the only safe method in all selfish route and charger comparisons, supporting a safety benefit from correctly interpreted advance text.",
+    "The numerical trigger had lower PTO cost in the jointly safe altruistic route cell, so no universal advance-warning economic benefit is claimed.",
+    "All combined-case Agent runs reoptimized again at physical onset because independent deviation and unexpected-discharge flags fired after the advance reoptimization.",
+    "One altruistic combined repetition omitted the return-delay carry-forward at the correction and recorded planner-truth mismatch; its oracle-level economic outcome is not counted as evidence of correct interpretation.",
+    "The primary results support advance unstructured information over sensor-only triggering for safety in selected cells, but do not establish general LLM economic superiority over the frozen rule parser."
+  ],
+  "artifact_hashes": {
+    "notice_sha256": "9e4e4860166f66dd99df0ee5e077df5661969e1c6b9a1522ae2a71a8dbec89d9",
+    "physical_event_sha256": "1f5ff94f13bd5728b7d0eff4c9fb49015a8b5a4d8675a475ef72860dbe959f2c",
+    "ablation_protocol_sha256": "2ea01a05d3bb84cffb34161457c3c59f00a5dc31e021260f0784a00b0ce96d53",
+    "matrix_runs_csv_sha256": "b683fcc644a0f65f55255c35a30ada8c7a3877427092bc10fa830b08240836e8",
+    "matrix_manifest_sha256": "c78e824b406f73399de807142a567a58510c1109bb77de156b93292d88868e80",
+    "analysis_summary_sha256": "27bb4bc5d6a306272e654d7850a3a16cd6a3ecab55ad27d5177347f7a373577a"
+  },
+  "privacy": {
+    "external_payload": "synthetic public notice/chat text plus operational numerical context",
+    "canonical_hidden_truth_sent": false,
+    "api_key_recorded": false,
+    "raw_workbooks_versioned": false,
+    "api_transcripts_versioned": false
+  }
+}

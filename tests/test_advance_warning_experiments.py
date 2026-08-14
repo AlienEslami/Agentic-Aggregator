@@ -10,9 +10,14 @@ from scripts.analyze_advance_warning_matrix import (
     summarize_pairs,
 )
 from scripts.run_advance_warning_matrix import (
+    ABLATION_PROTOCOL_PATH,
+    ROLE_ABLATION_CONFIGURATIONS,
     build_run_specs,
     read_solver_provenance,
+    should_reuse_workbook,
+    validate_ablation_protocol,
     validate_external_llm_gate,
+    validate_resume_fingerprints,
     workbook_path,
 )
 
@@ -37,6 +42,56 @@ def test_matrix_design_separates_primary_and_secondary_repetitions(tmp_path):
     )
     assert workbook_path(tmp_path, deterministic).name == "oracle_event_trigger.xlsx"
     assert workbook_path(tmp_path, stochastic).name == "agent_trigger_only_rep_001.xlsx"
+
+
+def test_stochastic_only_force_never_reuses_agent_but_keeps_fixed(monkeypatch, tmp_path):
+    monkeypatch.setattr(
+        "scripts.run_advance_warning_matrix.workbook_is_complete",
+        lambda workbook, expected_timesteps: True,
+    )
+    specs = build_run_specs(
+        cases=["aw_route6_late_return"],
+        modes=["selfish"],
+        include_agent=True,
+        agent_repetitions=1,
+    )
+    deterministic = next(spec for spec in specs if not spec.stochastic)
+    stochastic = next(spec for spec in specs if spec.stochastic)
+    workbook = tmp_path / "complete.xlsx"
+    assert should_reuse_workbook(
+        workbook, 48, deterministic, force=False, force_stochastic=True
+    )
+    assert not should_reuse_workbook(
+        workbook, 48, stochastic, force=False, force_stochastic=True
+    )
+
+
+def test_ablation_protocol_is_frozen_and_matches_runner():
+    protocol = validate_ablation_protocol()
+    assert ABLATION_PROTOCOL_PATH.exists()
+    assert protocol["status"] == "frozen_before_v2_primary_agent_execution"
+    assert tuple(protocol["design"]["configurations"]) == ROLE_ABLATION_CONFIGURATIONS
+    assert protocol["design"]["planned_runs"] == 120
+    assert protocol["reporting"]["do_not_redesign_after_primary_results"] is True
+
+
+def test_resume_rejects_changed_frozen_inputs(monkeypatch, tmp_path):
+    (tmp_path / "matrix_manifest.json").write_text(
+        '{"inputs":{"notice_sha256":"old","physical_event_sha256":"old",'
+        '"ablation_protocol_sha256":"old"}}',
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        "scripts.run_advance_warning_matrix.current_input_fingerprints",
+        lambda: {
+            "notice_sha256": "new",
+            "physical_event_sha256": "new",
+            "ablation_protocol_sha256": "new",
+        },
+    )
+    with pytest.raises(ValueError, match="different frozen inputs"):
+        validate_resume_fingerprints(tmp_path, force=False)
+    assert not validate_resume_fingerprints(tmp_path, force=True)
 
 
 def test_external_llm_gate_requires_explicit_authorization_and_key():

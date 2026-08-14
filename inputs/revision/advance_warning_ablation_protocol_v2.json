@@ -1,0 +1,83 @@
+{
+  "protocol_version": "advance_warning_ablation_v2",
+  "status": "frozen_before_v2_primary_agent_execution",
+  "frozen_date_utc": "2026-08-14",
+  "benchmark_version": "advance_warning_benchmark_v2",
+  "sequence": {
+    "primary_first": "Run and audit the five-repetition Agent Trigger comparison before executing role ablations.",
+    "secondary_second": "Execute the frozen role-ablation matrix without changing cases, prompts, safety rules, or economic rules in response to primary outcomes."
+  },
+  "design": {
+    "candidate_configuration": "full_agentic",
+    "configurations": [
+      "full_agentic",
+      "rule_parser_trigger_substitution",
+      "mathematical_pricing_substitution",
+      "evaluator_removal"
+    ],
+    "cases": [
+      "aw_route6_late_return",
+      "aw_charger_bank_shutdown",
+      "aw_combined_evening"
+    ],
+    "modes": ["selfish", "altruistic"],
+    "notice_variant": "uncertain_chat",
+    "repetitions_per_configuration_case_mode": 5,
+    "case_mode_cells": 6,
+    "planned_runs": 120,
+    "experimental_unit": "one complete 48-timestep closed-loop episode",
+    "analysis": "independent-sample difference in means within each case-mode cell"
+  },
+  "contrasts": [
+    {
+      "name": "llm_trigger_contribution",
+      "candidate": "full_agentic",
+      "baseline": "rule_parser_trigger_substitution",
+      "single_component_changed": "Replace the LLM Trigger with the frozen stateful rule parser.",
+      "hypothesis": "Contextual LLM interpretation improves safety and, when both runs are safe, mode-aligned economics."
+    },
+    {
+      "name": "llm_pricing_contribution",
+      "candidate": "full_agentic",
+      "baseline": "mathematical_pricing_substitution",
+      "single_component_changed": "Replace LLM pricing with the deterministic mathematical pricing policy.",
+      "hypothesis": "LLM pricing improves mode-aligned economics without reducing safety."
+    },
+    {
+      "name": "llm_evaluator_contribution",
+      "candidate": "full_agentic",
+      "baseline": "evaluator_removal",
+      "single_component_changed": "Remove the LLM evaluator while retaining solver and feasibility hard checks.",
+      "hypothesis": "The LLM evaluator improves acceptance quality without reducing safety."
+    }
+  ],
+  "controls": {
+    "common_hidden_physical_truth": true,
+    "causal_ex_post_settlement": true,
+    "same_workbooks_tariffs_solver_and_case_inputs": true,
+    "canonical_hidden_truth_sent_to_llm": false,
+    "model": "gpt-5.6-luna",
+    "reasoning_effort": "low",
+    "maximum_pricing_reruns": 1
+  },
+  "outcomes": {
+    "safety_first": true,
+    "complete_48_timesteps_required": true,
+    "maximum_reserve_shortfall_kwh": 0.000001,
+    "reserve_violation_timesteps": 0,
+    "minimum_observed_soc_fraction": 0.2,
+    "terminal_minimum_soc_fraction": 0.2,
+    "economic_comparison_only_when_both_groups_have_safe_runs": true,
+    "selfish_score": "realized aggregator revenue; higher is better",
+    "altruistic_score": "negative realized PTO cost; higher is better",
+    "economic_tie_tolerance": 0.001,
+    "bootstrap_iterations": 10000
+  },
+  "reporting": {
+    "report_each_case_mode_contrast": true,
+    "report_safety_rate_before_economics": true,
+    "report_token_usage_and_approximate_api_cost": true,
+    "do_not_pool_case_modes": true,
+    "do_not_redesign_after_primary_results": true
+  }
+}

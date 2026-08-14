@@ -27,6 +27,13 @@ PRIMARY_CASES = (
     "aw_combined_evening",
 )
 PRIMARY_MODES = ("selfish", "altruistic")
+NOTICE_INPUT = ROOT / "inputs" / "revision" / "advance_warning_notices_v1.json"
+PHYSICAL_INPUT = (
+    ROOT / "inputs" / "revision" / "advance_warning_physical_events_v1.json"
+)
+ABLATION_PROTOCOL_PATH = (
+    ROOT / "inputs" / "revision" / "advance_warning_ablation_protocol_v2.json"
+)
 PRIMARY_DETERMINISTIC_CONFIGURATIONS = (
     "oracle_event_trigger",
     "numerical_event_trigger",
@@ -210,6 +217,78 @@ def workbook_is_complete(workbook: Path, expected_timesteps: int) -> bool:
     )
 
 
+def should_reuse_workbook(
+    workbook: Path,
+    expected_timesteps: int,
+    spec: RunSpec,
+    *,
+    force: bool,
+    force_stochastic: bool,
+) -> bool:
+    """Apply explicit rerun policy without conflating fixed and LLM workbooks."""
+
+    if force or (force_stochastic and spec.stochastic):
+        return False
+    return workbook_is_complete(workbook, expected_timesteps)
+
+
+def validate_ablation_protocol() -> dict[str, Any]:
+    if not ABLATION_PROTOCOL_PATH.exists():
+        raise FileNotFoundError(
+            f"Frozen ablation protocol not found: {ABLATION_PROTOCOL_PATH}"
+        )
+    protocol = json.loads(ABLATION_PROTOCOL_PATH.read_text(encoding="utf-8"))
+    configured = tuple(protocol["design"]["configurations"])
+    if configured != ROLE_ABLATION_CONFIGURATIONS:
+        raise ValueError(
+            "Frozen ablation configurations do not match the matrix runner: "
+            f"{configured!r} != {ROLE_ABLATION_CONFIGURATIONS!r}"
+        )
+    return protocol
+
+
+def current_input_fingerprints() -> dict[str, str]:
+    return {
+        "notice_sha256": sha256(NOTICE_INPUT),
+        "physical_event_sha256": sha256(PHYSICAL_INPUT),
+        "ablation_protocol_sha256": sha256(ABLATION_PROTOCOL_PATH),
+    }
+
+
+def validate_resume_fingerprints(
+    output_root: Path,
+    *,
+    force: bool,
+) -> bool:
+    """Reject reuse when a fingerprinted matrix used different frozen inputs.
+
+    Returns ``False`` for a legacy manifest without hashes.  That permits a
+    one-time migration of already-audited workbooks; every newly written v2
+    manifest carries hashes and is checked on subsequent resumes.
+    """
+
+    manifest_path = output_root / "matrix_manifest.json"
+    if not manifest_path.exists():
+        return False
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    recorded_inputs = manifest.get("inputs") or {}
+    current = current_input_fingerprints()
+    if not all(recorded_inputs.get(name) for name in current):
+        return False
+    mismatches = {
+        name: {"recorded": recorded_inputs[name], "current": value}
+        for name, value in current.items()
+        if recorded_inputs[name] != value
+    }
+    if mismatches and not force:
+        raise ValueError(
+            "Refusing to reuse workbooks generated from different frozen inputs. "
+            "Use --force to rerun the complete matrix. Mismatches: "
+            + json.dumps(mismatches, sort_keys=True)
+        )
+    return not mismatches
+
+
 def validate_external_llm_gate(
     specs: Iterable[RunSpec],
     *,
@@ -323,9 +402,19 @@ def write_manifest(
         },
         "inputs": {
             "notice_file": "inputs/revision/advance_warning_notices_v1.json",
+            "notice_sha256": current_input_fingerprints()["notice_sha256"],
             "physical_event_file": (
                 "inputs/revision/advance_warning_physical_events_v1.json"
             ),
+            "physical_event_sha256": current_input_fingerprints()[
+                "physical_event_sha256"
+            ],
+            "ablation_protocol_file": (
+                "inputs/revision/advance_warning_ablation_protocol_v2.json"
+            ),
+            "ablation_protocol_sha256": current_input_fingerprints()[
+                "ablation_protocol_sha256"
+            ],
         },
         "planned_runs": len(specs),
         "indexed_completed_runs": completed_rows,
@@ -364,6 +453,14 @@ def main() -> None:
         ),
     )
     parser.add_argument("--force", action="store_true", help="Rerun complete workbooks.")
+    parser.add_argument(
+        "--force-stochastic",
+        action="store_true",
+        help=(
+            "Rerun only stochastic Agent/ablation workbooks while reusing complete "
+            "deterministic comparators."
+        ),
+    )
     parser.add_argument("--keep-going", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument(
@@ -372,6 +469,11 @@ def main() -> None:
         default=Path("results/revision/closed_loop"),
     )
     args = parser.parse_args()
+
+    try:
+        validate_ablation_protocol()
+    except (FileNotFoundError, KeyError, TypeError, ValueError) as exc:
+        raise SystemExit(str(exc)) from exc
 
     cases = args.case or list(PRIMARY_CASES)
     modes = args.mode or list(PRIMARY_MODES)
@@ -397,6 +499,10 @@ def main() -> None:
     output_root = args.output_root
     if not output_root.is_absolute():
         output_root = ROOT / output_root
+    try:
+        validate_resume_fingerprints(output_root, force=args.force)
+    except (KeyError, TypeError, ValueError) as exc:
+        raise SystemExit(str(exc)) from exc
     expected_timesteps = args.end - args.start + 1
     if expected_timesteps < 1:
         raise SystemExit("--end must be greater than or equal to --start")
@@ -421,8 +527,13 @@ def main() -> None:
     failures: list[str] = []
     for index, spec in enumerate(specs, start=1):
         workbook = workbook_path(output_root, spec)
-        complete = workbook_is_complete(workbook, expected_timesteps)
-        reused = complete and not args.force
+        reused = should_reuse_workbook(
+            workbook,
+            expected_timesteps,
+            spec,
+            force=args.force,
+            force_stochastic=args.force_stochastic,
+        )
         print(
             f"[{index}/{len(specs)}] {spec.run_id}: "
             f"{'reuse' if reused else 'run'}",
