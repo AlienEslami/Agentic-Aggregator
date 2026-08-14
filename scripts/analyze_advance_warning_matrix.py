@@ -770,14 +770,49 @@ def build_secondary_outcome_contrasts(
     return pd.DataFrame(rows, columns=SECONDARY_CONTRAST_COLUMNS)
 
 
-def _feedback_reason(value: Any) -> str | None:
+def _feedback_payload(value: Any) -> dict[str, Any]:
     if isinstance(value, dict):
-        return value.get("reason")
+        return value
     try:
         parsed = json.loads(str(value))
     except (TypeError, ValueError, json.JSONDecodeError):
-        return None
-    return parsed.get("reason") if isinstance(parsed, dict) else None
+        return {}
+    return parsed if isinstance(parsed, dict) else {}
+
+
+def _feedback_reason(value: Any) -> str | None:
+    return _feedback_payload(value).get("reason")
+
+
+def _rejection_feedback_is_no_op(row: pd.Series) -> bool:
+    """Return whether cost feedback cannot affect the proposed dispatch.
+
+    A multiplier instruction is a no-op only when every adjusted transaction
+    channel has zero scheduled energy. A period adjustment may affect either
+    channel, so it is not labelled a no-op here.
+    """
+
+    if row.get("feedback_reason") != "cost_too_high":
+        return False
+    feedback = _feedback_payload(row.get("feedback"))
+    if feedback.get("period_adjustment") is not None:
+        return False
+    channel_no_ops: list[bool] = []
+    if feedback.get("buy_multiplier_adjustment") is not None:
+        channel_no_ops.append(
+            abs(float(row.get("total_kwh_bought") or 0.0)) <= 1e-9
+        )
+    if feedback.get("sell_multiplier_adjustment") is not None:
+        channel_no_ops.append(
+            abs(float(row.get("total_kwh_sold") or 0.0)) <= 1e-9
+        )
+    return all(channel_no_ops) if channel_no_ops else True
+
+
+def _priority_flags(value: Any) -> tuple[bool, bool]:
+    payload = _feedback_payload(value)
+    applicable = bool(payload.get("applicable"))
+    return applicable, bool(payload.get("satisfied")) if applicable else False
 
 
 def build_evaluator_attempt_audit(
@@ -807,18 +842,31 @@ def build_evaluator_attempt_audit(
         attempts["feedback_reason"] = attempts.get(
             "feedback", pd.Series(index=attempts.index, dtype=object)
         ).map(_feedback_reason)
+        projected_full_day_pto_cost = pd.to_numeric(
+            attempts.get(
+                "projected_full_day_pto_cost",
+                attempts.get("pto_daily_cost"),
+            ),
+            errors="coerce",
+        )
         attempts["rejected_negative_pto_cost_violation"] = (
             attempts["mode"].eq("altruistic")
-            & pd.to_numeric(attempts.get("pto_daily_cost"), errors="coerce").lt(0)
+            & projected_full_day_pto_cost.lt(0)
             & ~attempts.get("evaluator_accepted", False).astype(bool)
             & ~attempts.get("is_mock", False).astype(bool)
         )
-        attempts["rejection_feedback_no_op_on_current_schedule"] = (
-            attempts["feedback_reason"].eq("cost_too_high")
-            & pd.to_numeric(attempts.get("total_kwh_bought"), errors="coerce")
-            .fillna(0.0)
-            .abs()
-            .le(1e-9)
+        attempts["rejection_feedback_no_op_on_current_schedule"] = attempts.apply(
+            _rejection_feedback_is_no_op,
+            axis=1,
+        )
+        priority_flags = attempts.get(
+            "priority_assessment", pd.Series(index=attempts.index, dtype=object)
+        ).map(_priority_flags)
+        attempts["interpreted_priority_applicable"] = priority_flags.map(
+            lambda flags: flags[0]
+        )
+        attempts["interpreted_priority_satisfied"] = priority_flags.map(
+            lambda flags: flags[1]
         )
         attempt_frames.append(attempts)
     if not attempt_frames:
@@ -839,8 +887,19 @@ def build_evaluator_attempt_audit(
     for keys, group in attempt_audit.groupby(group_columns, sort=True, dropna=False):
         group = group.sort_values("attempt")
         mode = str(group["mode"].iloc[0])
-        objective_column = (
-            "aggregator_revenue" if mode == "selfish" else "pto_daily_cost"
+        objective_candidates = (
+            ("projected_full_day_aggregator_revenue", "aggregator_revenue")
+            if mode == "selfish"
+            else ("projected_full_day_pto_cost", "pto_daily_cost")
+        )
+        objective_column = next(
+            (
+                column
+                for column in objective_candidates
+                if column in group
+                and pd.to_numeric(group[column], errors="coerce").notna().any()
+            ),
+            objective_candidates[-1],
         )
         objective = pd.to_numeric(group[objective_column], errors="coerce")
         solver_status = group.get(
@@ -854,11 +913,31 @@ def build_evaluator_attempt_audit(
         usable_group = group.loc[usable]
         usable_objective = objective.loc[usable]
         if usable_group.empty:
-            best_index = None
+            best_objective_index = None
         elif mode == "selfish":
-            best_index = usable_objective.idxmax()
+            best_objective_index = usable_objective.idxmax()
         else:
-            best_index = usable_objective.idxmin()
+            best_objective_index = usable_objective.idxmin()
+
+        eligible = usable.copy()
+        priority_applicable = group.get(
+            "interpreted_priority_applicable", False
+        ).astype(bool)
+        priority_satisfied = group.get(
+            "interpreted_priority_satisfied", False
+        ).astype(bool)
+        if (
+            priority_applicable.loc[usable].any()
+            and priority_satisfied.loc[usable].any()
+        ):
+            eligible &= priority_satisfied
+        eligible_objective = objective.loc[eligible]
+        if eligible_objective.empty:
+            best_candidate_index = None
+        elif mode == "selfish":
+            best_candidate_index = eligible_objective.idxmax()
+        else:
+            best_candidate_index = eligible_objective.idxmin()
 
         selected_group = group[group.get("accepted", False).astype(bool)]
         selected_index = selected_group.index[0] if not selected_group.empty else None
@@ -871,12 +950,21 @@ def build_evaluator_attempt_audit(
             else None
         )
 
-        best_value = float(objective.loc[best_index]) if best_index is not None else None
+        best_value = (
+            float(objective.loc[best_objective_index])
+            if best_objective_index is not None
+            else None
+        )
+        best_candidate_value = (
+            float(objective.loc[best_candidate_index])
+            if best_candidate_index is not None
+            else None
+        )
         selected_value = (
             float(objective.loc[selected_index]) if selected_index is not None else None
         )
-        selected_is_best = bool(
-            best_index is not None
+        selected_is_best_objective = bool(
+            best_objective_index is not None
             and selected_index is not None
             and np.isclose(
                 best_value,
@@ -885,7 +973,19 @@ def build_evaluator_attempt_audit(
                 atol=OBJECTIVE_TIE_TOLERANCE,
             )
         )
+        selected_is_best_candidate = bool(
+            best_candidate_index is not None
+            and selected_index is not None
+            and bool(eligible.loc[selected_index])
+            and np.isclose(
+                best_candidate_value,
+                selected_value,
+                rtol=0.0,
+                atol=OBJECTIVE_TIE_TOLERANCE,
+            )
+        )
         accepted_rerun_worse = False
+        accepted_rerun_economically_worse = False
         if evaluator_accepted_index is not None:
             accepted_attempt = int(group.loc[evaluator_accepted_index, "attempt"])
             earlier = group[
@@ -896,13 +996,37 @@ def build_evaluator_attempt_audit(
                 earlier_values = pd.to_numeric(
                     earlier[objective_column], errors="coerce"
                 )
-                accepted_rerun_worse = bool(
+                accepted_rerun_economically_worse = bool(
                     earlier_values.max()
                     > accepted_value + OBJECTIVE_TIE_TOLERANCE
                     if mode == "selfish"
                     else earlier_values.min()
                     < accepted_value - OBJECTIVE_TIE_TOLERANCE
                 )
+                accepted_applicable = bool(
+                    priority_applicable.loc[evaluator_accepted_index]
+                )
+                accepted_satisfied = bool(
+                    priority_satisfied.loc[evaluator_accepted_index]
+                )
+                earlier_outranks: list[bool] = []
+                for earlier_index in earlier.index:
+                    earlier_applicable = bool(priority_applicable.loc[earlier_index])
+                    earlier_satisfied = bool(priority_satisfied.loc[earlier_index])
+                    if accepted_applicable or earlier_applicable:
+                        if accepted_satisfied != earlier_satisfied:
+                            earlier_outranks.append(
+                                earlier_satisfied and not accepted_satisfied
+                            )
+                            continue
+                    earlier_value = float(objective.loc[earlier_index])
+                    earlier_outranks.append(
+                        earlier_value > accepted_value + OBJECTIVE_TIE_TOLERANCE
+                        if mode == "selfish"
+                        else earlier_value
+                        < accepted_value - OBJECTIVE_TIE_TOLERANCE
+                    )
+                accepted_rerun_worse = any(earlier_outranks)
         if best_value is None or selected_value is None:
             objective_regret = None
         elif mode == "selfish":
@@ -916,8 +1040,13 @@ def build_evaluator_attempt_audit(
                 "attempt_count": len(group),
                 "objective_metric": objective_column,
                 "best_usable_attempt": (
-                    int(group.loc[best_index, "attempt"])
-                    if best_index is not None
+                    int(group.loc[best_candidate_index, "attempt"])
+                    if best_candidate_index is not None
+                    else None
+                ),
+                "best_usable_economic_attempt": (
+                    int(group.loc[best_objective_index, "attempt"])
+                    if best_objective_index is not None
                     else None
                 ),
                 "selected_attempt": (
@@ -931,10 +1060,15 @@ def build_evaluator_attempt_audit(
                     else None
                 ),
                 "best_usable_objective": best_value,
+                "best_usable_candidate_objective": best_candidate_value,
                 "selected_objective": selected_value,
-                "selected_is_best_usable_objective": selected_is_best,
+                "selected_is_best_usable_candidate": selected_is_best_candidate,
+                "selected_is_best_usable_objective": selected_is_best_objective,
                 "selected_objective_regret": objective_regret,
                 "accepted_rerun_worse_than_earlier_usable_attempt": accepted_rerun_worse,
+                "accepted_rerun_economically_worse_than_earlier_usable_attempt": (
+                    accepted_rerun_economically_worse
+                ),
                 "rejected_negative_pto_cost_count": int(
                     group["rejected_negative_pto_cost_violation"].sum()
                 ),
@@ -1188,11 +1322,27 @@ def main() -> None:
                     pd.Series(dtype=bool),
                 ).sum()
             ),
-            "selected_schedules_not_best_usable_objective": int(
-                (~evaluator_decision_audit.get(
-                    "selected_is_best_usable_objective",
+            "accepted_rerun_economically_worse_but_not_necessarily_priority_worse": int(
+                evaluator_decision_audit.get(
+                    "accepted_rerun_economically_worse_than_earlier_usable_attempt",
                     pd.Series(dtype=bool),
-                ).astype(bool)).sum()
+                ).sum()
+            ),
+            "selected_schedules_not_best_usable_candidate": int(
+                (
+                    ~evaluator_decision_audit.get(
+                        "selected_is_best_usable_candidate",
+                        pd.Series(dtype=bool),
+                    ).astype(bool)
+                ).sum()
+            ),
+            "selected_schedules_not_best_usable_objective": int(
+                (
+                    ~evaluator_decision_audit.get(
+                        "selected_is_best_usable_objective",
+                        pd.Series(dtype=bool),
+                    ).astype(bool)
+                ).sum()
             ),
             "rejected_negative_pto_cost_attempts": int(
                 evaluator_attempts.get(

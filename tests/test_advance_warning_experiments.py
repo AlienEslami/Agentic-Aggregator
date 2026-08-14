@@ -6,6 +6,7 @@ import pytest
 from scripts.analyze_advance_warning_matrix import (
     annotate_runs,
     build_ablation_contrasts,
+    build_evaluator_attempt_audit,
     build_primary_pairs,
     settlement_secondary_outcomes,
     summarize_pairs,
@@ -329,3 +330,110 @@ def test_secondary_outcomes_measure_price_aligned_flexibility_and_throughput():
     assert outcomes["energy_weighted_average_sell_grid_price"] == pytest.approx(3.75)
     assert outcomes["peak_net_import_kwh_per_interval"] == 20.0
     assert outcomes["battery_throughput_proxy_kwh"] == 50.0
+
+
+def test_evaluator_audit_uses_projected_full_day_economics(monkeypatch, tmp_path):
+    attempts = pd.DataFrame(
+        {
+            "timestep": [11, 11],
+            "attempt": [1, 2],
+            "mode": ["altruistic", "altruistic"],
+            "pto_daily_cost": [-40.0, -30.0],
+            "projected_full_day_pto_cost": [120.0, 110.0],
+            "aggregator_revenue": [1.0, 1.0],
+            "projected_full_day_aggregator_revenue": [1.0, 1.0],
+            "solver_status": ["ok/optimal", "ok/optimal"],
+            "is_mock": [False, False],
+            "accepted": [False, True],
+            "evaluator_accepted": [False, False],
+            "total_kwh_bought": [0.0, 0.0],
+            "total_kwh_sold": [5.0, 5.0],
+            "feedback": [
+                '{"reason":"cost_too_high",'
+                '"buy_multiplier_adjustment":{"direction":"lower"}}',
+                '{"reason":"cost_too_high",'
+                '"sell_multiplier_adjustment":{"direction":"raise"}}',
+            ],
+        }
+    )
+    monkeypatch.setattr(pd, "read_excel", lambda *args, **kwargs: attempts.copy())
+    runs = pd.DataFrame(
+        [
+            {
+                "run_id": "run-1",
+                "configuration": "full_agentic",
+                "case": "case-1",
+                "variant": "uncertain_chat",
+                "mode": "altruistic",
+                "repetition": 1,
+                "workbook": str(tmp_path / "run.xlsx"),
+            }
+        ]
+    )
+
+    attempt_audit, decision_audit = build_evaluator_attempt_audit(
+        runs, repository_root=tmp_path
+    )
+
+    decision = decision_audit.iloc[0]
+    assert decision["objective_metric"] == "projected_full_day_pto_cost"
+    assert decision["best_usable_attempt"] == 2
+    assert decision["best_usable_economic_attempt"] == 2
+    assert decision["selected_is_best_usable_candidate"]
+    assert decision["selected_is_best_usable_objective"]
+    assert decision["selected_objective_regret"] == 0
+    assert decision["rejected_negative_pto_cost_count"] == 0
+    assert attempt_audit["rejection_feedback_no_op_on_current_schedule"].tolist() == [
+        True,
+        False,
+    ]
+
+
+def test_evaluator_audit_treats_satisfied_operator_priority_as_lexicographic(
+    monkeypatch, tmp_path
+):
+    attempts = pd.DataFrame(
+        {
+            "timestep": [5, 5],
+            "attempt": [1, 2],
+            "mode": ["selfish", "selfish"],
+            "projected_full_day_aggregator_revenue": [13.0, 7.0],
+            "projected_full_day_pto_cost": [140.0, 141.0],
+            "solver_status": ["ok/optimal", "ok/optimal"],
+            "is_mock": [False, False],
+            "accepted": [False, True],
+            "evaluator_accepted": [False, True],
+            "total_kwh_bought": [0.0, 100.0],
+            "total_kwh_sold": [0.0, 0.0],
+            "feedback": ["{}", "{}"],
+            "priority_assessment": [
+                '{"applicable":true,"satisfied":false}',
+                '{"applicable":true,"satisfied":true}',
+            ],
+        }
+    )
+    monkeypatch.setattr(pd, "read_excel", lambda *args, **kwargs: attempts.copy())
+    runs = pd.DataFrame(
+        [
+            {
+                "run_id": "run-priority",
+                "configuration": "full_agentic",
+                "case": "case-priority",
+                "variant": "uncertain_chat",
+                "mode": "selfish",
+                "repetition": 1,
+                "workbook": str(tmp_path / "priority.xlsx"),
+            }
+        ]
+    )
+
+    _, decisions = build_evaluator_attempt_audit(runs, repository_root=tmp_path)
+    decision = decisions.iloc[0]
+    assert decision["best_usable_attempt"] == 2
+    assert decision["best_usable_economic_attempt"] == 1
+    assert decision["selected_is_best_usable_candidate"]
+    assert not decision["selected_is_best_usable_objective"]
+    assert not decision["accepted_rerun_worse_than_earlier_usable_attempt"]
+    assert decision[
+        "accepted_rerun_economically_worse_than_earlier_usable_attempt"
+    ]
