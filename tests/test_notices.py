@@ -79,6 +79,35 @@ def test_non_aligned_clock_window_includes_every_overlapping_half_hour():
     assert (normalized.effective_timestep, normalized.expected_end_timestep) == (8, 11)
 
 
+def test_end_of_day_clock_window_maps_to_final_timestep():
+    interpretation = NoticeInterpretation(
+        event_id="AW-ROUTE6",
+        source_type="driver_chat",
+        event_type="service_delay",
+        phase="warning",
+        effective_timestep=44,
+        expected_end_timestep=None,
+    )
+    normalized = normalize_notice_clock_timesteps(
+        interpretation,
+        {
+            "operational_notices": [
+                {
+                    "event_id": "AW-ROUTE6",
+                    "text": (
+                        "Dispatch has not confirmed the 21:30-to-end-of-day "
+                        "control window."
+                    ),
+                }
+            ]
+        },
+    )
+    assert (normalized.effective_timestep, normalized.expected_end_timestep) == (
+        44,
+        48,
+    )
+
+
 def test_followup_inherits_normalized_window_but_recovery_does_not():
     active = {
         "event_id": "AW-BANK",

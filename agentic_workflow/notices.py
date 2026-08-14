@@ -46,6 +46,12 @@ _TIME_WINDOW_RE = re.compile(
     r"(?:-|â€“|–|to|through|until)\s*((?:[01]?\d|2[0-3]):[0-5]\d|24:00)\b",
     re.IGNORECASE,
 )
+_END_OF_DAY_WINDOW_RE = re.compile(
+    r"\b(?:window\s+|from\s+)?([01]?\d|2[0-3]):([0-5]\d)\s*"
+    r"(?:-?\s*to\s*-?|through|until|-)\s*(?:the[\s-]+)?end"
+    r"(?:[\s-]+of[\s-]+(?:the[\s-]+)?day)?\b",
+    re.IGNORECASE,
+)
 _POWER_RE = re.compile(r"\b(\d+(?:\.\d+)?)\s*kW\b", re.IGNORECASE)
 _POWER_RANGE_RE = re.compile(
     r"(?:power|ceiling|output)[^\d]{0,32}(\d+(?:\.\d+)?)\s*(?:-|–|to)\s*"
@@ -186,11 +192,19 @@ def _timestep_window(text: str) -> tuple[int, int] | None:
     """
 
     match = _TIME_WINDOW_RE.search(text)
-    if not match:
+    open_ended_match = None if match else _END_OF_DAY_WINDOW_RE.search(text)
+    if match is None and open_ended_match is None:
         return None
-    start_minutes = int(match.group(1)) * 60 + int(match.group(2))
-    end_hour, end_minute = (int(part) for part in match.group(3).split(":", 1))
-    end_minutes = end_hour * 60 + end_minute
+    selected = match or open_ended_match
+    assert selected is not None
+    start_minutes = int(selected.group(1)) * 60 + int(selected.group(2))
+    if match is not None:
+        end_hour, end_minute = (
+            int(part) for part in match.group(3).split(":", 1)
+        )
+        end_minutes = end_hour * 60 + end_minute
+    else:
+        end_minutes = 24 * 60
     if end_minutes <= start_minutes:
         return None
     start = max(1, min(48, start_minutes // 30 + 1))

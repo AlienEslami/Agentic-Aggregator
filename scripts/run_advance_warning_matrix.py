@@ -98,14 +98,19 @@ def build_run_specs(
     include_role_ablations: bool = False,
     ablation_repetitions: int = 5,
     include_fixed: bool = False,
+    include_primary_deterministic: bool = True,
 ) -> list[RunSpec]:
     if agent_repetitions < 1:
         raise ValueError("agent_repetitions must be positive")
     if ablation_repetitions < 1:
         raise ValueError("ablation_repetitions must be positive")
 
-    configurations = list(PRIMARY_DETERMINISTIC_CONFIGURATIONS)
-    if include_fixed:
+    configurations = (
+        list(PRIMARY_DETERMINISTIC_CONFIGURATIONS)
+        if include_primary_deterministic
+        else []
+    )
+    if include_fixed and include_primary_deterministic:
         configurations.insert(0, "fixed_da_plan")
 
     specs: list[RunSpec] = []
@@ -442,6 +447,14 @@ def main() -> None:
     parser.add_argument("--include-agent", action="store_true")
     parser.add_argument("--agent-repetitions", type=int, default=5)
     parser.add_argument("--include-role-ablations", action="store_true")
+    parser.add_argument(
+        "--only-role-ablations",
+        action="store_true",
+        help=(
+            "Schedule only role-ablation configurations. Intended for an isolated "
+            "pilot output root; requires --include-role-ablations."
+        ),
+    )
     parser.add_argument("--ablation-repetitions", type=int, default=5)
     parser.add_argument("--include-fixed", action="store_true")
     parser.add_argument(
@@ -470,6 +483,9 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    if args.only_role_ablations and not args.include_role_ablations:
+        raise SystemExit("--only-role-ablations requires --include-role-ablations")
+
     try:
         validate_ablation_protocol()
     except (FileNotFoundError, KeyError, TypeError, ValueError) as exc:
@@ -486,6 +502,7 @@ def main() -> None:
         include_role_ablations=args.include_role_ablations,
         ablation_repetitions=args.ablation_repetitions,
         include_fixed=args.include_fixed,
+        include_primary_deterministic=not args.only_role_ablations,
     )
     try:
         validate_external_llm_gate(

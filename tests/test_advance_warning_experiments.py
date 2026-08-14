@@ -44,6 +44,19 @@ def test_matrix_design_separates_primary_and_secondary_repetitions(tmp_path):
     assert workbook_path(tmp_path, stochastic).name == "agent_trigger_only_rep_001.xlsx"
 
 
+def test_isolated_ablation_pilot_has_no_primary_workbooks():
+    specs = build_run_specs(
+        include_role_ablations=True,
+        ablation_repetitions=1,
+        include_primary_deterministic=False,
+    )
+    assert len(specs) == 24
+    assert all(spec.run_family == "secondary_role_ablation" for spec in specs)
+    assert {
+        spec.configuration for spec in specs
+    } == set(ROLE_ABLATION_CONFIGURATIONS)
+
+
 def test_stochastic_only_force_never_reuses_agent_but_keeps_fixed(monkeypatch, tmp_path):
     monkeypatch.setattr(
         "scripts.run_advance_warning_matrix.workbook_is_complete",

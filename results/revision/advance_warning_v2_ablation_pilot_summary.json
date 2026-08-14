@@ -1,0 +1,114 @@
+{
+  "artifact": "advance_warning_v2_role_ablation_pilot",
+  "status": "execution_validation_only_not_confirmatory_evidence",
+  "pilot_date_utc": "2026-08-14",
+  "pilot_git_commit": "5947b8993b7fae0f72ba519e514f00d78b9e352b",
+  "design": {
+    "cases": 3,
+    "modes": 2,
+    "configurations": [
+      "full_agentic",
+      "rule_parser_trigger_substitution",
+      "mathematical_pricing_substitution",
+      "evaluator_removal"
+    ],
+    "repetitions_per_cell": 1,
+    "planned_episodes": 24,
+    "output_root": "results/revision/ablation_pilot_v2",
+    "excluded_from_confirmatory_analysis": true
+  },
+  "execution": {
+    "completed_episodes": 24,
+    "complete_48_timestep_episodes": 24,
+    "gurobi_only_episodes": 24,
+    "solver_fallback_episodes": 0,
+    "initial_failed_cells": 5,
+    "initial_failure": "Pricing transport output had different buy/sell array lengths; three identical strict-parse retries exhausted.",
+    "resume_reused_complete_episodes": 19,
+    "resume_regenerated_failed_episodes": 5
+  },
+  "integrity_audit": {
+    "agent_call_sidecars": 24,
+    "retained_call_records": 261,
+    "schema_valid_records": 261,
+    "schema_invalid_records": 0,
+    "hidden_truth_request_marker_hits": 0,
+    "public_notice_occurrences": 72,
+    "public_notice_metadata_violations": 0,
+    "pricing_length_normalizations": 7,
+    "actionable_clock_defects_found": 1,
+    "actionable_clock_defect": "One 21:30-to-end-of-day route warning had a null expected end timestep.",
+    "clock_fix": "The deterministic public-text normalizer maps end of day to timestep 48.",
+    "recovery_null_expected_end_is_intentional": true
+  },
+  "safety_by_configuration": {
+    "full_agentic": {"safe": 6, "runs": 6},
+    "rule_parser_trigger_substitution": {"safe": 5, "runs": 6},
+    "mathematical_pricing_substitution": {"safe": 6, "runs": 6},
+    "evaluator_removal": {"safe": 6, "runs": 6}
+  },
+  "unsafe_diagnostic": {
+    "run_id": "aw_charger_bank_shutdown__selfish__uncertain_chat__rule_parser_trigger_substitution__r001",
+    "optimizer_calls": 25,
+    "maximum_reserve_shortfall_kwh": 24.6523,
+    "reserve_violation_timesteps": 12,
+    "minimum_observed_soc_fraction": 0.1324594520547945
+  },
+  "descriptive_contrasts_n_equals_1": {
+    "warning": "Diagnostics only; no uncertainty estimate or superiority conclusion is valid at one repetition.",
+    "full_vs_rule_trigger": {
+      "route_selfish_revenue_gain": -0.0000005537,
+      "route_altruistic_pto_cost_reduction": 1.4485251136,
+      "charger_selfish_safety": "full safe; rule substitution unsafe",
+      "charger_altruistic_pto_cost_reduction": 46.8544910599,
+      "combined_selfish_revenue_gain": 8.483465171,
+      "combined_altruistic_pto_cost_reduction": 2.0966083748
+    },
+    "full_vs_mathematical_pricing": {
+      "combined_selfish_revenue_gain": -3.7859242568,
+      "combined_altruistic_pto_cost_reduction": 11.9684062125,
+      "charger_altruistic_pto_cost_reduction": -1.2612355341
+    },
+    "full_vs_evaluator_removal": {
+      "combined_selfish_revenue_gain": -3.0531646928,
+      "charger_altruistic_pto_cost_reduction": 1.6512655013
+    }
+  },
+  "retained_completed_workload": {
+    "llm_request_attempts": 261,
+    "llm_successful_requests": 261,
+    "llm_failed_attempts": 0,
+    "llm_total_tokens": 3400684,
+    "approximate_api_cost_usd": 0.743288,
+    "provider_latency_seconds": 1165.84,
+    "summed_episode_wall_seconds": 2157.23,
+    "summed_local_process_cpu_seconds": 5950.33,
+    "maximum_local_peak_rss_mb": 713.2,
+    "provider_compute_note": "OpenAI server-side GPU, FLOPs, and energy are not exposed by the API.",
+    "initial_failed_attempt_overhead_included": false
+  },
+  "workload_by_configuration": {
+    "full_agentic": {"calls": 54, "tokens": 859415, "approximate_cost_usd": 0.189373},
+    "rule_parser_trigger_substitution": {"calls": 122, "tokens": 1056888, "approximate_cost_usd": 0.235189},
+    "mathematical_pricing_substitution": {"calls": 43, "tokens": 777284, "approximate_cost_usd": 0.166008},
+    "evaluator_removal": {"calls": 42, "tokens": 707097, "approximate_cost_usd": 0.152718}
+  },
+  "confirmatory_projection_from_completed_pilot": {
+    "episodes": 120,
+    "tokens": 17003420,
+    "approximate_api_cost_usd": 3.71644,
+    "sequential_episode_wall_seconds": 10786.15,
+    "planning_note": "Allow additional margin for retries, provider latency variation, and local solver variability."
+  },
+  "frozen_input_hashes_sha256": {
+    "notice": "9e4e4860166f66dd99df0ee5e077df5661969e1c6b9a1522ae2a71a8dbec89d9",
+    "physical_event": "1f5ff94f13bd5728b7d0eff4c9fb49015a8b5a4d8675a475ef72860dbe959f2c",
+    "ablation_protocol": "2ea01a05d3bb84cffb34161457c3c59f00a5dc31e021260f0784a00b0ce96d53"
+  },
+  "local_artifact_hashes_sha256": {
+    "matrix_runs_csv": "5c549d06f8c5747faed8be1e23453cc269d3b866ba57d23a07791ba9a430fe22",
+    "matrix_manifest_json": "c5069fccee3260e30b00011040cc6fca6168219786d504bcc9aba144e89a7399",
+    "analysis_summary_json": "b4add551d5fa8b70b83cd6197fd598891ed0bad255cc12d55ba1d55205c639f9",
+    "ablation_contrasts_csv": "18e72d501e30a82b18166f40ba87f0dc9b81fb74053e38d78bcf3adb86da54f9"
+  }
+}

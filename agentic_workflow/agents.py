@@ -22,6 +22,7 @@ from .models import (
     NoticeInterpretation,
     NoticeParameterUpdates,
     PricingDecision,
+    StructuredPricingDecision,
     StructuredTriggerDecision,
     TriggerDecision,
 )
@@ -280,8 +281,29 @@ class OpenAIAgentBackend(AgentBackend):
             "previous_multipliers": previous.model_dump() if previous else None,
             "evaluator_feedback": feedback.model_dump() if feedback else None,
         }
-        decision = self._parse(system_prompt, user_data, PricingDecision, role="pricing")
-        return normalize_pricing_decision(decision, context["mode"], context["remaining_timesteps"])
+        decision = self._parse(
+            system_prompt,
+            user_data,
+            StructuredPricingDecision,
+            role="pricing",
+        )
+        expected_length = int(context["remaining_timesteps"])
+        actual_lengths = {
+            "buy": len(decision.buy_multipliers),
+            "sell": len(decision.sell_multipliers),
+        }
+        if actual_lengths != {"buy": expected_length, "sell": expected_length}:
+            self.call_records[-1]["post_parse_normalization"] = {
+                "kind": "pricing_array_length",
+                "expected_length": expected_length,
+                "actual_lengths": actual_lengths,
+                "method": "truncate_or_extend_last_value",
+            }
+        return normalize_pricing_decision(
+            decision,
+            context["mode"],
+            expected_length,
+        )
 
     def evaluate(
         self,
@@ -1003,7 +1025,7 @@ def normalize_trigger_decision(
 
 
 def normalize_pricing_decision(
-    decision: PricingDecision,
+    decision: PricingDecision | StructuredPricingDecision,
     mode: str,
     remaining_timesteps: int,
 ) -> PricingDecision:
@@ -1026,7 +1048,12 @@ def normalize_pricing_decision(
         if remaining_timesteps <= 10:
             buy[index] = min(buy[index], 1.15)
         sell[index] = min(sell[index], buy[index] - 0.01)
-    return decision.model_copy(update={"buy_multipliers": buy, "sell_multipliers": sell})
+    return PricingDecision(
+        buy_multipliers=buy,
+        sell_multipliers=sell,
+        reasoning=decision.reasoning,
+        confidence=decision.confidence,
+    )
 
 
 def create_agent_backend(name: str, model: str) -> AgentBackend:

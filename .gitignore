@@ -72,6 +72,7 @@ results/revision/*
 !results/revision/advance_warning_gurobi_5rep_summary.json
 !results/revision/advance_warning_v2_deterministic_summary.json
 !results/revision/advance_warning_v2_agent_5rep_summary.json
+!results/revision/advance_warning_v2_ablation_pilot_summary.json
 
 # Legacy generated-data folder from earlier versions of the repository
 Files/

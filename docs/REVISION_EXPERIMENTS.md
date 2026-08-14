@@ -257,11 +257,23 @@ Trigger substitution, mathematical-pricing substitution, and evaluator removal:
 
 ```powershell
 python scripts/run_advance_warning_matrix.py `
-  --include-agent `
   --include-role-ablations `
-  --agent-repetitions 5 `
+  --only-role-ablations `
   --ablation-repetitions 5 `
   --allow-external-llm
+```
+
+Before the confirmatory run, validate all role paths with one repetition in a
+separate output root. The pilot root must never be reused by the confirmatory
+matrix:
+
+```powershell
+python scripts/run_advance_warning_matrix.py `
+  --include-role-ablations `
+  --only-role-ablations `
+  --ablation-repetitions 1 `
+  --allow-external-llm `
+  --output-root results/revision/ablation_pilot_v2
 ```
 
 Complete workbooks are reused unless `--force` is supplied. Repeated workbooks
@@ -497,3 +509,41 @@ tie tolerance, and 10,000 bootstrap iterations. This is 120 secondary episodes.
 The protocol explicitly prohibits redesigning the ablations in response to the
 primary Agent results. A one-repetition-per-cell pilot may validate execution,
 but it is not included in the confirmatory five-repetition analysis.
+
+### Isolated v2 role-ablation pilot
+
+On 2026-08-14, the isolated pilot completed all 24 planned episodes: four role
+configurations across three cases and two modes. All completed workbooks used
+Gurobi without fallback. Their lossless sidecars contained 261 successful,
+schema-valid structured calls, 3,400,684 tokens, and approximately USD 0.7433
+at the frozen rates. No canonical/hidden-physical-truth marker appeared in a
+request, and all 72 public-notice occurrences contained only the five allowed
+public fields.
+
+The first pass exposed a transport-validation defect in five altruistic runs:
+the model sometimes returned buy and sell arrays of different lengths, and the
+three identical parse retries exhausted. The transport schema now accepts the
+two nonempty arrays and a deterministic post-parse step independently truncates
+or extends them to the known remaining horizon before constructing the strict
+pricing decision. Every correction is logged. The resumed pilot reused 19
+complete workbooks and regenerated only the five failed cells; seven retained
+pricing calls required this length normalization.
+
+The audit also found one non-recovery interpretation of
+`21:30-to-end-of-day` with a missing end timestep. The deterministic public-text
+clock parser now maps `end of day` to timestep 48, with an exact regression
+test. Recovery interpretations intentionally retain a null expected end because
+the restriction has ended. The affected pilot workbook was not converted into
+confirmatory evidence; all 120 confirmatory episodes will start fresh with the
+corrected normalizer.
+
+Descriptively, `full_agentic`, the mathematical-pricing substitution, and
+evaluator removal were each safe in all six pilot cells. The rule-trigger
+substitution was safe in five: in the selfish charger-shutdown cell it made 25
+optimizer calls and ended with a 24.6523 kWh maximum reserve shortfall across 12
+timesteps. These single-run outcomes validate that the contrasts are
+decision-sensitive, but they are not statistical evidence and must not be cited
+as an ablation conclusion. Based on the completed pilot workload, the frozen
+120-run study projects to about 17.0 million tokens, USD 3.72 at the recorded
+rates, and roughly three hours of sequential episode time; allow additional
+margin for retries and API variability.

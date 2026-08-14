@@ -247,11 +247,22 @@ class StructuredTriggerDecision(StrictModel):
         )
 
 
-class PricingDecision(StrictModel):
+class StructuredPricingDecision(StrictModel):
+    """Transport schema for LLM pricing output before deterministic normalization.
+
+    JSON Schema cannot express that two arrays must have equal lengths. Keeping
+    that cross-field rule out of the transport schema lets the workflow repair
+    length-only defects deterministically instead of spending three identical
+    retries and aborting the episode.
+    """
+
     buy_multipliers: list[float] = Field(min_length=1)
     sell_multipliers: list[float] = Field(min_length=1)
     reasoning: str
     confidence: float = Field(ge=0.0, le=1.0)
+
+
+class PricingDecision(StructuredPricingDecision):
 
     @model_validator(mode="after")
     def matching_lengths(self) -> "PricingDecision":

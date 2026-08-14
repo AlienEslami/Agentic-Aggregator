@@ -11,12 +11,15 @@ from agentic_workflow.agents import (
     RuleBasedAgentBackend,
     normalize_trigger_decision,
 )
-from agentic_workflow.models import EvaluationDecision, NULL_FEEDBACK, PricingDecision
 from agentic_workflow.models import (
+    EvaluationDecision,
+    NULL_FEEDBACK,
     NoticeInterpretation,
     NoticeUncertaintyAssessment,
+    PricingDecision,
     StructuredNoticeInterpretation,
     StructuredNoticeParameterUpdates,
+    StructuredPricingDecision,
     StructuredTriggerDecision,
     TriggerDecision,
 )
@@ -410,6 +413,66 @@ def test_openai_parse_records_schema_failure_and_retry():
     assert backend._parse("system", {}, TriggerDecision, role="trigger") == parsed
     assert [record["schema_valid"] for record in backend.call_records] == [False, True]
     assert [record["attempt"] for record in backend.call_records] == [1, 2]
+
+
+def test_openai_pricing_normalizes_mismatched_transport_lengths():
+    parsed = StructuredPricingDecision(
+        buy_multipliers=[1.03, 1.04],
+        sell_multipliers=[0.82],
+        reasoning="valid content with a length-only transport defect",
+        confidence=0.9,
+    )
+
+    class FakeCompletions:
+        def parse(self, **kwargs):
+            assert kwargs["response_format"] is StructuredPricingDecision
+            return SimpleNamespace(
+                choices=[SimpleNamespace(message=SimpleNamespace(
+                    parsed=parsed,
+                    refusal=None,
+                    content='{"buy_multipliers":[1.03,1.04],"sell_multipliers":[0.82]}',
+                ))]
+            )
+
+    backend = OpenAIAgentBackend.__new__(OpenAIAgentBackend)
+    backend.model = "test-model"
+    backend.call_records = []
+    backend.client = SimpleNamespace(
+        chat=SimpleNamespace(completions=FakeCompletions())
+    )
+    context = _context()
+    context.update(
+        {
+            "remaining_timesteps": 3,
+            "remaining_hours": 1.5,
+            "realtime_state": {},
+            "deviations": {},
+            "day_ahead_summary": {},
+        }
+    )
+
+    decision = backend.price(
+        context,
+        TriggerDecision(
+            action="optimize",
+            reasoning="test",
+            confidence=1,
+            trigger_type="service_notice",
+            flagged_buses=[],
+        ),
+        rerun_count=0,
+        previous=None,
+        feedback=None,
+    )
+
+    assert decision.buy_multipliers == [1.03, 1.04, 1.04]
+    assert decision.sell_multipliers == [0.82, 0.82, 0.82]
+    assert backend.call_records[-1]["post_parse_normalization"] == {
+        "kind": "pricing_array_length",
+        "expected_length": 3,
+        "actual_lengths": {"buy": 2, "sell": 1},
+        "method": "truncate_or_extend_last_value",
+    }
 
 
 def test_openai_trigger_schema_uses_only_closed_objects():
