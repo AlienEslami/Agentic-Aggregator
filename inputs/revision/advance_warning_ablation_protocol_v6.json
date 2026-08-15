@@ -2,7 +2,7 @@
   "protocol_version": "advance_warning_ablation_v6",
   "status": "implemented_and_frozen_pending_altruistic_reexecution",
   "frozen_date_utc": "2026-08-14",
-  "prompt_freeze_commit": "PENDING_IMPLEMENTATION_COMMIT",
+  "prompt_freeze_commit": "634ac10b16045f56dbb23105db79fdfc2256c342",
   "supersedes_for_future_runs": "inputs/revision/advance_warning_ablation_protocol_v5.json",
   "historical_result_policy": "The complete v5 matrix remains immutable provenance. The v6 matrix re-executes only altruistic cells after the revenue-neutrality correction and is not pooled with v5 altruistic outcomes.",
   "change_reason": [
