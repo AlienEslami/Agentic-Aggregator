@@ -31,6 +31,11 @@ SUMMARY_COLUMNS = (
     "optimize_decisions",
     "realized_pto_cost",
     "realized_aggregator_revenue",
+    "baseline_aggregator_revenue_reference",
+    "baseline_revenue_retention_fraction",
+    "baseline_revenue_retention_floor",
+    "baseline_revenue_retention_shortfall",
+    "baseline_revenue_retention_compliant",
     "revenue_neutrality_active",
     "revenue_neutrality_floor",
     "revenue_neutrality_shortfall",
@@ -94,6 +99,7 @@ def command_for(
     trigger_prompt_variant: str = "baseline",
     trigger_confidence_threshold: float = 0.0,
     pricing_guidance_variant: str = "base",
+    altruistic_revenue_retention_fraction: float = 0.50,
     max_reruns: int = 1,
 ) -> list[str]:
     return [
@@ -127,6 +133,8 @@ def command_for(
         "--realize-notice-truth",
         "--mode",
         mode,
+        "--altruistic-revenue-retention-fraction",
+        str(altruistic_revenue_retention_fraction),
         "--start-timestep",
         str(start),
         "--end-timestep",

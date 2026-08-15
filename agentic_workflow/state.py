@@ -269,6 +269,10 @@ class WorkflowState:
                 "revenue_neutrality_floor": result.get("revenue_neutrality_floor") if result else None,
                 "revenue_neutrality_shortfall": result.get("revenue_neutrality_shortfall") if result else None,
                 "revenue_neutrality_compliant": result.get("revenue_neutrality_compliant") if result else None,
+                "baseline_revenue_retention_fraction": result.get("baseline_revenue_retention_fraction") if result else None,
+                "baseline_revenue_retention_floor": result.get("baseline_revenue_retention_floor") if result else None,
+                "baseline_revenue_retention_shortfall": result.get("baseline_revenue_retention_shortfall") if result else None,
+                "baseline_revenue_retention_compliant": result.get("baseline_revenue_retention_compliant") if result else None,
                 "canonical_priority_satisfied": result.get("benchmark_canonical_priority_satisfied") if result else None,
                 "canonical_priority_compliance_gap": result.get("benchmark_canonical_priority_compliance_gap") if result else None,
                 "interpreted_operational_priority": _json(

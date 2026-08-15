@@ -114,6 +114,7 @@ def _price_zone(value: float, minimum: float, maximum: float) -> str:
 def build_context(
     *,
     mode: str,
+    altruistic_revenue_retention_fraction: float = 0.50,
     timestep: int,
     observation: list[dict[str, Any]],
     realtime_plan: pd.DataFrame,
@@ -215,6 +216,11 @@ def build_context(
     )
     summary = day_ahead.summary
     reference_aggregator_revenue = _float(summary.get("aggregator_revenue"))
+    retained_revenue_floor = (
+        reference_aggregator_revenue * altruistic_revenue_retention_fraction
+        if reference_aggregator_revenue is not None
+        else None
+    )
     buy_multipliers = list(summary.get("buy_multipliers") or [1.05, 1.10, 1.05])
     sell_multipliers = list(summary.get("sell_multipliers") or [0.80, 0.85, 0.80])
     period_size = max(1, 48 // len(buy_multipliers))
@@ -374,13 +380,22 @@ def build_context(
         },
         "revenue_neutrality": {
             "active": mode == "altruistic",
-            "policy": "frozen_day_ahead_full_day_aggregator_revenue",
-            "full_day_revenue_floor": (
+            "policy": "baseline_revenue_retention_floor",
+            "baseline_full_day_aggregator_revenue": (
                 round(reference_aggregator_revenue, 6)
                 if reference_aggregator_revenue is not None
                 else None
             ),
-            "source": "day_ahead_summary.aggregator_revenue",
+            "retention_fraction": altruistic_revenue_retention_fraction,
+            "full_day_revenue_floor": (
+                round(retained_revenue_floor, 6)
+                if retained_revenue_floor is not None
+                else None
+            ),
+            "source": (
+                "altruistic_revenue_retention_fraction * "
+                "day_ahead_summary.aggregator_revenue"
+            ),
             "fixed_before_realtime_disturbances": True,
             "realized_prefix_aggregator_revenue": None,
             "remaining_revenue_required": None,

@@ -542,7 +542,7 @@ class OpenAIAgentBackend(AgentBackend):
             "day_ahead_summary": context["day_ahead_summary"],
             "reoptimization_history": context["reoptimization_history"],
             "full_day_accounting": context.get("full_day_accounting", {}),
-            "revenue_neutrality": context.get("revenue_neutrality", {}),
+            "baseline_revenue_retention": context.get("revenue_neutrality", {}),
             "rerun_count": rerun_count,
             "previous_multipliers": previous.model_dump() if previous else None,
             "evaluator_feedback": feedback.model_dump() if feedback else None,
@@ -628,7 +628,7 @@ class OpenAIAgentBackend(AgentBackend):
             ),
             "fleet_constraints": context.get("fleet_constraints", {}),
             "full_day_accounting": context.get("full_day_accounting", {}),
-            "revenue_neutrality": context.get("revenue_neutrality", {}),
+            "baseline_revenue_retention": context.get("revenue_neutrality", {}),
         }
         decision = self._parse(
             _prompt("evaluator_system.txt"), user_data, EvaluationDecision, role="evaluator"

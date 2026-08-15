@@ -524,6 +524,11 @@ def write_manifest(
             "mip_gap": args.solver_mip_gap,
             "fallback_permitted_in_final_results": False,
         },
+        "altruistic_baseline_revenue_retention": {
+            "fraction": args.altruistic_revenue_retention_fraction,
+            "reference": "frozen day-ahead full-day aggregator revenue",
+            "floor_formula": "fraction * reference",
+        },
         "inputs": {
             "notice_file": "inputs/revision/advance_warning_notices_v1.json",
             "physical_event_file": (
@@ -568,6 +573,15 @@ def main() -> None:
     parser.add_argument("--start", type=int, default=1)
     parser.add_argument("--end", type=int, default=48)
     parser.add_argument("--model", default="gpt-5.6-luna")
+    parser.add_argument(
+        "--altruistic-revenue-retention-fraction",
+        type=float,
+        default=0.50,
+        help=(
+            "Fraction of baseline full-day aggregator revenue retained in "
+            "altruistic mode; must match the frozen protocol."
+        ),
+    )
     parser.add_argument("--solver-order", default="gurobi")
     parser.add_argument("--solver-time-limit", type=float, default=60.0)
     parser.add_argument("--solver-mip-gap", type=float, default=0.02)
@@ -657,6 +671,18 @@ def main() -> None:
         protocol = validate_ablation_protocol()
     except (FileNotFoundError, KeyError, TypeError, ValueError) as exc:
         raise SystemExit(str(exc)) from exc
+
+    frozen_retention = protocol["controls"][
+        "altruistic_baseline_revenue_retention"
+    ]
+    if abs(
+        args.altruistic_revenue_retention_fraction
+        - float(frozen_retention["retention_fraction"])
+    ) > 1e-12:
+        raise SystemExit(
+            "--altruistic-revenue-retention-fraction must match the frozen "
+            "protocol value"
+        )
 
     cases = args.case or list(PRIMARY_CASES)
     modes = args.mode or list(protocol["design"]["modes"])
@@ -753,6 +779,9 @@ def main() -> None:
                         end=args.end,
                         model=args.model,
                         output=workbook,
+                        altruistic_revenue_retention_fraction=(
+                            args.altruistic_revenue_retention_fraction
+                        ),
                     ),
                     cwd=ROOT,
                     check=True,

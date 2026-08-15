@@ -33,6 +33,15 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--notice-variant", default="explicit")
     parser.add_argument("--mode", choices=("selfish", "altruistic"), default="selfish")
     parser.add_argument(
+        "--altruistic-revenue-retention-fraction",
+        type=float,
+        default=0.50,
+        help=(
+            "Fraction of the frozen day-ahead aggregator revenue retained as the "
+            "full-day floor in altruistic mode (v6 default: 0.50)."
+        ),
+    )
+    parser.add_argument(
         "--scenario",
         action="append",
         dest="scenario_ids",
@@ -134,6 +143,9 @@ def main(argv: list[str] | None = None) -> int:
         notice_scenario_ids=tuple(args.notice_scenario_ids or []),
         notice_variant=args.notice_variant,
         mode=args.mode,
+        altruistic_revenue_retention_fraction=(
+            args.altruistic_revenue_retention_fraction
+        ),
         scenario_ids=tuple(args.scenario_ids or ["rt_none"]),
         start_timestep=args.start_timestep,
         end_timestep=args.end_timestep,

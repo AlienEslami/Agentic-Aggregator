@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
@@ -52,6 +53,7 @@ class WorkflowConfig:
     notice_variant: str = "explicit"
     spot_prices_workbook: Path | None = None
     mode: Mode = "selfish"
+    altruistic_revenue_retention_fraction: float = 0.50
     scenario_ids: tuple[str, ...] = ("rt_none",)
     start_timestep: int = 1
     end_timestep: int = 48
@@ -91,6 +93,13 @@ class WorkflowConfig:
             raise FileNotFoundError("Missing workflow inputs: " + ", ".join(missing))
         if self.mode not in {"selfish", "altruistic"}:
             raise ValueError(f"Unsupported mode: {self.mode}")
+        if (
+            not math.isfinite(self.altruistic_revenue_retention_fraction)
+            or not 0 <= self.altruistic_revenue_retention_fraction <= 1
+        ):
+            raise ValueError(
+                "altruistic_revenue_retention_fraction must be finite and in [0, 1]"
+            )
         if not 1 <= self.start_timestep <= 48:
             raise ValueError("start_timestep must be in [1, 48]")
         if not self.start_timestep <= self.end_timestep <= 48:

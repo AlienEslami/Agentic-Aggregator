@@ -125,7 +125,10 @@ def test_ablation_protocol_is_frozen_and_matches_runner():
     assert protocol["controls"]["shared_trigger_evidence_change_gate"] is True
     assert protocol["controls"]["maximum_pricing_reruns"] == 1
     assert protocol["controls"]["maximum_optimizer_attempts_per_trigger"] == 2
-    assert protocol["controls"]["altruistic_revenue_neutrality"]["active"] is True
+    retention = protocol["controls"]["altruistic_baseline_revenue_retention"]
+    assert retention["active"] is True
+    assert retention["retention_fraction"] == 0.5
+    assert retention["expected_retention_floor_for_current_input"] == 9.214257
     assert protocol["outcomes"][
         "battery_throughput_in_primary_or_secondary_contrasts"
     ] is False

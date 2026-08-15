@@ -1,15 +1,15 @@
 {
   "protocol_version": "advance_warning_ablation_v6",
   "status": "implemented_and_frozen_pending_altruistic_reexecution",
-  "frozen_date_utc": "2026-08-14",
+  "frozen_date_utc": "2026-08-15",
   "prompt_freeze_commit": "634ac10b16045f56dbb23105db79fdfc2256c342",
   "supersedes_for_future_runs": "inputs/revision/advance_warning_ablation_protocol_v5.json",
-  "historical_result_policy": "The complete v5 matrix remains immutable provenance. The v6 matrix re-executes only altruistic cells after the revenue-neutrality correction and is not pooled with v5 altruistic outcomes.",
+  "historical_result_policy": "The complete v5 matrix remains immutable provenance. The v6 matrix re-executes only altruistic cells after the 50% baseline-revenue retention correction and is not pooled with v5 altruistic outcomes.",
   "change_reason": [
-    "replace unconstrained PTO-cost minimization, whose trivial tariff optimum is minimum buy and maximum sell multipliers, with a revenue-neutral cooperative pricing problem",
-    "freeze the full-day aggregator revenue floor from the day-ahead reference before any real-time disturbance",
+    "replace unconstrained PTO-cost minimization, whose trivial tariff optimum is minimum buy and maximum sell multipliers, with a cooperative pricing problem subject to a 50% baseline-revenue retention floor",
+    "freeze the full-day aggregator revenue reference and its 50% retained floor before any real-time disturbance",
     "allow each real-time decision to influence only the remaining revenue requirement after causal settlement",
-    "rank altruistic candidates by operational-priority satisfaction, revenue-neutrality compliance, and then lower projected full-day PTO cost",
+    "rank altruistic candidates by operational-priority satisfaction, baseline-revenue retention compliance, and then lower projected full-day PTO cost",
     "remove battery-throughput proxy from the paper-facing secondary contrasts because repeated cycling is not a material opportunity in these bus schedules"
   ],
   "design": {
@@ -44,13 +44,13 @@
       "name": "llm_pricing_contribution",
       "candidate": "full_agentic",
       "baseline": "deterministic_pricing_substitution",
-      "single_component_changed": "Replace only LLM pricing with the deterministic price-zone heuristic under the same full-day revenue-neutrality policy."
+      "single_component_changed": "Replace only LLM pricing with the deterministic price-zone heuristic under the same 50% baseline-revenue retention policy."
     },
     {
       "name": "llm_evaluator_contribution",
       "candidate": "full_agentic",
       "baseline": "evaluator_removal",
-      "single_component_changed": "Remove only the LLM evaluator while retaining solver, feasibility, and method-independent revenue-neutrality guards."
+      "single_component_changed": "Remove only the LLM evaluator while retaining solver, feasibility, and method-independent baseline-revenue retention guards."
     }
   ],
   "controls": {
@@ -63,21 +63,25 @@
     "llm_deterministic_numerical_trigger_fallback": false,
     "maximum_pricing_reruns": 1,
     "maximum_optimizer_attempts_per_trigger": 2,
-    "altruistic_revenue_neutrality": {
+    "altruistic_baseline_revenue_retention": {
       "active": true,
-      "floor_source": "frozen day_ahead_summary.aggregator_revenue for the altruistic mode",
+      "baseline_source": "frozen day_ahead_summary.aggregator_revenue for the altruistic mode",
+      "retention_fraction": 0.5,
+      "floor_formula": "0.5 * frozen day_ahead_summary.aggregator_revenue",
+      "expected_reference_revenue_for_current_input": 18.428513,
+      "expected_retention_floor_for_current_input": 9.214257,
       "full_day_rule": "projected full-day aggregator revenue must be at least the frozen floor",
       "remaining_rule": "remaining revenue required equals max(0, frozen full-day floor minus realized settled-prefix revenue)",
       "average_multiplier_constraint": false,
       "candidate_order": [
         "solver usability and operational-priority satisfaction",
-        "revenue-neutrality compliance",
+        "50% baseline-revenue retention compliance",
         "lower projected full-day PTO cost",
         "evaluator acceptance only as an objective tie-breaker"
       ],
       "rerun_cap_policy": "if no candidate meets the floor, retain the usable candidate with the smallest shortfall and flag it noncompliant"
     },
-    "candidate_selection": "operational priority first; for altruistic candidates require revenue neutrality before comparing projected full-day PTO cost",
+    "candidate_selection": "operational priority first; for altruistic candidates require the 50% baseline-revenue retention floor before comparing projected full-day PTO cost",
     "feedback_compliance_guard": "enforce only the Evaluator's explicit structured side, direction, executable window, and target when a rerun array is numerically noncompliant",
     "trigger_prompt_variant": "baseline",
     "trigger_confidence_threshold": 0.0,
@@ -87,8 +91,8 @@
     "prompt_sha256": {
       "trigger_system.txt": "ab19e952cb147b0693a7bee9ea23403cbefd3a1ca28a006cb069facce1e0dbba",
       "pricing_selfish_system.txt": "cd36c75d95e425dea89c76ae1e71d3bd636908b3edf98bfa16050402659fcfe1",
-      "pricing_altruistic_system.txt": "3efa271fb32038f792380dc3fefc309e291338e00ce3827b8508099d660d452b",
-      "evaluator_system.txt": "6b1ac105d0b4b99390336e13363a3072271f483dc004b836241b034f12d503a1"
+      "pricing_altruistic_system.txt": "934b806ef1481b0d0650c21faca65184412830078bb3254c1b49a6ae5fde8537",
+      "evaluator_system.txt": "fe1a30f2bcd29b4bc836edb383490088c4503b71e0e5df4dbd91309fc1fcbf59"
     },
     "model": "gpt-5.6-luna",
     "reasoning_effort": "low",
@@ -105,9 +109,9 @@
     "reserve_violation_timesteps": 0,
     "minimum_observed_soc_fraction": 0.2,
     "terminal_minimum_soc_fraction": 0.2,
-    "revenue_neutrality_compliance_before_altruistic_cost_comparison": true,
-    "economic_comparison_only_when_both_runs_are_operationally_feasible_and_revenue_neutral": true,
-    "altruistic_score": "among revenue-neutral runs, negative realized full-day PTO cost; higher is better",
+    "baseline_revenue_retention_compliance_before_altruistic_cost_comparison": true,
+    "economic_comparison_only_when_both_runs_are_operationally_feasible_and_meet_retention_floor": true,
+    "altruistic_score": "among runs meeting the 50% baseline-revenue retention floor, negative realized full-day PTO cost; higher is better",
     "secondary_outcomes": [
       "realized full-day grid net cost",
       "cheap-period charging",
@@ -122,8 +126,8 @@
   },
   "reporting": {
     "report_each_case_mode_contrast": true,
-    "report_operational_feasibility_before_revenue_neutrality_and_economics": true,
-    "report_revenue_floor_compliance_and_shortfall": true,
+    "report_operational_feasibility_before_baseline_revenue_retention_and_economics": true,
+    "report_retention_floor_compliance_and_shortfall": true,
     "report_tokens_api_cost_latency_cpu_memory_and_solver_telemetry": true,
     "do_not_pool_case_modes": true,
     "v5_altruistic_outputs_excluded_from_v6_inference": true,

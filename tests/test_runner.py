@@ -145,6 +145,7 @@ def test_full_day_projection_adds_settled_prefix_and_compares_incumbent():
         },
         "revenue_neutrality": {
             "active": True,
+            "retention_fraction": 0.5,
             "full_day_revenue_floor": 4.0,
         },
     }
@@ -159,6 +160,10 @@ def test_full_day_projection_adds_settled_prefix_and_compares_incumbent():
     assert result["revenue_neutrality_floor"] == 4.0
     assert result["revenue_neutrality_shortfall"] == 1.0
     assert result["revenue_neutrality_compliant"] is False
+    assert result["baseline_revenue_retention_fraction"] == 0.5
+    assert result["baseline_revenue_retention_floor"] == 4.0
+    assert result["baseline_revenue_retention_shortfall"] == 1.0
+    assert result["baseline_revenue_retention_compliant"] is False
     assert context["revenue_neutrality"]["remaining_revenue_required"] == 2.0
     assert context["da_benchmark"]["projected_full_day_da_pto_cost"] == 45.0
     assert result["projected_full_day_pto_cost_delta_vs_incumbent"] == -54.7

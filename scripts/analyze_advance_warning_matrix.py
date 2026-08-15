@@ -1452,12 +1452,11 @@ def main() -> None:
         "economic_rule": {
             "selfish": "higher realized aggregator revenue is better",
             "altruistic": (
-                "first require the frozen day-ahead full-day aggregator "
-                "revenue-neutrality floor, then lower realized full-day PTO "
-                "cost is better"
+                "first require the 50% baseline-revenue retention floor, then "
+                "lower realized full-day PTO cost is better"
             ),
             "paired_economic_effect_reported_only_when_both_runs_are_realized_operationally_feasible": True,
-            "altruistic_paired_economic_effect_also_requires_both_runs_to_be_revenue_neutral": True,
+            "altruistic_paired_economic_effect_also_requires_both_runs_to_meet_the_baseline_revenue_retention_floor": True,
             "absolute_tie_tolerance": args.economic_tie_tolerance,
         },
         "secondary_outcome_rule": {

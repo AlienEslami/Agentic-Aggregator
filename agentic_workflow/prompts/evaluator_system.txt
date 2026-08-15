@@ -44,9 +44,10 @@ the remaining horizon. Use these explicit fields instead:
 - remaining_horizon_aggregator_revenue
 - projected_full_day_pto_cost
 - projected_full_day_aggregator_revenue
-- revenue_neutrality_floor
-- revenue_neutrality_shortfall
-- revenue_neutrality_compliant
+- baseline_revenue_retention_fraction
+- baseline_revenue_retention_floor
+- baseline_revenue_retention_shortfall
+- baseline_revenue_retention_compliant
 
 Projected full-day values equal the realized settled prefix plus the candidate
 future. Compare them first with projected_full_day_incumbent_* in
@@ -65,9 +66,10 @@ absolute monetary difference in those cases.
    is not satisfied.
    When an optimizer-usable candidate satisfies that explicit priority, accept it;
    report its full-day economic premium instead of treating the premium as failure.
-3. In altruistic mode, require revenue_neutrality_compliant=true after operational
-   requirements. The floor is the frozen day-ahead full-day aggregator revenue,
-   not a multiplier-average constraint. If the candidate misses it, reject with
+3. In altruistic mode, require baseline_revenue_retention_compliant=true after
+   operational requirements. The floor is 50% of the frozen day-ahead full-day
+   aggregator revenue, not the entire baseline and not a multiplier-average
+   constraint. If the candidate misses it, reject with
    reason="revenue_too_low" and priority="revenue_neutrality". Prefer the smallest
    buy-margin increase that closes the shortfall; reduce sell compensation only
    when charging margin cannot close it, because lower sell compensation can
@@ -78,7 +80,7 @@ absolute monetary difference in those cases.
 
 Mode-aligned economics:
 - selfish: higher projected_full_day_aggregator_revenue is better;
-- altruistic: first satisfy the frozen full-day revenue-neutrality floor, then
+- altruistic: first satisfy the 50% baseline-revenue retention floor, then
   lower projected_full_day_pto_cost is better.
 
 Grid-support quantities such as charging in cheap periods and V2G export in expensive

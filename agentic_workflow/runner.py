@@ -82,21 +82,28 @@ class WorkflowRunner:
         config.validate()
         self.config = config
         self.day_ahead = load_day_ahead_reference(config.state_workbook, config.mode)
+        self.baseline_aggregator_revenue: float | None = None
         self.revenue_neutrality_floor: float | None = None
         if config.mode == "altruistic":
             try:
-                floor = float(self.day_ahead.summary["aggregator_revenue"])
+                baseline_revenue = float(
+                    self.day_ahead.summary["aggregator_revenue"]
+                )
             except (KeyError, TypeError, ValueError) as exc:
                 raise ValueError(
                     "Altruistic mode requires a numeric day-ahead aggregator "
-                    "revenue to define the frozen revenue-neutrality floor."
+                    "revenue to define the baseline-revenue retention floor."
                 ) from exc
-            if not math.isfinite(floor) or floor < 0:
+            if not math.isfinite(baseline_revenue) or baseline_revenue < 0:
                 raise ValueError(
-                    "Altruistic revenue-neutrality floor must be finite and "
+                    "Altruistic baseline aggregator revenue must be finite and "
                     "nonnegative."
                 )
-            self.revenue_neutrality_floor = floor
+            self.baseline_aggregator_revenue = baseline_revenue
+            self.revenue_neutrality_floor = (
+                baseline_revenue
+                * config.altruistic_revenue_retention_fraction
+            )
         forecast_prices, forecast_energy = load_forecast_tables(
             config.forecast_workbook,
             config.spot_prices_workbook,
@@ -173,8 +180,15 @@ class WorkflowRunner:
             "canonical_operator_priority_sent_to_llm": False,
             "common_physical_truth_across_methods": True,
             "causal_settlement": True,
-            "altruistic_revenue_neutrality": (
-                "frozen_day_ahead_full_day_aggregator_revenue"
+            "altruistic_baseline_revenue_retention": (
+                {
+                    "reference_full_day_revenue": self.baseline_aggregator_revenue,
+                    "retention_fraction": (
+                        self.config.altruistic_revenue_retention_fraction
+                    ),
+                    "full_day_floor": self.revenue_neutrality_floor,
+                    "fixed_before_realtime_disturbances": True,
+                }
                 if self.config.mode == "altruistic"
                 else "not_applicable"
             ),
@@ -655,6 +669,19 @@ class WorkflowRunner:
                     else None
                 ),
                 "revenue_neutrality_compliant": revenue_compliant,
+                "baseline_revenue_retention_active": revenue_neutrality_active,
+                "baseline_revenue_retention_fraction": (
+                    revenue_neutrality.get("retention_fraction")
+                    if revenue_neutrality_active
+                    else None
+                ),
+                "baseline_revenue_retention_floor": revenue_floor,
+                "baseline_revenue_retention_shortfall": (
+                    round(revenue_shortfall, 6)
+                    if revenue_shortfall is not None
+                    else None
+                ),
+                "baseline_revenue_retention_compliant": revenue_compliant,
             }
         )
 
@@ -722,7 +749,8 @@ class WorkflowRunner:
                     target_value=round(target, 6),
                     instruction=(
                         "Raise the buy multiplier minimally across the executable "
-                        "horizon to close the projected full-day revenue-neutrality "
+                        "horizon to close the projected full-day baseline-revenue "
+                        "retention "
                         "shortfall while preserving V2G incentives."
                     ),
                 )
@@ -745,7 +773,8 @@ class WorkflowRunner:
                     target_value=round(target, 6),
                     instruction=(
                         "Lower the sell multiplier only because charging margin "
-                        "cannot close the projected full-day revenue-neutrality "
+                        "cannot close the projected full-day baseline-revenue "
+                        "retention "
                         "shortfall."
                     ),
                 )
@@ -791,7 +820,7 @@ class WorkflowRunner:
                 "accept": False,
                 "reasoning": (
                     "The candidate is operationally usable but violates the "
-                    "frozen full-day revenue-neutrality policy: projected "
+                    "50% baseline-revenue retention policy: projected "
                     f"aggregator revenue {projected:.6f} is below the floor "
                     f"{floor:.6f} by {shortfall:.6f}."
                 ),
@@ -934,7 +963,8 @@ class WorkflowRunner:
                 ):
                     selection_reasoning = (
                         f"Rerun cap of {self.config.max_reruns} reached without a "
-                        "revenue-neutral candidate; the operationally usable attempt "
+                        "baseline-revenue-retention-compliant candidate; the "
+                        "operationally usable attempt "
                         "with the smallest projected full-day revenue shortfall was "
                         "retained and remains explicitly flagged noncompliant."
                     )
@@ -1063,6 +1093,9 @@ class WorkflowRunner:
                     )
                 context = build_context(
                 mode=self.config.mode,
+                altruistic_revenue_retention_fraction=(
+                    self.config.altruistic_revenue_retention_fraction
+                ),
                 timestep=timestep,
                 observation=observation,
                 realtime_plan=self.state.realtime_plan,
@@ -1332,6 +1365,24 @@ class WorkflowRunner:
                     float(row.get("realized_pto_cost") or 0) for row in settlement
                 ),
                 "realized_aggregator_revenue": realized_aggregator_revenue,
+                "baseline_aggregator_revenue_reference": (
+                    self.baseline_aggregator_revenue
+                ),
+                "baseline_revenue_retention_fraction": (
+                    self.config.altruistic_revenue_retention_fraction
+                    if revenue_neutrality_active
+                    else None
+                ),
+                "baseline_revenue_retention_floor": self.revenue_neutrality_floor,
+                "baseline_revenue_retention_shortfall": (
+                    revenue_neutrality_shortfall
+                ),
+                "baseline_revenue_retention_compliant": (
+                    revenue_neutrality_shortfall
+                    <= REVENUE_NEUTRALITY_TOLERANCE
+                    if revenue_neutrality_shortfall is not None
+                    else None
+                ),
                 "revenue_neutrality_active": revenue_neutrality_active,
                 "revenue_neutrality_floor": self.revenue_neutrality_floor,
                 "revenue_neutrality_shortfall": revenue_neutrality_shortfall,
