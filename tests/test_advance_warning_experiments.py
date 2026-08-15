@@ -231,7 +231,7 @@ def _run(
     }
 
 
-def test_paired_analysis_reports_economics_only_when_both_runs_are_safe():
+def test_paired_analysis_reports_economics_only_when_both_runs_are_feasible():
     raw = pd.DataFrame(
         [
             _run("rule_text_event_trigger", 1, revenue=10, pto_cost=20),
@@ -265,15 +265,15 @@ def test_paired_analysis_reports_economics_only_when_both_runs_are_safe():
     first_numerical = pairs[
         pairs["contrast"].eq("agent_vs_numerical") & pairs["repetition"].eq(1)
     ].iloc[0]
-    assert first_numerical["safety_outcome"] == "candidate_only_safe"
+    assert first_numerical["feasibility_outcome"] == "candidate_only_feasible"
     assert not first_numerical["valid_economic_comparison"]
     assert pd.isna(first_numerical["mode_aligned_economic_gain"])
 
     summary = summarize_pairs(pairs, bootstrap_iterations=100)
     numerical = summary[summary["contrast"].eq("agent_vs_numerical")].iloc[0]
-    assert numerical["comparable_safe_pairs"] == 0
-    assert numerical["candidate_safe_rate"] == 0.5
-    assert numerical["baseline_safe_rate"] == 0.0
+    assert numerical["comparable_feasible_pairs"] == 0
+    assert numerical["candidate_feasible_rate"] == 0.5
+    assert numerical["baseline_feasible_rate"] == 0.0
 
 
 def test_role_ablation_uses_independent_sample_difference():

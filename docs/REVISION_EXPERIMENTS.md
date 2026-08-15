@@ -789,6 +789,54 @@ accounting corrections and freezes the margin-times-volume pricing guidance plus
 the narrow Evaluator-feedback compliance guard. The v5-v8 pricing pilots are
 development evidence and are excluded from the final 120-episode analysis.
 
+The final v5 matrix completed all 120 planned episodes from clean commit
+`9ed28b6`, with five repetitions for each of three cases, two modes, and four
+role configurations. All workbooks used Gurobi without solver fallback and all
+48 intervals were settled. The full workflow was operationally feasible in
+30/30 episodes, compared with 24/30 for the rule-parser Trigger substitution,
+30/30 for deterministic pricing, and 29/30 with the Evaluator removed.
+
+The table reports the full workflow's feasibility-first, mode-aligned gain over
+each ablation. Positive economic values favor the full workflow: selfish values
+are revenue increases and altruistic values are full-day PTO-cost reductions.
+An economic gain is not reported when the comparison arm has no feasible run.
+
+| Case | Mode | Full score | vs rule Trigger | vs deterministic pricing | vs no Evaluator |
+|---|---:|---:|---:|---:|---:|
+| Late return | Selfish | 24.809 | +1.189 | +5.532 | +11.880 |
+| Late return | Altruistic | -116.968 | +0.206 | +0.408 | +0.868 and 5/5 vs 4/5 feasible |
+| Charger shutdown | Selfish | 13.691 | +7.020 and 5/5 vs 4/5 feasible | +0.674 | +1.453 |
+| Charger shutdown | Altruistic | -118.119 | 5/5 vs 0/5 feasible; economics N/A | tie | +0.030 |
+| Combined evening | Selfish | 32.356 | -0.490 | +3.624 | +3.701 |
+| Combined evening | Altruistic | -122.241 | -0.215 | tie | -0.328 |
+
+Under the feasibility-first 0.001 tolerance, the full workflow is better in 13
+of 18 case-mode-role contrasts, tied in two, and worse in three. Six economic
+bootstrap intervals are entirely positive, one is entirely negative, ten
+include zero, and one economic comparison is unavailable because the rule
+Trigger has no feasible charger-altruistic episode. The three negative point
+estimates are confined to the combined event. The combined-selfish Trigger and
+combined-altruistic Evaluator intervals include zero; only the small
+combined-altruistic Trigger result is entirely negative. These are descriptive
+repeated-run results because the pricing prompt was tuned on these cases before
+the final matrix.
+
+Relative to the historical v4 full workflow, the corrected v5 workflow improves
+mean selfish revenue in every case: late return from 12.929 to 24.809, charger
+shutdown from 13.018 to 13.691, and combined evening from 30.560 to 32.356.
+Thus the margin-times-endogenous-volume correction fixes the principal zero-V2G
+failure without claiming universal dominance. In altruistic mode, late-return
+cost improves by 0.735, charger cost is unchanged, and combined-event cost is
+0.646 higher.
+
+The final matrix used 10,425,646 total tokens in 906 successful requests and had
+one failed API attempt; all episodes still completed. Approximate API cost was
+USD 2.0870. Summed episode wall
+time was 6,863.6 seconds, summed local process CPU time was 7,318.7 seconds, and
+peak observed resident memory was 715.5 MB. All 120 settlement energy totals
+reconcile with their matrix-index totals. The result manifest records the exact
+prompt, notice, physical-event, protocol, workbook, Git, and solver provenance.
+
 The controlled Evaluator study now uses
 `information_and_evaluator_ablation_protocol_v2.json`. A missed qualitative
 operator priority does not receive an arbitrary currency penalty. The single

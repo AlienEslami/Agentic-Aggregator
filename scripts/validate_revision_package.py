@@ -17,12 +17,15 @@ REVISION = ROOT / "inputs" / "revision"
 REQUIRED_FILES = (
     ROOT / "requirements-lock.txt",
     ROOT / "requirements-dev-lock.txt",
-    REVISION / "advance_warning_ablation_protocol_v4.json",
+    REVISION / "advance_warning_ablation_protocol_v5.json",
     REVISION / "information_and_evaluator_ablation_protocol_v2.json",
     REVISION / "revision_sensitivity_protocol_v1.json",
     REVISION / "scaling_and_second_depot_protocol_v1.json",
     REVISION / "independent_validation_checklist_v1.md",
     ROOT / "agentic_workflow" / "prompts" / "trigger_system.txt",
+    ROOT / "agentic_workflow" / "prompts" / "pricing_selfish_system.txt",
+    ROOT / "agentic_workflow" / "prompts" / "pricing_altruistic_system.txt",
+    ROOT / "agentic_workflow" / "prompts" / "evaluator_system.txt",
     ROOT / "agentic_workflow" / "prompts" / "trigger_variant_action_first.txt",
     ROOT / "agentic_workflow" / "prompts" / "trigger_variant_evidence_first.txt",
 )
@@ -111,6 +114,33 @@ def main(argv: list[str] | None = None) -> int:
                         "error": str(exc),
                     }
                 )
+
+    protocol_path = REVISION / "advance_warning_ablation_protocol_v5.json"
+    prompt_paths = {
+        name: ROOT / "agentic_workflow" / "prompts" / name
+        for name in (
+            "trigger_system.txt",
+            "pricing_selfish_system.txt",
+            "pricing_altruistic_system.txt",
+            "evaluator_system.txt",
+        )
+    }
+    if protocol_path.exists() and all(path.exists() for path in prompt_paths.values()):
+        protocol = validate_json(protocol_path)
+        recorded_prompt_hashes = (protocol.get("controls") or {}).get(
+            "prompt_sha256"
+        ) or {}
+        current_prompt_hashes = {
+            name: sha256(path) for name, path in prompt_paths.items()
+        }
+        checks.append(
+            {
+                "check": "final_v5_prompt_hashes_match_protocol",
+                "passed": recorded_prompt_hashes == current_prompt_hashes,
+                "recorded": recorded_prompt_hashes,
+                "current": current_prompt_hashes,
+            }
+        )
 
     notice_errors: list[str] = []
     for name in ("trigger_notices_v3.json", "advance_warning_notices_v1.json"):

@@ -55,9 +55,9 @@ PAIR_COLUMNS = (
     "repetition",
     "candidate_configuration",
     "baseline_configuration",
-    "candidate_safe",
-    "baseline_safe",
-    "safety_outcome",
+    "candidate_feasible",
+    "baseline_feasible",
+    "feasibility_outcome",
     "valid_economic_comparison",
     "mode_aligned_economic_gain",
     "aggregator_revenue_delta",
@@ -72,14 +72,14 @@ CONTRAST_SUMMARY_COLUMNS = (
     "variant",
     "mode",
     "n_pairs",
-    "candidate_safe_rate",
-    "baseline_safe_rate",
-    "net_safety_advantage_rate",
-    "candidate_only_safe_count",
-    "baseline_only_safe_count",
-    "both_safe_count",
-    "neither_safe_count",
-    "comparable_safe_pairs",
+    "candidate_feasible_rate",
+    "baseline_feasible_rate",
+    "net_feasibility_advantage_rate",
+    "candidate_only_feasible_count",
+    "baseline_only_feasible_count",
+    "both_feasible_count",
+    "neither_feasible_count",
+    "comparable_feasible_pairs",
     "mode_aligned_economic_gain_mean",
     "mode_aligned_economic_gain_std",
     "mode_aligned_economic_gain_ci95_low",
@@ -100,17 +100,17 @@ ABLATION_SUMMARY_COLUMNS = (
     "baseline_configuration",
     "candidate_runs",
     "baseline_runs",
-    "candidate_safe_rate",
-    "baseline_safe_rate",
-    "net_safety_advantage_rate",
+    "candidate_feasible_rate",
+    "baseline_feasible_rate",
+    "net_feasibility_advantage_rate",
     "candidate_evaluator_acceptance_rate",
     "baseline_evaluator_acceptance_rate",
     "candidate_forced_selection_rate",
     "baseline_forced_selection_rate",
-    "candidate_safe_economic_runs",
-    "baseline_safe_economic_runs",
-    "candidate_mode_aligned_score_mean_safe_only",
-    "baseline_mode_aligned_score_mean_safe_only",
+    "candidate_feasible_economic_runs",
+    "baseline_feasible_economic_runs",
+    "candidate_mode_aligned_score_mean_feasible_only",
+    "baseline_mode_aligned_score_mean_feasible_only",
     "mode_aligned_economic_gain_mean",
     "mode_aligned_economic_gain_ci95_low",
     "mode_aligned_economic_gain_ci95_high",
@@ -230,16 +230,13 @@ def annotate_runs(
     violations = numeric(result, "reserve_violation_timesteps")
     minimum_soc = numeric(result, "minimum_observed_soc_fraction")
     terminal_soc = numeric(result, "terminal_minimum_soc_fraction")
-    result["safety_feasible"] = (
+    result["operationally_feasible"] = (
         complete
         & shortfall.le(reserve_tolerance_kwh)
         & violations.eq(0)
         & minimum_soc.ge(minimum_soc_fraction - reserve_tolerance_kwh)
         & terminal_soc.ge(minimum_soc_fraction - reserve_tolerance_kwh)
     )
-    # Compatibility aliases keep frozen v3 analysis columns readable while all
-    # new tables use the more precise operational-feasibility terminology.
-    result["operationally_feasible"] = result["safety_feasible"]
     result["economic_metric"] = np.where(
         result["mode"].eq("selfish"),
         "realized_aggregator_revenue",
@@ -251,7 +248,7 @@ def annotate_runs(
         result["mode"].eq("selfish"), revenue, pto_cost
     )
     # Higher is always better: revenue in selfish mode, negative PTO cost in
-    # altruistic mode. This is used only after both paired runs pass safety.
+    # altruistic mode. This is used only after both paired runs are feasible.
     result["mode_aligned_economic_score"] = np.where(
         result["mode"].eq("selfish"), revenue, -pto_cost
     )
@@ -418,14 +415,14 @@ def build_method_summary(
     for keys, group in runs.groupby(group_columns, dropna=False, sort=True):
         row = dict(zip(group_columns, keys))
         complete = group["status"].astype(str).eq("complete")
-        safe = group["safety_feasible"].astype(bool)
+        feasible = group["operationally_feasible"].astype(bool)
         row.update(
             {
                 "n_runs": len(group),
                 "n_complete": int(complete.sum()),
-                "n_safe": int(safe.sum()),
+                "n_feasible": int(feasible.sum()),
                 "complete_rate": float(complete.mean()),
-                "safety_rate": float(safe.mean()),
+                "feasibility_rate": float(feasible.mean()),
             }
         )
         for metric in metric_columns:
@@ -439,9 +436,13 @@ def build_method_summary(
             row[f"{metric}_std"] = std
             row[f"{metric}_ci95_low"] = low
             row[f"{metric}_ci95_high"] = high
-        safe_scores = numeric(group.loc[safe], "mode_aligned_economic_score")
-        row["mode_aligned_economic_score_mean_safe_only"] = (
-            float(safe_scores.mean()) if safe_scores.notna().any() else None
+        feasible_scores = numeric(
+            group.loc[feasible], "mode_aligned_economic_score"
+        )
+        row["mode_aligned_economic_score_mean_feasible_only"] = (
+            float(feasible_scores.mean())
+            if feasible_scores.notna().any()
+            else None
         )
         rows.append(row)
     return pd.DataFrame(rows)
@@ -463,17 +464,17 @@ def pair_row(
     candidate: pd.Series,
     baseline: pd.Series,
 ) -> dict[str, Any]:
-    candidate_safe = bool(candidate["safety_feasible"])
-    baseline_safe = bool(baseline["safety_feasible"])
-    if candidate_safe and baseline_safe:
-        outcome = "both_safe"
-    elif candidate_safe:
-        outcome = "candidate_only_safe"
-    elif baseline_safe:
-        outcome = "baseline_only_safe"
+    candidate_feasible = bool(candidate["operationally_feasible"])
+    baseline_feasible = bool(baseline["operationally_feasible"])
+    if candidate_feasible and baseline_feasible:
+        outcome = "both_feasible"
+    elif candidate_feasible:
+        outcome = "candidate_only_feasible"
+    elif baseline_feasible:
+        outcome = "baseline_only_feasible"
     else:
-        outcome = "neither_safe"
-    valid_economic = candidate_safe and baseline_safe
+        outcome = "neither_feasible"
+    valid_economic = candidate_feasible and baseline_feasible
     candidate_score = float(candidate["mode_aligned_economic_score"])
     baseline_score = float(baseline["mode_aligned_economic_score"])
     revenue_delta = float(candidate["realized_aggregator_revenue"]) - float(
@@ -491,9 +492,9 @@ def pair_row(
         "repetition": int(candidate["repetition"]),
         "candidate_configuration": candidate["configuration"],
         "baseline_configuration": baseline["configuration"],
-        "candidate_safe": candidate_safe,
-        "baseline_safe": baseline_safe,
-        "safety_outcome": outcome,
+        "candidate_feasible": candidate_feasible,
+        "baseline_feasible": baseline_feasible,
+        "feasibility_outcome": outcome,
         "valid_economic_comparison": valid_economic,
         "mode_aligned_economic_gain": (
             candidate_score - baseline_score if valid_economic else None
@@ -588,20 +589,26 @@ def build_ablation_contrasts(
             ]
             if baseline.empty:
                 continue
-            candidate_safe = candidate[candidate["safety_feasible"].astype(bool)]
-            baseline_safe = baseline[baseline["safety_feasible"].astype(bool)]
+            candidate_feasible = candidate[
+                candidate["operationally_feasible"].astype(bool)
+            ]
+            baseline_feasible = baseline[
+                baseline["operationally_feasible"].astype(bool)
+            ]
             difference, low, high = independent_mean_difference_ci(
-                numeric(candidate_safe, "mode_aligned_economic_score"),
-                numeric(baseline_safe, "mode_aligned_economic_score"),
+                numeric(candidate_feasible, "mode_aligned_economic_score"),
+                numeric(baseline_feasible, "mode_aligned_economic_score"),
                 seed=seed_for(
                     (contrast, cell.case, cell.variant, cell.mode)
                 ),
                 bootstrap_iterations=bootstrap_iterations,
             )
             candidate_scores = numeric(
-                candidate_safe, "mode_aligned_economic_score"
+                candidate_feasible, "mode_aligned_economic_score"
             )
-            baseline_scores = numeric(baseline_safe, "mode_aligned_economic_score")
+            baseline_scores = numeric(
+                baseline_feasible, "mode_aligned_economic_score"
+            )
             candidate_decisions = numeric(candidate, "optimize_decisions").sum()
             baseline_decisions = numeric(baseline, "optimize_decisions").sum()
             candidate_evaluator_accepts = numeric(
@@ -627,11 +634,15 @@ def build_ablation_contrasts(
                     "baseline_configuration": baseline_configuration,
                     "candidate_runs": len(candidate),
                     "baseline_runs": len(baseline),
-                    "candidate_safe_rate": float(candidate["safety_feasible"].mean()),
-                    "baseline_safe_rate": float(baseline["safety_feasible"].mean()),
-                    "net_safety_advantage_rate": float(
-                        candidate["safety_feasible"].mean()
-                        - baseline["safety_feasible"].mean()
+                    "candidate_feasible_rate": float(
+                        candidate["operationally_feasible"].mean()
+                    ),
+                    "baseline_feasible_rate": float(
+                        baseline["operationally_feasible"].mean()
+                    ),
+                    "net_feasibility_advantage_rate": float(
+                        candidate["operationally_feasible"].mean()
+                        - baseline["operationally_feasible"].mean()
                     ),
                     "candidate_evaluator_acceptance_rate": (
                         float(candidate_evaluator_accepts / candidate_decisions)
@@ -653,14 +664,14 @@ def build_ablation_contrasts(
                         if baseline_decisions
                         else None
                     ),
-                    "candidate_safe_economic_runs": len(candidate_safe),
-                    "baseline_safe_economic_runs": len(baseline_safe),
-                    "candidate_mode_aligned_score_mean_safe_only": (
+                    "candidate_feasible_economic_runs": len(candidate_feasible),
+                    "baseline_feasible_economic_runs": len(baseline_feasible),
+                    "candidate_mode_aligned_score_mean_feasible_only": (
                         float(candidate_scores.mean())
                         if candidate_scores.notna().any()
                         else None
                     ),
-                    "baseline_mode_aligned_score_mean_safe_only": (
+                    "baseline_mode_aligned_score_mean_feasible_only": (
                         float(baseline_scores.mean())
                         if baseline_scores.notna().any()
                         else None
@@ -707,7 +718,7 @@ def build_secondary_outcome_contrasts(
         candidate = runs[
             common
             & runs["configuration"].eq("full_agentic")
-            & runs["safety_feasible"].astype(bool)
+            & runs["operationally_feasible"].astype(bool)
         ]
         if candidate.empty:
             continue
@@ -715,7 +726,7 @@ def build_secondary_outcome_contrasts(
             baseline = runs[
                 common
                 & runs["configuration"].eq(baseline_configuration)
-                & runs["safety_feasible"].astype(bool)
+                & runs["operationally_feasible"].astype(bool)
             ]
             if baseline.empty:
                 continue
@@ -1151,7 +1162,7 @@ def summarize_pairs(
     rows: list[dict[str, Any]] = []
     group_columns = ["contrast", "question", "case", "variant", "mode"]
     for keys, group in pairs.groupby(group_columns, dropna=False, sort=True):
-        outcomes = group["safety_outcome"].value_counts()
+        outcomes = group["feasibility_outcome"].value_counts()
         valid = group[group["valid_economic_comparison"].astype(bool)]
         gains = numeric(valid, "mode_aligned_economic_gain")
         mean, std, low, high = mean_std_ci(
@@ -1163,16 +1174,27 @@ def summarize_pairs(
             {
                 **dict(zip(group_columns, keys)),
                 "n_pairs": len(group),
-                "candidate_safe_rate": float(group["candidate_safe"].mean()),
-                "baseline_safe_rate": float(group["baseline_safe"].mean()),
-                "net_safety_advantage_rate": float(
-                    group["candidate_safe"].mean() - group["baseline_safe"].mean()
+                "candidate_feasible_rate": float(
+                    group["candidate_feasible"].mean()
                 ),
-                "candidate_only_safe_count": int(outcomes.get("candidate_only_safe", 0)),
-                "baseline_only_safe_count": int(outcomes.get("baseline_only_safe", 0)),
-                "both_safe_count": int(outcomes.get("both_safe", 0)),
-                "neither_safe_count": int(outcomes.get("neither_safe", 0)),
-                "comparable_safe_pairs": len(valid),
+                "baseline_feasible_rate": float(
+                    group["baseline_feasible"].mean()
+                ),
+                "net_feasibility_advantage_rate": float(
+                    group["candidate_feasible"].mean()
+                    - group["baseline_feasible"].mean()
+                ),
+                "candidate_only_feasible_count": int(
+                    outcomes.get("candidate_only_feasible", 0)
+                ),
+                "baseline_only_feasible_count": int(
+                    outcomes.get("baseline_only_feasible", 0)
+                ),
+                "both_feasible_count": int(outcomes.get("both_feasible", 0)),
+                "neither_feasible_count": int(
+                    outcomes.get("neither_feasible", 0)
+                ),
+                "comparable_feasible_pairs": len(valid),
                 "mode_aligned_economic_gain_mean": mean,
                 "mode_aligned_economic_gain_std": std,
                 "mode_aligned_economic_gain_ci95_low": low,
@@ -1281,7 +1303,7 @@ def main() -> None:
         frame.to_csv(output_dir / filename, index=False)
 
     summary = {
-        "protocol_version": "advance_warning_analysis_v4",
+        "protocol_version": "advance_warning_analysis_v5",
         "source": {
             "path": str(runs_path),
             "sha256": sha256(runs_path),
@@ -1370,8 +1392,13 @@ def main() -> None:
         json.dumps(summary, indent=2) + "\n", encoding="utf-8"
     )
     print(f"Wrote feasibility-first analysis to {output_dir}")
-    if primary_pairs.empty:
-        print("No Agent Trigger repetitions are indexed yet; primary contrasts are empty.")
+    if primary_pairs.empty and not ablation_summary.empty:
+        print(
+            "Role-ablation analysis complete; primary trigger-method contrasts "
+            "were not scheduled in this matrix."
+        )
+    elif primary_pairs.empty:
+        print("No Agent Trigger repetitions are indexed; primary contrasts are empty.")
     if ablation_summary.empty:
         print("No role-ablation runs are indexed yet; ablation contrasts are empty.")
 

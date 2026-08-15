@@ -18,6 +18,7 @@ from scripts.build_scaling_inputs import depot_b_prices, depot_b_trips, replicat
 from scripts.run_revision_sensitivity import build_specs as build_sensitivity_specs
 from scripts.run_scaling_study import build_specs as build_scaling_specs
 from scripts.run_evaluator_ablation import validate_protocol as validate_evaluator_protocol
+from scripts.validate_revision_package import REQUIRED_FILES
 
 
 def test_trigger_confidence_threshold_holds_only_low_confidence_optimization():
@@ -167,3 +168,15 @@ def test_evaluator_v2_protocol_has_no_currency_penalty():
     assert validate_evaluator_protocol()["protocol_version"] == (
         "information_and_evaluator_ablation_v2"
     )
+
+
+def test_revision_package_validator_tracks_final_v5_protocol_and_prompts():
+    required_names = {path.name for path in REQUIRED_FILES}
+    assert "advance_warning_ablation_protocol_v5.json" in required_names
+    assert "advance_warning_ablation_protocol_v4.json" not in required_names
+    assert {
+        "trigger_system.txt",
+        "pricing_selfish_system.txt",
+        "pricing_altruistic_system.txt",
+        "evaluator_system.txt",
+    }.issubset(required_names)
