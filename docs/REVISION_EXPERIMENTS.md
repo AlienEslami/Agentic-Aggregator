@@ -837,6 +837,25 @@ peak observed resident memory was 715.5 MB. All 120 settlement energy totals
 reconcile with their matrix-index totals. The result manifest records the exact
 prompt, notice, physical-event, protocol, workbook, Git, and solver provenance.
 
+The altruistic tariff comparison is corrected prospectively in
+`advance_warning_ablation_protocol_v6.json`. In v5, unconstrained PTO-cost
+minimization has a trivial tariff optimum: the lowest buy multiplier and highest
+sell multiplier transfer the least revenue to the aggregator. V6 therefore
+freezes a full-day revenue-neutrality floor from the altruistic day-ahead
+reference before disturbances. At each decision, the only adjustable quantity
+is the remaining requirement after settled-prefix revenue. Candidate order is
+operational-priority satisfaction, revenue-neutrality compliance, and then
+lower projected full-day PTO cost. If no attempt reaches the floor, the usable
+candidate with the smallest shortfall is retained and explicitly flagged.
+
+This is an outcome constraint, not an average-multiplier constraint: the Pricing
+Agent remains free to distribute margin across executable intervals. The v6
+analysis reports revenue-floor compliance before PTO cost. Battery-throughput
+proxy is retained only in raw diagnostic calculations and is removed from the
+paper-facing secondary contrasts because repeated cycling is not a material
+opportunity in these schedules. V6 re-executes the 60 altruistic role-ablation
+episodes only; historical v5 altruistic results are not pooled with them.
+
 The controlled Evaluator study now uses
 `information_and_evaluator_ablation_protocol_v2.json`. A missed qualitative
 operator priority does not receive an arbitrary currency penalty. The single
@@ -883,9 +902,9 @@ ceilings, not expected costs; change them only through an explicitly recorded
 authorization.
 
 ```powershell
-# 1. Final role ablation: 120 episodes
-python scripts/run_advance_warning_matrix.py --output-root results/revision/ablation_final_v5 --include-role-ablations --only-role-ablations --ablation-repetitions 5 --allow-external-llm --require-clean-git --max-approximate-api-cost-usd 4.00
-python scripts/analyze_advance_warning_matrix.py --runs results/revision/ablation_final_v5/matrix_runs.csv --output-dir results/revision/ablation_final_v5/analysis
+# 1. Corrected altruistic role ablation: 60 episodes
+python scripts/run_advance_warning_matrix.py --output-root results/revision/ablation_altruistic_v6 --mode altruistic --include-role-ablations --only-role-ablations --ablation-repetitions 5 --allow-external-llm --require-clean-git --max-approximate-api-cost-usd 2.50
+python scripts/analyze_advance_warning_matrix.py --runs results/revision/ablation_altruistic_v6/matrix_runs.csv --output-dir results/revision/ablation_altruistic_v6/analysis
 
 # 2. Controlled Evaluator ablation: 48 episodes
 python scripts/run_evaluator_ablation.py --output-root results/revision/evaluator_ablation_v2 --agent-repetitions 5 --allow-external-llm --require-clean-git

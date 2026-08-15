@@ -57,6 +57,8 @@ PAIR_COLUMNS = (
     "baseline_configuration",
     "candidate_feasible",
     "baseline_feasible",
+    "candidate_revenue_neutrality_compliant",
+    "baseline_revenue_neutrality_compliant",
     "feasibility_outcome",
     "valid_economic_comparison",
     "mode_aligned_economic_gain",
@@ -75,6 +77,8 @@ CONTRAST_SUMMARY_COLUMNS = (
     "candidate_feasible_rate",
     "baseline_feasible_rate",
     "net_feasibility_advantage_rate",
+    "candidate_revenue_neutrality_compliance_rate",
+    "baseline_revenue_neutrality_compliance_rate",
     "candidate_only_feasible_count",
     "baseline_only_feasible_count",
     "both_feasible_count",
@@ -103,6 +107,8 @@ ABLATION_SUMMARY_COLUMNS = (
     "candidate_feasible_rate",
     "baseline_feasible_rate",
     "net_feasibility_advantage_rate",
+    "candidate_revenue_neutrality_compliance_rate",
+    "baseline_revenue_neutrality_compliance_rate",
     "candidate_evaluator_acceptance_rate",
     "baseline_evaluator_acceptance_rate",
     "candidate_forced_selection_rate",
@@ -160,11 +166,6 @@ SECONDARY_OUTCOME_METRICS = (
         "Maximum realized net import in one 30-minute interval",
         "lower",
     ),
-    (
-        "battery_throughput_proxy_kwh",
-        "Grid-side charge plus discharge energy (cycling proxy)",
-        "descriptive",
-    ),
 )
 SECONDARY_CONTRAST_COLUMNS = (
     "contrast",
@@ -202,6 +203,20 @@ def numeric(frame: pd.DataFrame, column: str) -> pd.Series:
     return pd.to_numeric(frame[column], errors="coerce")
 
 
+def booleans(frame: pd.DataFrame, column: str, *, default: bool) -> pd.Series:
+    if column not in frame:
+        return pd.Series(default, index=frame.index, dtype=bool)
+
+    def convert(value: Any) -> bool:
+        if value is None or (not isinstance(value, str) and pd.isna(value)):
+            return default
+        if isinstance(value, str):
+            return value.strip().lower() in {"true", "1", "yes"}
+        return bool(value)
+
+    return frame[column].map(convert).astype(bool)
+
+
 def annotate_runs(
     frame: pd.DataFrame,
     *,
@@ -236,6 +251,21 @@ def annotate_runs(
         & violations.eq(0)
         & minimum_soc.ge(minimum_soc_fraction - reserve_tolerance_kwh)
         & terminal_soc.ge(minimum_soc_fraction - reserve_tolerance_kwh)
+    )
+    altruistic = result["mode"].eq("altruistic")
+    policy_recorded = "revenue_neutrality_compliant" in result
+    recorded_compliance = booleans(
+        result,
+        "revenue_neutrality_compliant",
+        default=not policy_recorded,
+    )
+    result["revenue_neutrality_policy_recorded"] = policy_recorded
+    result["revenue_neutrality_compliant_for_comparison"] = (
+        ~altruistic | recorded_compliance
+    )
+    result["economic_comparison_eligible"] = (
+        result["operationally_feasible"]
+        & result["revenue_neutrality_compliant_for_comparison"]
     )
     result["economic_metric"] = np.where(
         result["mode"].eq("selfish"),
@@ -397,7 +427,8 @@ def build_method_summary(
         "peak_net_import_kwh_per_interval",
         "peak_net_import_kw",
         "peak_net_export_kwh_per_interval",
-        "battery_throughput_proxy_kwh",
+        "revenue_neutrality_floor",
+        "revenue_neutrality_shortfall",
         "maximum_reserve_shortfall_kwh",
         "minimum_observed_soc_fraction",
         "terminal_minimum_soc_fraction",
@@ -416,6 +447,9 @@ def build_method_summary(
         row = dict(zip(group_columns, keys))
         complete = group["status"].astype(str).eq("complete")
         feasible = group["operationally_feasible"].astype(bool)
+        revenue_compliant = group[
+            "revenue_neutrality_compliant_for_comparison"
+        ].astype(bool)
         row.update(
             {
                 "n_runs": len(group),
@@ -423,6 +457,9 @@ def build_method_summary(
                 "n_feasible": int(feasible.sum()),
                 "complete_rate": float(complete.mean()),
                 "feasibility_rate": float(feasible.mean()),
+                "revenue_neutrality_compliance_rate": float(
+                    revenue_compliant.mean()
+                ),
             }
         )
         for metric in metric_columns:
@@ -436,12 +473,13 @@ def build_method_summary(
             row[f"{metric}_std"] = std
             row[f"{metric}_ci95_low"] = low
             row[f"{metric}_ci95_high"] = high
-        feasible_scores = numeric(
-            group.loc[feasible], "mode_aligned_economic_score"
+        eligible_scores = numeric(
+            group.loc[group["economic_comparison_eligible"].astype(bool)],
+            "mode_aligned_economic_score",
         )
         row["mode_aligned_economic_score_mean_feasible_only"] = (
-            float(feasible_scores.mean())
-            if feasible_scores.notna().any()
+            float(eligible_scores.mean())
+            if eligible_scores.notna().any()
             else None
         )
         rows.append(row)
@@ -466,6 +504,12 @@ def pair_row(
 ) -> dict[str, Any]:
     candidate_feasible = bool(candidate["operationally_feasible"])
     baseline_feasible = bool(baseline["operationally_feasible"])
+    candidate_revenue_compliant = bool(
+        candidate["revenue_neutrality_compliant_for_comparison"]
+    )
+    baseline_revenue_compliant = bool(
+        baseline["revenue_neutrality_compliant_for_comparison"]
+    )
     if candidate_feasible and baseline_feasible:
         outcome = "both_feasible"
     elif candidate_feasible:
@@ -474,7 +518,12 @@ def pair_row(
         outcome = "baseline_only_feasible"
     else:
         outcome = "neither_feasible"
-    valid_economic = candidate_feasible and baseline_feasible
+    valid_economic = (
+        candidate_feasible
+        and baseline_feasible
+        and candidate_revenue_compliant
+        and baseline_revenue_compliant
+    )
     candidate_score = float(candidate["mode_aligned_economic_score"])
     baseline_score = float(baseline["mode_aligned_economic_score"])
     revenue_delta = float(candidate["realized_aggregator_revenue"]) - float(
@@ -494,6 +543,8 @@ def pair_row(
         "baseline_configuration": baseline["configuration"],
         "candidate_feasible": candidate_feasible,
         "baseline_feasible": baseline_feasible,
+        "candidate_revenue_neutrality_compliant": candidate_revenue_compliant,
+        "baseline_revenue_neutrality_compliant": baseline_revenue_compliant,
         "feasibility_outcome": outcome,
         "valid_economic_comparison": valid_economic,
         "mode_aligned_economic_gain": (
@@ -590,10 +641,10 @@ def build_ablation_contrasts(
             if baseline.empty:
                 continue
             candidate_feasible = candidate[
-                candidate["operationally_feasible"].astype(bool)
+                candidate["economic_comparison_eligible"].astype(bool)
             ]
             baseline_feasible = baseline[
-                baseline["operationally_feasible"].astype(bool)
+                baseline["economic_comparison_eligible"].astype(bool)
             ]
             difference, low, high = independent_mean_difference_ci(
                 numeric(candidate_feasible, "mode_aligned_economic_score"),
@@ -643,6 +694,16 @@ def build_ablation_contrasts(
                     "net_feasibility_advantage_rate": float(
                         candidate["operationally_feasible"].mean()
                         - baseline["operationally_feasible"].mean()
+                    ),
+                    "candidate_revenue_neutrality_compliance_rate": float(
+                        candidate[
+                            "revenue_neutrality_compliant_for_comparison"
+                        ].mean()
+                    ),
+                    "baseline_revenue_neutrality_compliance_rate": float(
+                        baseline[
+                            "revenue_neutrality_compliant_for_comparison"
+                        ].mean()
                     ),
                     "candidate_evaluator_acceptance_rate": (
                         float(candidate_evaluator_accepts / candidate_decisions)
@@ -704,7 +765,7 @@ def build_secondary_outcome_contrasts(
     Only runs meeting realized operational feasibility criteria enter these
     outcome comparisons. Raw differences are always full Agent minus baseline;
     benefit-aligned differences reverse the sign for metrics where lower is
-    preferable and remain blank for descriptive-only throughput.
+    preferable.
     """
 
     rows: list[dict[str, Any]] = []
@@ -942,11 +1003,36 @@ def build_evaluator_attempt_audit(
             and priority_satisfied.loc[usable].any()
         ):
             eligible &= priority_satisfied
+        revenue_compliant = booleans(
+            group, "revenue_neutrality_compliant", default=True
+        )
+        if mode == "altruistic" and (eligible & revenue_compliant).any():
+            eligible &= revenue_compliant
         eligible_objective = objective.loc[eligible]
         if eligible_objective.empty:
             best_candidate_index = None
         elif mode == "selfish":
             best_candidate_index = eligible_objective.idxmax()
+        elif not revenue_compliant.loc[eligible].any() and (
+            "revenue_neutrality_shortfall" in group
+        ):
+            eligible_shortfall = pd.to_numeric(
+                group.loc[eligible, "revenue_neutrality_shortfall"],
+                errors="coerce",
+            )
+            if eligible_shortfall.notna().any():
+                minimum_shortfall = eligible_shortfall.min()
+                closest = eligible_shortfall.index[
+                    np.isclose(
+                        eligible_shortfall,
+                        minimum_shortfall,
+                        rtol=0.0,
+                        atol=OBJECTIVE_TIE_TOLERANCE,
+                    )
+                ]
+                best_candidate_index = objective.loc[closest].idxmin()
+            else:
+                best_candidate_index = eligible_objective.idxmin()
         else:
             best_candidate_index = eligible_objective.idxmin()
 
@@ -1030,6 +1116,47 @@ def build_evaluator_attempt_audit(
                                 earlier_satisfied and not accepted_satisfied
                             )
                             continue
+                    if mode == "altruistic":
+                        accepted_revenue_compliant = bool(
+                            revenue_compliant.loc[evaluator_accepted_index]
+                        )
+                        earlier_revenue_compliant = bool(
+                            revenue_compliant.loc[earlier_index]
+                        )
+                        if (
+                            accepted_revenue_compliant
+                            != earlier_revenue_compliant
+                        ):
+                            earlier_outranks.append(
+                                earlier_revenue_compliant
+                                and not accepted_revenue_compliant
+                            )
+                            continue
+                        if not accepted_revenue_compliant and (
+                            "revenue_neutrality_shortfall" in group
+                        ):
+                            accepted_shortfall = float(
+                                group.loc[
+                                    evaluator_accepted_index,
+                                    "revenue_neutrality_shortfall",
+                                ]
+                            )
+                            earlier_shortfall = float(
+                                group.loc[
+                                    earlier_index,
+                                    "revenue_neutrality_shortfall",
+                                ]
+                            )
+                            if not np.isclose(
+                                earlier_shortfall,
+                                accepted_shortfall,
+                                rtol=0.0,
+                                atol=OBJECTIVE_TIE_TOLERANCE,
+                            ):
+                                earlier_outranks.append(
+                                    earlier_shortfall < accepted_shortfall
+                                )
+                                continue
                     earlier_value = float(objective.loc[earlier_index])
                     earlier_outranks.append(
                         earlier_value > accepted_value + OBJECTIVE_TIE_TOLERANCE
@@ -1184,6 +1311,12 @@ def summarize_pairs(
                     group["candidate_feasible"].mean()
                     - group["baseline_feasible"].mean()
                 ),
+                "candidate_revenue_neutrality_compliance_rate": float(
+                    group["candidate_revenue_neutrality_compliant"].mean()
+                ),
+                "baseline_revenue_neutrality_compliance_rate": float(
+                    group["baseline_revenue_neutrality_compliant"].mean()
+                ),
                 "candidate_only_feasible_count": int(
                     outcomes.get("candidate_only_feasible", 0)
                 ),
@@ -1303,7 +1436,7 @@ def main() -> None:
         frame.to_csv(output_dir / filename, index=False)
 
     summary = {
-        "protocol_version": "advance_warning_analysis_v5",
+        "protocol_version": "advance_warning_analysis_v6",
         "source": {
             "path": str(runs_path),
             "sha256": sha256(runs_path),
@@ -1318,8 +1451,13 @@ def main() -> None:
         },
         "economic_rule": {
             "selfish": "higher realized aggregator revenue is better",
-            "altruistic": "lower realized PTO cost is better",
+            "altruistic": (
+                "first require the frozen day-ahead full-day aggregator "
+                "revenue-neutrality floor, then lower realized full-day PTO "
+                "cost is better"
+            ),
             "paired_economic_effect_reported_only_when_both_runs_are_realized_operationally_feasible": True,
+            "altruistic_paired_economic_effect_also_requires_both_runs_to_be_revenue_neutral": True,
             "absolute_tie_tolerance": args.economic_tie_tolerance,
         },
         "secondary_outcome_rule": {
@@ -1327,7 +1465,6 @@ def main() -> None:
             "expensive_price_zone": "spot price in the upper third of the realized daily min-max range",
             "downward_flexibility": "realized charging energy in cheap-price intervals",
             "upward_flexibility": "realized V2G export energy in expensive-price intervals",
-            "battery_throughput_proxy": "realized grid-side charging plus V2G export energy; descriptive cycling proxy, not a degradation model",
             "secondary_contrasts_use_realized_operationally_feasible_runs_only": True,
             "all_settlement_totals_reconcile_with_matrix_index": bool(
                 runs["settlement_reconciliation_ok"].all()

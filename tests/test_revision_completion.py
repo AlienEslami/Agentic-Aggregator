@@ -170,10 +170,10 @@ def test_evaluator_v2_protocol_has_no_currency_penalty():
     )
 
 
-def test_revision_package_validator_tracks_final_v5_protocol_and_prompts():
+def test_revision_package_validator_tracks_final_v6_protocol_and_prompts():
     required_names = {path.name for path in REQUIRED_FILES}
-    assert "advance_warning_ablation_protocol_v5.json" in required_names
-    assert "advance_warning_ablation_protocol_v4.json" not in required_names
+    assert "advance_warning_ablation_protocol_v6.json" in required_names
+    assert "advance_warning_ablation_protocol_v5.json" not in required_names
     assert {
         "trigger_system.txt",
         "pricing_selfish_system.txt",

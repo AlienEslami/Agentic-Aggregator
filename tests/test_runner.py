@@ -18,7 +18,7 @@ from agentic_workflow.models import (
     TriggerDecision,
 )
 from agentic_workflow.optimizer import OptimizerBackend
-from agentic_workflow.runner import WorkflowRunner
+from agentic_workflow.runner import OptimizationCandidate, WorkflowRunner
 
 
 class FakeOptimizer(OptimizerBackend):
@@ -143,6 +143,10 @@ def test_full_day_projection_adds_settled_prefix_and_compares_incumbent():
             "da_cost_remaining": 40.0,
             "da_revenue_remaining": 4.0,
         },
+        "revenue_neutrality": {
+            "active": True,
+            "full_day_revenue_floor": 4.0,
+        },
     }
 
     runner._update_full_day_accounting(context, timestep=1)
@@ -152,8 +156,100 @@ def test_full_day_projection_adds_settled_prefix_and_compares_incumbent():
     assert result["remaining_horizon_pto_cost"] == -3.0
     assert result["projected_full_day_pto_cost"] == 2.0
     assert result["projected_full_day_aggregator_revenue"] == 3.0
+    assert result["revenue_neutrality_floor"] == 4.0
+    assert result["revenue_neutrality_shortfall"] == 1.0
+    assert result["revenue_neutrality_compliant"] is False
+    assert context["revenue_neutrality"]["remaining_revenue_required"] == 2.0
     assert context["da_benchmark"]["projected_full_day_da_pto_cost"] == 45.0
     assert result["projected_full_day_pto_cost_delta_vs_incumbent"] == -54.7
+
+
+def test_altruistic_revenue_neutrality_guard_rejects_shortfall_with_actionable_feedback():
+    runner = WorkflowRunner.__new__(WorkflowRunner)
+    runner.config = SimpleNamespace(mode="altruistic")
+    pricing = PricingDecision(
+        buy_multipliers=[1.01, 1.01],
+        sell_multipliers=[0.99, 0.99],
+        reasoning="PTO-favourable proposal",
+        confidence=1.0,
+    )
+    result = {
+        "is_mock": False,
+        "solver_status": "ok/optimal",
+        "projected_full_day_aggregator_revenue": 4.0,
+        "revenue_neutrality_floor": 5.0,
+        "revenue_neutrality_shortfall": 1.0,
+        "revenue_neutrality_compliant": False,
+        "w_buy": [10.0, 10.0],
+        "w_sell": [0.0, 0.0],
+    }
+    context = {
+        "planning_start_timestep": 7,
+        "intraday_prices": {
+            "prices": [
+                {"timestep": 7, "spot_market": 1.0},
+                {"timestep": 8, "spot_market": 1.0},
+            ]
+        },
+    }
+    evaluation = EvaluationDecision(
+        accept=True,
+        reasoning="PTO cost improved.",
+        confidence=1.0,
+        feedback=NULL_FEEDBACK,
+    )
+
+    guarded = runner._apply_revenue_neutrality_guard(
+        context, pricing, result, evaluation
+    )
+
+    assert guarded.accept is False
+    assert guarded.feedback.reason == "revenue_too_low"
+    assert guarded.feedback.priority == "revenue_neutrality"
+    assert guarded.feedback.buy_multiplier_adjustment is not None
+    assert guarded.feedback.buy_multiplier_adjustment.direction == "raise"
+
+
+def test_altruistic_candidate_selection_requires_revenue_neutrality_before_cost():
+    runner = WorkflowRunner.__new__(WorkflowRunner)
+    runner.config = SimpleNamespace(mode="altruistic")
+    pricing = PricingDecision(
+        buy_multipliers=[1.01],
+        sell_multipliers=[0.99],
+        reasoning="test",
+        confidence=1.0,
+    )
+    accepted = EvaluationDecision(
+        accept=True,
+        reasoning="accepted",
+        confidence=1.0,
+        feedback=NULL_FEEDBACK,
+    )
+    compliant = OptimizationCandidate(
+        pricing=pricing,
+        result={
+            "solver_status": "ok/optimal",
+            "projected_full_day_pto_cost": 110.0,
+            "revenue_neutrality_compliant": True,
+            "revenue_neutrality_shortfall": 0.0,
+        },
+        evaluation=accepted,
+        attempt=1,
+    )
+    cheaper_but_noncompliant = OptimizationCandidate(
+        pricing=pricing,
+        result={
+            "solver_status": "ok/optimal",
+            "projected_full_day_pto_cost": 90.0,
+            "revenue_neutrality_compliant": False,
+            "revenue_neutrality_shortfall": 1.0,
+        },
+        evaluation=accepted.model_copy(update={"accept": False}),
+        attempt=2,
+    )
+
+    assert not runner._is_better(cheaper_but_noncompliant, compliant)
+    assert runner._is_better(compliant, cheaper_but_noncompliant)
 
 
 def test_observed_warning_memory_is_separate_from_accepted_optimizer_state():

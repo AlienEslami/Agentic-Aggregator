@@ -265,6 +265,10 @@ class WorkflowState:
                 "remaining_horizon_aggregator_revenue": result.get("remaining_horizon_aggregator_revenue") if result else None,
                 "projected_full_day_pto_cost": result.get("projected_full_day_pto_cost") if result else None,
                 "projected_full_day_aggregator_revenue": result.get("projected_full_day_aggregator_revenue") if result else None,
+                "revenue_neutrality_active": result.get("revenue_neutrality_active") if result else None,
+                "revenue_neutrality_floor": result.get("revenue_neutrality_floor") if result else None,
+                "revenue_neutrality_shortfall": result.get("revenue_neutrality_shortfall") if result else None,
+                "revenue_neutrality_compliant": result.get("revenue_neutrality_compliant") if result else None,
                 "canonical_priority_satisfied": result.get("benchmark_canonical_priority_satisfied") if result else None,
                 "canonical_priority_compliance_gap": result.get("benchmark_canonical_priority_compliance_gap") if result else None,
                 "interpreted_operational_priority": _json(

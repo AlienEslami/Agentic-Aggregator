@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 import time
 from dataclasses import dataclass
 from typing import Any
@@ -27,6 +28,7 @@ from .io import (
 from .models import (
     EvaluationDecision,
     EvaluationFeedback,
+    MultiplierAdjustment,
     NoticeInterpretation,
     OperationalPriority,
     PricingDecision,
@@ -55,6 +57,9 @@ from .state import WorkflowState
 from .telemetry import ResourceMeter, summarize_agent_calls, system_profile
 
 
+REVENUE_NEUTRALITY_TOLERANCE = 1e-3
+
+
 OBJECTIVE_TIE_TOLERANCE = 1e-3
 
 
@@ -77,6 +82,21 @@ class WorkflowRunner:
         config.validate()
         self.config = config
         self.day_ahead = load_day_ahead_reference(config.state_workbook, config.mode)
+        self.revenue_neutrality_floor: float | None = None
+        if config.mode == "altruistic":
+            try:
+                floor = float(self.day_ahead.summary["aggregator_revenue"])
+            except (KeyError, TypeError, ValueError) as exc:
+                raise ValueError(
+                    "Altruistic mode requires a numeric day-ahead aggregator "
+                    "revenue to define the frozen revenue-neutrality floor."
+                ) from exc
+            if not math.isfinite(floor) or floor < 0:
+                raise ValueError(
+                    "Altruistic revenue-neutrality floor must be finite and "
+                    "nonnegative."
+                )
+            self.revenue_neutrality_floor = floor
         forecast_prices, forecast_energy = load_forecast_tables(
             config.forecast_workbook,
             config.spot_prices_workbook,
@@ -153,6 +173,12 @@ class WorkflowRunner:
             "canonical_operator_priority_sent_to_llm": False,
             "common_physical_truth_across_methods": True,
             "causal_settlement": True,
+            "altruistic_revenue_neutrality": (
+                "frozen_day_ahead_full_day_aggregator_revenue"
+                if self.config.mode == "altruistic"
+                else "not_applicable"
+            ),
+            "battery_throughput_used_in_decision": False,
         }
 
     def _workbook_inputs(self, timestep: int) -> dict[str, pd.DataFrame]:
@@ -243,6 +269,38 @@ class WorkflowRunner:
             )
             if candidate_satisfied != incumbent_satisfied:
                 return candidate_satisfied
+        if self.config.mode == "altruistic":
+            candidate_compliant = bool(
+                candidate.result.get("revenue_neutrality_compliant")
+            )
+            incumbent_compliant = bool(
+                incumbent.result.get("revenue_neutrality_compliant")
+            )
+            if candidate_compliant != incumbent_compliant:
+                return candidate_compliant
+            if not candidate_compliant:
+                candidate_shortfall = float(
+                    candidate.result.get("revenue_neutrality_shortfall")
+                    if candidate.result.get("revenue_neutrality_shortfall")
+                    is not None
+                    else float("inf")
+                )
+                incumbent_shortfall = float(
+                    incumbent.result.get("revenue_neutrality_shortfall")
+                    if incumbent.result.get("revenue_neutrality_shortfall")
+                    is not None
+                    else float("inf")
+                )
+                if (
+                    candidate_shortfall
+                    < incumbent_shortfall - REVENUE_NEUTRALITY_TOLERANCE
+                ):
+                    return True
+                if (
+                    candidate_shortfall
+                    > incumbent_shortfall + REVENUE_NEUTRALITY_TOLERANCE
+                ):
+                    return False
         if self.config.mode == "selfish":
             candidate_value = candidate.result.get(
                 "projected_full_day_aggregator_revenue",
@@ -375,6 +433,18 @@ class WorkflowRunner:
                 "projected_full_day_aggregator_revenue_delta_vs_incumbent": result.get(
                     "projected_full_day_aggregator_revenue_delta_vs_incumbent"
                 ),
+                "revenue_neutrality_active": result.get(
+                    "revenue_neutrality_active"
+                ),
+                "revenue_neutrality_floor": result.get(
+                    "revenue_neutrality_floor"
+                ),
+                "revenue_neutrality_shortfall": result.get(
+                    "revenue_neutrality_shortfall"
+                ),
+                "revenue_neutrality_compliant": result.get(
+                    "revenue_neutrality_compliant"
+                ),
                 "total_kwh_bought": result.get("total_kwh_bought"),
                 "total_kwh_sold": result.get("total_kwh_sold"),
                 "proposed_period_boundaries": json.dumps(
@@ -480,6 +550,19 @@ class WorkflowRunner:
             + float(benchmark.get("da_revenue_remaining") or 0.0),
             6,
         )
+        revenue_neutrality = context.get("revenue_neutrality") or {}
+        if revenue_neutrality.get("active"):
+            floor = float(revenue_neutrality["full_day_revenue_floor"])
+            revenue_neutrality.update(
+                {
+                    "realized_prefix_aggregator_revenue": round(
+                        realized_aggregator_revenue, 6
+                    ),
+                    "remaining_revenue_required": round(
+                        max(0.0, floor - realized_aggregator_revenue), 6
+                    ),
+                }
+            )
         context["full_day_accounting"] = {
             "settled_through_timestep": timestep,
             "realized_prefix_pto_cost": round(realized_pto_cost, 6),
@@ -503,6 +586,7 @@ class WorkflowRunner:
                 "realized settled prefix plus candidate or incumbent future; "
                 "negative remaining-horizon cost is not an automatic acceptance"
             ),
+            "revenue_neutrality": revenue_neutrality,
         }
 
     @staticmethod
@@ -516,6 +600,24 @@ class WorkflowRunner:
         projected_revenue = (
             float(accounting.get("realized_prefix_aggregator_revenue") or 0.0)
             + remaining_revenue
+        )
+        revenue_neutrality = context.get("revenue_neutrality") or {}
+        revenue_neutrality_active = bool(revenue_neutrality.get("active"))
+        revenue_floor = (
+            float(revenue_neutrality["full_day_revenue_floor"])
+            if revenue_neutrality_active
+            and revenue_neutrality.get("full_day_revenue_floor") is not None
+            else None
+        )
+        revenue_shortfall = (
+            max(0.0, revenue_floor - projected_revenue)
+            if revenue_floor is not None
+            else None
+        )
+        revenue_compliant = (
+            revenue_shortfall <= REVENUE_NEUTRALITY_TOLERANCE
+            if revenue_shortfall is not None
+            else None
         )
         result.update(
             {
@@ -544,6 +646,157 @@ class WorkflowRunner:
                         or 0.0
                     ),
                     6,
+                ),
+                "revenue_neutrality_active": revenue_neutrality_active,
+                "revenue_neutrality_floor": revenue_floor,
+                "revenue_neutrality_shortfall": (
+                    round(revenue_shortfall, 6)
+                    if revenue_shortfall is not None
+                    else None
+                ),
+                "revenue_neutrality_compliant": revenue_compliant,
+            }
+        )
+
+    @staticmethod
+    def _revenue_neutrality_feedback(
+        context: dict[str, Any],
+        pricing: PricingDecision,
+        result: dict[str, Any],
+    ) -> EvaluationFeedback:
+        """Request the smallest practical margin correction after a shortfall.
+
+        Charging margin is preferred because a small uniform buy adjustment is
+        less likely to suppress V2G than reducing the PTO's sell credit.  The
+        next optimizer call still determines transaction volume endogenously.
+        """
+
+        start = int(context.get("planning_start_timestep") or 1)
+        count = len(pricing.buy_multipliers)
+        end = min(48, start + count - 1)
+        shortfall = float(result.get("revenue_neutrality_shortfall") or 0.0)
+        price_rows = list(
+            (context.get("intraday_prices") or {}).get("prices") or []
+        )
+        prices = [
+            float(row.get("spot_market") or 0.0) for row in price_rows[:count]
+        ]
+        prices.extend([0.0] * (count - len(prices)))
+        buy_volume = [
+            float(value or 0.0)
+            for value in list(result.get("w_buy") or [])[:count]
+        ]
+        sell_volume = [
+            float(value or 0.0)
+            for value in list(result.get("w_sell") or [])[:count]
+        ]
+        buy_volume.extend([0.0] * (count - len(buy_volume)))
+        sell_volume.extend([0.0] * (count - len(sell_volume)))
+
+        buy_weights = [
+            price * volume for price, volume in zip(prices, buy_volume)
+        ]
+        sell_weights = [
+            price * volume for price, volume in zip(prices, sell_volume)
+        ]
+        buy_leverage = sum(buy_weights)
+        sell_leverage = sum(sell_weights)
+        buy_adjustment = None
+        sell_adjustment = None
+
+        if buy_leverage > 0:
+            current_buy = sum(
+                weight * multiplier
+                for weight, multiplier in zip(buy_weights, pricing.buy_multipliers)
+            ) / buy_leverage
+            required = shortfall / buy_leverage if shortfall > 0 else 0.0
+            target = min(1.20, current_buy + max(0.03, 1.05 * required))
+            amount = target - current_buy
+            if amount >= 0.03 - 1e-9:
+                buy_adjustment = MultiplierAdjustment(
+                    timestep_start=start,
+                    timestep_end=end,
+                    direction="raise",
+                    amount=round(max(0.03, amount), 6),
+                    current_value=round(current_buy, 6),
+                    target_value=round(target, 6),
+                    instruction=(
+                        "Raise the buy multiplier minimally across the executable "
+                        "horizon to close the projected full-day revenue-neutrality "
+                        "shortfall while preserving V2G incentives."
+                    ),
+                )
+
+        if buy_adjustment is None and sell_leverage > 0:
+            current_sell = sum(
+                weight * multiplier
+                for weight, multiplier in zip(sell_weights, pricing.sell_multipliers)
+            ) / sell_leverage
+            required = shortfall / sell_leverage if shortfall > 0 else 0.0
+            target = max(0.55, current_sell - max(0.03, 1.05 * required))
+            amount = current_sell - target
+            if amount >= 0.03 - 1e-9:
+                sell_adjustment = MultiplierAdjustment(
+                    timestep_start=start,
+                    timestep_end=end,
+                    direction="lower",
+                    amount=round(max(0.03, amount), 6),
+                    current_value=round(current_sell, 6),
+                    target_value=round(target, 6),
+                    instruction=(
+                        "Lower the sell multiplier only because charging margin "
+                        "cannot close the projected full-day revenue-neutrality "
+                        "shortfall."
+                    ),
+                )
+
+        return EvaluationFeedback(
+            reason="revenue_too_low",
+            buy_multiplier_adjustment=buy_adjustment,
+            sell_multiplier_adjustment=sell_adjustment,
+            period_adjustment=(
+                f"Close the projected full-day aggregator revenue shortfall of "
+                f"{shortfall:.6f} over executable timesteps {start}-{end}."
+            ),
+            priority="revenue_neutrality",
+        )
+
+    def _apply_revenue_neutrality_guard(
+        self,
+        context: dict[str, Any],
+        pricing: PricingDecision,
+        result: dict[str, Any],
+        evaluation: EvaluationDecision,
+    ) -> EvaluationDecision:
+        if self.config.mode != "altruistic":
+            return evaluation
+        if result.get("revenue_neutrality_compliant") is not False:
+            return evaluation
+        if result.get("is_mock") or str(result.get("solver_status", "")).lower() in {
+            "infeasible",
+            "error",
+            "unknown",
+            "mock",
+        }:
+            return evaluation
+        if evaluation.feedback.reason == "operational_priority":
+            return evaluation
+        floor = float(result.get("revenue_neutrality_floor") or 0.0)
+        projected = float(
+            result.get("projected_full_day_aggregator_revenue") or 0.0
+        )
+        shortfall = float(result.get("revenue_neutrality_shortfall") or 0.0)
+        return evaluation.model_copy(
+            update={
+                "accept": False,
+                "reasoning": (
+                    "The candidate is operationally usable but violates the "
+                    "frozen full-day revenue-neutrality policy: projected "
+                    f"aggregator revenue {projected:.6f} is below the floor "
+                    f"{floor:.6f} by {shortfall:.6f}."
+                ),
+                "feedback": self._revenue_neutrality_feedback(
+                    context, pricing, result
                 ),
             }
         )
@@ -636,6 +889,9 @@ class WorkflowRunner:
                         "reasoning": "A mock optimizer result cannot be accepted.",
                     }
                 )
+            evaluation = self._apply_revenue_neutrality_guard(
+                context, pricing, result, evaluation
+            )
             candidate = OptimizationCandidate(
                 pricing=pricing,
                 result=result,
@@ -671,6 +927,16 @@ class WorkflowRunner:
                         "A solver-usable earlier attempt had a better mode-aligned "
                         "economic objective than the evaluator-accepted rerun, so the "
                         "earlier schedule was retained."
+                    )
+                elif (
+                    self.config.mode == "altruistic"
+                    and best.result.get("revenue_neutrality_compliant") is False
+                ):
+                    selection_reasoning = (
+                        f"Rerun cap of {self.config.max_reruns} reached without a "
+                        "revenue-neutral candidate; the operationally usable attempt "
+                        "with the smallest projected full-day revenue shortfall was "
+                        "retained and remains explicitly flagged noncompliant."
                     )
                 else:
                     selection_reasoning = (
@@ -1017,6 +1283,20 @@ class WorkflowRunner:
             usage_summary = summarize_agent_calls(self.state.agent_calls)
             profile = system_profile()
             settlement = self.state.settlement
+            realized_aggregator_revenue = sum(
+                float(row.get("realized_aggregator_revenue") or 0)
+                for row in settlement
+            )
+            revenue_neutrality_active = self.config.mode == "altruistic"
+            revenue_neutrality_shortfall = (
+                max(
+                    0.0,
+                    float(self.revenue_neutrality_floor or 0.0)
+                    - realized_aggregator_revenue,
+                )
+                if revenue_neutrality_active
+                else None
+            )
             self.state.run_summary = {
                 "status": run_status,
                 "start_timestep": self.config.start_timestep,
@@ -1051,9 +1331,15 @@ class WorkflowRunner:
                 "realized_pto_cost": sum(
                     float(row.get("realized_pto_cost") or 0) for row in settlement
                 ),
-                "realized_aggregator_revenue": sum(
-                    float(row.get("realized_aggregator_revenue") or 0)
-                    for row in settlement
+                "realized_aggregator_revenue": realized_aggregator_revenue,
+                "revenue_neutrality_active": revenue_neutrality_active,
+                "revenue_neutrality_floor": self.revenue_neutrality_floor,
+                "revenue_neutrality_shortfall": revenue_neutrality_shortfall,
+                "revenue_neutrality_compliant": (
+                    revenue_neutrality_shortfall
+                    <= REVENUE_NEUTRALITY_TOLERANCE
+                    if revenue_neutrality_shortfall is not None
+                    else None
                 ),
                 "realized_grid_net_cost": sum(
                     float(row.get("realized_grid_net_cost") or 0)

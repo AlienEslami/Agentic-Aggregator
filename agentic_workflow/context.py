@@ -214,6 +214,7 @@ def build_context(
         current in full_price_map for current in range(planning_start_timestep, 49)
     )
     summary = day_ahead.summary
+    reference_aggregator_revenue = _float(summary.get("aggregator_revenue"))
     buy_multipliers = list(summary.get("buy_multipliers") or [1.05, 1.10, 1.05])
     sell_multipliers = list(summary.get("sell_multipliers") or [0.80, 0.85, 0.80])
     period_size = max(1, 48 // len(buy_multipliers))
@@ -370,6 +371,19 @@ def build_context(
             "buy_multipliers": buy_multipliers,
             "sell_multipliers": sell_multipliers,
             "avg_grid_price": _float(summary.get("avg_grid_price")),
+        },
+        "revenue_neutrality": {
+            "active": mode == "altruistic",
+            "policy": "frozen_day_ahead_full_day_aggregator_revenue",
+            "full_day_revenue_floor": (
+                round(reference_aggregator_revenue, 6)
+                if reference_aggregator_revenue is not None
+                else None
+            ),
+            "source": "day_ahead_summary.aggregator_revenue",
+            "fixed_before_realtime_disturbances": True,
+            "realized_prefix_aggregator_revenue": None,
+            "remaining_revenue_required": None,
         },
         "reoptimization_history": {
             "last_reopt_timestep": last_reopt_timestep,

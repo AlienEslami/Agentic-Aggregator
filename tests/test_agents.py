@@ -427,6 +427,24 @@ def test_evaluator_prompt_requires_full_day_accounting_and_no_negative_cost_guar
     assert "all flagged buses have |energy_deviation_pct| <= 5%" not in prompt
 
 
+def test_altruistic_pricing_and_evaluator_prompts_require_revenue_neutrality():
+    prompt_dir = (
+        Path(__file__).parents[1] / "agentic_workflow" / "prompts"
+    )
+    pricing = (prompt_dir / "pricing_altruistic_system.txt").read_text(
+        encoding="utf-8"
+    )
+    evaluator = (prompt_dir / "evaluator_system.txt").read_text(
+        encoding="utf-8"
+    )
+
+    assert "REVENUE-NEUTRALITY POLICY" in pricing
+    assert "remaining_revenue_required" in pricing
+    assert "not an average-multiplier constraint" in pricing
+    assert "revenue_neutrality_compliant=true" in evaluator
+    assert 'priority="revenue_neutrality"' in evaluator
+
+
 def test_selfish_pricing_prompt_models_margin_volume_tradeoff():
     prompt = (
         Path(__file__).parents[1]

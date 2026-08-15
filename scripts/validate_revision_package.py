@@ -17,7 +17,7 @@ REVISION = ROOT / "inputs" / "revision"
 REQUIRED_FILES = (
     ROOT / "requirements-lock.txt",
     ROOT / "requirements-dev-lock.txt",
-    REVISION / "advance_warning_ablation_protocol_v5.json",
+    REVISION / "advance_warning_ablation_protocol_v6.json",
     REVISION / "information_and_evaluator_ablation_protocol_v2.json",
     REVISION / "revision_sensitivity_protocol_v1.json",
     REVISION / "scaling_and_second_depot_protocol_v1.json",
@@ -115,7 +115,7 @@ def main(argv: list[str] | None = None) -> int:
                     }
                 )
 
-    protocol_path = REVISION / "advance_warning_ablation_protocol_v5.json"
+    protocol_path = REVISION / "advance_warning_ablation_protocol_v6.json"
     prompt_paths = {
         name: ROOT / "agentic_workflow" / "prompts" / name
         for name in (
@@ -135,7 +135,7 @@ def main(argv: list[str] | None = None) -> int:
         }
         checks.append(
             {
-                "check": "final_v5_prompt_hashes_match_protocol",
+                "check": "final_v6_prompt_hashes_match_protocol",
                 "passed": recorded_prompt_hashes == current_prompt_hashes,
                 "recorded": recorded_prompt_hashes,
                 "current": current_prompt_hashes,

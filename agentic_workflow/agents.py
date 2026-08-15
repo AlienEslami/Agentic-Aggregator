@@ -541,6 +541,8 @@ class OpenAIAgentBackend(AgentBackend):
             "remaining_prices": context["intraday_prices"],
             "day_ahead_summary": context["day_ahead_summary"],
             "reoptimization_history": context["reoptimization_history"],
+            "full_day_accounting": context.get("full_day_accounting", {}),
+            "revenue_neutrality": context.get("revenue_neutrality", {}),
             "rerun_count": rerun_count,
             "previous_multipliers": previous.model_dump() if previous else None,
             "evaluator_feedback": feedback.model_dump() if feedback else None,
@@ -626,6 +628,7 @@ class OpenAIAgentBackend(AgentBackend):
             ),
             "fleet_constraints": context.get("fleet_constraints", {}),
             "full_day_accounting": context.get("full_day_accounting", {}),
+            "revenue_neutrality": context.get("revenue_neutrality", {}),
         }
         decision = self._parse(
             _prompt("evaluator_system.txt"), user_data, EvaluationDecision, role="evaluator"
@@ -986,6 +989,15 @@ class RuleBasedAgentBackend(AgentBackend):
                 sell = [0.65] * len(sell)
             elif feedback and feedback.reason == "cost_too_high":
                 buy = [max(1.01, value - 0.05) for value in buy]
+            elif (
+                feedback
+                and feedback.reason == "revenue_too_low"
+                and mode == "altruistic"
+            ):
+                # The structured revenue-neutrality adjustment is applied below.
+                # Do not run the legacy cost-reduction fallback, which would move
+                # margins in the wrong direction for a revenue shortfall.
+                pass
             elif feedback and feedback.reason == "v2g_unused":
                 sell = [min(0.97, value + 0.05) for value in sell]
             else:
@@ -997,7 +1009,18 @@ class RuleBasedAgentBackend(AgentBackend):
             reasoning=f"Deterministic {mode} pricing policy for {len(rows)} remaining timesteps.",
             confidence=1.0,
         )
-        return normalize_pricing_decision(decision, mode, int(context["remaining_timesteps"]))
+        normalized = normalize_pricing_decision(
+            decision, mode, int(context["remaining_timesteps"])
+        )
+        effective, _ = enforce_evaluator_pricing_feedback(
+            normalized,
+            feedback=feedback,
+            mode=mode,
+            planning_start_timestep=int(
+                context.get("planning_start_timestep") or context["timestep"]
+            ),
+        )
+        return effective
 
     def evaluate(
         self,

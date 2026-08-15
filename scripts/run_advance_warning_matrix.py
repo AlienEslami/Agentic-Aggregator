@@ -32,7 +32,7 @@ PHYSICAL_INPUT = (
     ROOT / "inputs" / "revision" / "advance_warning_physical_events_v1.json"
 )
 ABLATION_PROTOCOL_PATH = (
-    ROOT / "inputs" / "revision" / "advance_warning_ablation_protocol_v5.json"
+    ROOT / "inputs" / "revision" / "advance_warning_ablation_protocol_v6.json"
 )
 PROMPT_INPUTS = {
     name: ROOT / "agentic_workflow" / "prompts" / name
@@ -482,7 +482,7 @@ def write_manifest(
 ) -> None:
     input_fingerprints = current_input_fingerprints()
     manifest = {
-        "protocol_version": "advance_warning_matrix_v5",
+        "protocol_version": "advance_warning_matrix_v6",
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "git_commit": git_revision(),
         "git_worktree_clean": git_worktree_is_clean(),
@@ -530,7 +530,7 @@ def write_manifest(
                 "inputs/revision/advance_warning_physical_events_v1.json"
             ),
             "ablation_protocol_file": (
-                "inputs/revision/advance_warning_ablation_protocol_v5.json"
+                "inputs/revision/advance_warning_ablation_protocol_v6.json"
             ),
             **input_fingerprints,
             "prompt_sha256": {
@@ -558,7 +558,7 @@ def write_manifest(
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
-            "Run the prespecified three-case, two-mode advance-warning matrix with "
+            "Run the prespecified advance-warning matrix with "
             "resume-safe repeated Agent and role-ablation trials."
         )
     )
@@ -647,19 +647,19 @@ def main() -> None:
     ):
         raise SystemExit("--max-approximate-api-cost-usd must be positive")
     if args.solver_order.strip().lower() != "gurobi":
-        raise SystemExit("Final v5 matrix requires --solver-order gurobi")
+        raise SystemExit("Final v6 matrix requires --solver-order gurobi")
     if args.solver_time_limit <= 0:
         raise SystemExit("--solver-time-limit must be positive")
     if not 0 <= args.solver_mip_gap < 1:
         raise SystemExit("--solver-mip-gap must be in [0,1)")
 
     try:
-        validate_ablation_protocol()
+        protocol = validate_ablation_protocol()
     except (FileNotFoundError, KeyError, TypeError, ValueError) as exc:
         raise SystemExit(str(exc)) from exc
 
     cases = args.case or list(PRIMARY_CASES)
-    modes = args.mode or list(PRIMARY_MODES)
+    modes = args.mode or list(protocol["design"]["modes"])
     specs = build_run_specs(
         cases=cases,
         modes=modes,

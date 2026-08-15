@@ -347,6 +347,7 @@ class EvaluationFeedback(StrictModel):
         "deviation_correction",
         "mock_recovery",
         "operational_compliance",
+        "revenue_neutrality",
     ] | None
     operational_priority: OperationalPriority | None = None
 

@@ -117,15 +117,18 @@ def test_ablation_protocol_is_frozen_and_matches_runner():
     protocol = validate_ablation_protocol()
     assert ABLATION_PROTOCOL_PATH.exists()
     assert protocol["status"] == (
-        "implemented_and_frozen_after_exploratory_tuning_pending_final_execution"
+        "implemented_and_frozen_pending_altruistic_reexecution"
     )
     assert tuple(protocol["design"]["configurations"]) == ROLE_ABLATION_CONFIGURATIONS
-    assert protocol["design"]["planned_runs"] == 120
+    assert protocol["design"]["planned_runs"] == 60
+    assert protocol["design"]["modes"] == ["altruistic"]
     assert protocol["controls"]["shared_trigger_evidence_change_gate"] is True
     assert protocol["controls"]["maximum_pricing_reruns"] == 1
     assert protocol["controls"]["maximum_optimizer_attempts_per_trigger"] == 2
-    assert protocol["reporting"]["v3_and_v4_outputs_excluded_from_v5_inference"] is True
-    assert protocol["reporting"]["pricing_prompt_pilots_excluded_from_v5_inference"] is True
+    assert protocol["controls"]["altruistic_revenue_neutrality"]["active"] is True
+    assert protocol["outcomes"][
+        "battery_throughput_in_primary_or_secondary_contrasts"
+    ] is False
 
 
 def test_resume_rejects_changed_frozen_inputs(monkeypatch, tmp_path):
@@ -276,6 +279,30 @@ def test_paired_analysis_reports_economics_only_when_both_runs_are_feasible():
     assert numerical["baseline_feasible_rate"] == 0.0
 
 
+def test_altruistic_economics_require_revenue_neutrality_compliance():
+    rows = [
+        _run("rule_text_event_trigger", 1, revenue=10, pto_cost=20),
+        _run("numerical_event_trigger", 1, revenue=10, pto_cost=20),
+        _run("oracle_event_trigger", 1, revenue=10, pto_cost=20),
+        _run("agent_trigger_only", 1, revenue=9, pto_cost=15),
+    ]
+    for row in rows:
+        row["mode"] = "altruistic"
+        row["revenue_neutrality_compliant"] = True
+        row["revenue_neutrality_floor"] = 10.0
+        row["revenue_neutrality_shortfall"] = 0.0
+    rows[-1]["revenue_neutrality_compliant"] = False
+    rows[-1]["revenue_neutrality_shortfall"] = 1.0
+
+    pairs = build_primary_pairs(annotate_runs(pd.DataFrame(rows)))
+    comparison = pairs[pairs["contrast"].eq("agent_vs_rule_text")].iloc[0]
+
+    assert comparison["candidate_feasible"]
+    assert not comparison["candidate_revenue_neutrality_compliant"]
+    assert not comparison["valid_economic_comparison"]
+    assert pd.isna(comparison["mode_aligned_economic_gain"])
+
+
 def test_role_ablation_uses_independent_sample_difference():
     rows = []
     for repetition, revenue in enumerate((20, 30), start=1):
@@ -407,6 +434,60 @@ def test_evaluator_audit_uses_projected_full_day_economics(monkeypatch, tmp_path
     assert attempt_audit["rejection_feedback_no_op_on_current_schedule"].tolist() == [
         True,
         False,
+    ]
+
+
+def test_evaluator_audit_ranks_revenue_neutral_candidate_before_lower_pto_cost(
+    monkeypatch, tmp_path
+):
+    attempts = pd.DataFrame(
+        {
+            "timestep": [11, 11],
+            "attempt": [1, 2],
+            "mode": ["altruistic", "altruistic"],
+            "projected_full_day_pto_cost": [100.0, 105.0],
+            "projected_full_day_aggregator_revenue": [9.0, 10.0],
+            "revenue_neutrality_compliant": [False, True],
+            "revenue_neutrality_shortfall": [1.0, 0.0],
+            "solver_status": ["ok/optimal", "ok/optimal"],
+            "is_mock": [False, False],
+            "accepted": [False, True],
+            "evaluator_accepted": [False, True],
+            "total_kwh_bought": [100.0, 100.0],
+            "total_kwh_sold": [0.0, 0.0],
+            "feedback": [
+                '{"reason":"revenue_too_low",'
+                '"buy_multiplier_adjustment":{"direction":"raise"}}',
+                "{}",
+            ],
+        }
+    )
+    monkeypatch.setattr(pd, "read_excel", lambda *args, **kwargs: attempts.copy())
+    runs = pd.DataFrame(
+        [
+            {
+                "run_id": "run-revenue-neutral",
+                "configuration": "full_agentic",
+                "case": "case-1",
+                "variant": "uncertain_chat",
+                "mode": "altruistic",
+                "repetition": 1,
+                "workbook": str(tmp_path / "run.xlsx"),
+            }
+        ]
+    )
+
+    _, decisions = build_evaluator_attempt_audit(
+        runs, repository_root=tmp_path
+    )
+    decision = decisions.iloc[0]
+
+    assert decision["best_usable_attempt"] == 2
+    assert decision["best_usable_economic_attempt"] == 1
+    assert decision["selected_is_best_usable_candidate"]
+    assert not decision["accepted_rerun_worse_than_earlier_usable_attempt"]
+    assert decision[
+        "accepted_rerun_economically_worse_than_earlier_usable_attempt"
     ]
 
 
