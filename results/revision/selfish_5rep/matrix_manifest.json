@@ -1,0 +1,677 @@
+{
+  "protocol_version": "advance_warning_matrix_v5_selfish_subset",
+  "created_utc": "2026-08-14T21:27:13.75758-04:00",
+  "git_commit": "9ed28b6ae0d6782d8e16fd324f8ce7b145f9f316",
+  "git_worktree_clean": true,
+  "design": {
+    "cases": [
+      "aw_route6_late_return",
+      "aw_charger_bank_shutdown",
+      "aw_combined_evening"
+    ],
+    "modes": [
+      "selfish"
+    ],
+    "variant": "uncertain_chat",
+    "agent_repetitions": 0,
+    "role_ablation_repetitions": 5,
+    "primary_contrasts": [
+      "agent_vs_rule_text",
+      "agent_vs_numerical",
+      "agent_vs_oracle"
+    ],
+    "secondary_role_ablations": [
+      "full_agentic",
+      "rule_parser_trigger_substitution",
+      "deterministic_pricing_substitution",
+      "evaluator_removal"
+    ],
+    "operational_feasibility_first": true
+  },
+  "external_llm": {
+    "scheduled": true,
+    "explicit_cli_authorization": true,
+    "payload_scope": "synthetic public notice/chat text plus operational numerical context; canonical hidden truth is not included",
+    "api_key_recorded": false,
+    "model": "gpt-5.6-luna"
+  },
+  "solver_settings": {
+    "order": "gurobi",
+    "time_limit_seconds": 60.0,
+    "mip_gap": 0.02,
+    "fallback_permitted_in_final_results": false
+  },
+  "inputs": {
+    "notice_file": "inputs/revision/advance_warning_notices_v1.json",
+    "physical_event_file": "inputs/revision/advance_warning_physical_events_v1.json",
+    "ablation_protocol_file": "inputs/revision/advance_warning_ablation_protocol_v5.json",
+    "notice_sha256": "9e4e4860166f66dd99df0ee5e077df5661969e1c6b9a1522ae2a71a8dbec89d9",
+    "physical_event_sha256": "1f5ff94f13bd5728b7d0eff4c9fb49015a8b5a4d8675a475ef72860dbe959f2c",
+    "ablation_protocol_sha256": "9054cc241860312d00fd250ac213f75566541f11f6fdf569897e7754c2637a40",
+    "prompt_trigger_system.txt_sha256": "ab19e952cb147b0693a7bee9ea23403cbefd3a1ca28a006cb069facce1e0dbba",
+    "prompt_pricing_selfish_system.txt_sha256": "cd36c75d95e425dea89c76ae1e71d3bd636908b3edf98bfa16050402659fcfe1",
+    "prompt_pricing_altruistic_system.txt_sha256": "209eedbedb93cd9c3b09600879a3cdde3b1277432efd153e498fa24364c1abe4",
+    "prompt_evaluator_system.txt_sha256": "a352806ad30ef69522c06e68e049d48e584bac32d0076ac3ddd7f87c14bea7ba",
+    "prompt_sha256": {
+      "trigger_system.txt": "ab19e952cb147b0693a7bee9ea23403cbefd3a1ca28a006cb069facce1e0dbba",
+      "pricing_selfish_system.txt": "cd36c75d95e425dea89c76ae1e71d3bd636908b3edf98bfa16050402659fcfe1",
+      "pricing_altruistic_system.txt": "209eedbedb93cd9c3b09600879a3cdde3b1277432efd153e498fa24364c1abe4",
+      "evaluator_system.txt": "a352806ad30ef69522c06e68e049d48e584bac32d0076ac3ddd7f87c14bea7ba"
+    }
+  },
+  "planned_runs": 60,
+  "indexed_completed_runs": 60,
+  "execution_budget": {
+    "maximum_approximate_api_cost_usd": 4.0,
+    "indexed_approximate_api_cost_usd": 1.05800638
+  },
+  "runs": [
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "full_agentic",
+      "repetition": 1,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_route6_late_return__selfish__uncertain_chat__full_agentic__r001"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "full_agentic",
+      "repetition": 2,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_route6_late_return__selfish__uncertain_chat__full_agentic__r002"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "full_agentic",
+      "repetition": 3,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_route6_late_return__selfish__uncertain_chat__full_agentic__r003"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "full_agentic",
+      "repetition": 4,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_route6_late_return__selfish__uncertain_chat__full_agentic__r004"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "full_agentic",
+      "repetition": 5,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_route6_late_return__selfish__uncertain_chat__full_agentic__r005"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "rule_parser_trigger_substitution",
+      "repetition": 1,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_route6_late_return__selfish__uncertain_chat__rule_parser_trigger_substitution__r001"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "rule_parser_trigger_substitution",
+      "repetition": 2,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_route6_late_return__selfish__uncertain_chat__rule_parser_trigger_substitution__r002"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "rule_parser_trigger_substitution",
+      "repetition": 3,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_route6_late_return__selfish__uncertain_chat__rule_parser_trigger_substitution__r003"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "rule_parser_trigger_substitution",
+      "repetition": 4,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_route6_late_return__selfish__uncertain_chat__rule_parser_trigger_substitution__r004"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "rule_parser_trigger_substitution",
+      "repetition": 5,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_route6_late_return__selfish__uncertain_chat__rule_parser_trigger_substitution__r005"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "deterministic_pricing_substitution",
+      "repetition": 1,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_route6_late_return__selfish__uncertain_chat__deterministic_pricing_substitution__r001"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "deterministic_pricing_substitution",
+      "repetition": 2,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_route6_late_return__selfish__uncertain_chat__deterministic_pricing_substitution__r002"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "deterministic_pricing_substitution",
+      "repetition": 3,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_route6_late_return__selfish__uncertain_chat__deterministic_pricing_substitution__r003"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "deterministic_pricing_substitution",
+      "repetition": 4,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_route6_late_return__selfish__uncertain_chat__deterministic_pricing_substitution__r004"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "deterministic_pricing_substitution",
+      "repetition": 5,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_route6_late_return__selfish__uncertain_chat__deterministic_pricing_substitution__r005"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "evaluator_removal",
+      "repetition": 1,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_route6_late_return__selfish__uncertain_chat__evaluator_removal__r001"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "evaluator_removal",
+      "repetition": 2,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_route6_late_return__selfish__uncertain_chat__evaluator_removal__r002"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "evaluator_removal",
+      "repetition": 3,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_route6_late_return__selfish__uncertain_chat__evaluator_removal__r003"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "evaluator_removal",
+      "repetition": 4,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_route6_late_return__selfish__uncertain_chat__evaluator_removal__r004"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "evaluator_removal",
+      "repetition": 5,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_route6_late_return__selfish__uncertain_chat__evaluator_removal__r005"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "full_agentic",
+      "repetition": 1,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_charger_bank_shutdown__selfish__uncertain_chat__full_agentic__r001"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "full_agentic",
+      "repetition": 2,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_charger_bank_shutdown__selfish__uncertain_chat__full_agentic__r002"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "full_agentic",
+      "repetition": 3,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_charger_bank_shutdown__selfish__uncertain_chat__full_agentic__r003"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "full_agentic",
+      "repetition": 4,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_charger_bank_shutdown__selfish__uncertain_chat__full_agentic__r004"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "full_agentic",
+      "repetition": 5,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_charger_bank_shutdown__selfish__uncertain_chat__full_agentic__r005"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "rule_parser_trigger_substitution",
+      "repetition": 1,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_charger_bank_shutdown__selfish__uncertain_chat__rule_parser_trigger_substitution__r001"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "rule_parser_trigger_substitution",
+      "repetition": 2,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_charger_bank_shutdown__selfish__uncertain_chat__rule_parser_trigger_substitution__r002"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "rule_parser_trigger_substitution",
+      "repetition": 3,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_charger_bank_shutdown__selfish__uncertain_chat__rule_parser_trigger_substitution__r003"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "rule_parser_trigger_substitution",
+      "repetition": 4,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_charger_bank_shutdown__selfish__uncertain_chat__rule_parser_trigger_substitution__r004"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "rule_parser_trigger_substitution",
+      "repetition": 5,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_charger_bank_shutdown__selfish__uncertain_chat__rule_parser_trigger_substitution__r005"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "deterministic_pricing_substitution",
+      "repetition": 1,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_charger_bank_shutdown__selfish__uncertain_chat__deterministic_pricing_substitution__r001"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "deterministic_pricing_substitution",
+      "repetition": 2,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_charger_bank_shutdown__selfish__uncertain_chat__deterministic_pricing_substitution__r002"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "deterministic_pricing_substitution",
+      "repetition": 3,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_charger_bank_shutdown__selfish__uncertain_chat__deterministic_pricing_substitution__r003"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "deterministic_pricing_substitution",
+      "repetition": 4,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_charger_bank_shutdown__selfish__uncertain_chat__deterministic_pricing_substitution__r004"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "deterministic_pricing_substitution",
+      "repetition": 5,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_charger_bank_shutdown__selfish__uncertain_chat__deterministic_pricing_substitution__r005"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "evaluator_removal",
+      "repetition": 1,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_charger_bank_shutdown__selfish__uncertain_chat__evaluator_removal__r001"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "evaluator_removal",
+      "repetition": 2,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_charger_bank_shutdown__selfish__uncertain_chat__evaluator_removal__r002"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "evaluator_removal",
+      "repetition": 3,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_charger_bank_shutdown__selfish__uncertain_chat__evaluator_removal__r003"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "evaluator_removal",
+      "repetition": 4,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_charger_bank_shutdown__selfish__uncertain_chat__evaluator_removal__r004"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "evaluator_removal",
+      "repetition": 5,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_charger_bank_shutdown__selfish__uncertain_chat__evaluator_removal__r005"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "full_agentic",
+      "repetition": 1,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_combined_evening__selfish__uncertain_chat__full_agentic__r001"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "full_agentic",
+      "repetition": 2,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_combined_evening__selfish__uncertain_chat__full_agentic__r002"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "full_agentic",
+      "repetition": 3,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_combined_evening__selfish__uncertain_chat__full_agentic__r003"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "full_agentic",
+      "repetition": 4,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_combined_evening__selfish__uncertain_chat__full_agentic__r004"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "full_agentic",
+      "repetition": 5,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_combined_evening__selfish__uncertain_chat__full_agentic__r005"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "rule_parser_trigger_substitution",
+      "repetition": 1,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_combined_evening__selfish__uncertain_chat__rule_parser_trigger_substitution__r001"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "rule_parser_trigger_substitution",
+      "repetition": 2,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_combined_evening__selfish__uncertain_chat__rule_parser_trigger_substitution__r002"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "rule_parser_trigger_substitution",
+      "repetition": 3,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_combined_evening__selfish__uncertain_chat__rule_parser_trigger_substitution__r003"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "rule_parser_trigger_substitution",
+      "repetition": 4,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_combined_evening__selfish__uncertain_chat__rule_parser_trigger_substitution__r004"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "rule_parser_trigger_substitution",
+      "repetition": 5,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_combined_evening__selfish__uncertain_chat__rule_parser_trigger_substitution__r005"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "deterministic_pricing_substitution",
+      "repetition": 1,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_combined_evening__selfish__uncertain_chat__deterministic_pricing_substitution__r001"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "deterministic_pricing_substitution",
+      "repetition": 2,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_combined_evening__selfish__uncertain_chat__deterministic_pricing_substitution__r002"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "deterministic_pricing_substitution",
+      "repetition": 3,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_combined_evening__selfish__uncertain_chat__deterministic_pricing_substitution__r003"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "deterministic_pricing_substitution",
+      "repetition": 4,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_combined_evening__selfish__uncertain_chat__deterministic_pricing_substitution__r004"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "deterministic_pricing_substitution",
+      "repetition": 5,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_combined_evening__selfish__uncertain_chat__deterministic_pricing_substitution__r005"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "evaluator_removal",
+      "repetition": 1,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_combined_evening__selfish__uncertain_chat__evaluator_removal__r001"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "evaluator_removal",
+      "repetition": 2,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_combined_evening__selfish__uncertain_chat__evaluator_removal__r002"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "evaluator_removal",
+      "repetition": 3,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_combined_evening__selfish__uncertain_chat__evaluator_removal__r003"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "evaluator_removal",
+      "repetition": 4,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_combined_evening__selfish__uncertain_chat__evaluator_removal__r004"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "evaluator_removal",
+      "repetition": 5,
+      "run_family": "secondary_role_ablation",
+      "stochastic": true,
+      "run_id": "aw_combined_evening__selfish__uncertain_chat__evaluator_removal__r005"
+    }
+  ],
+  "derived_subset": {
+    "mode": "selfish",
+    "source_protocol": "advance_warning_matrix_v5",
+    "source_matrix_sha256": "21473d68e3cdcf1bdb62aaf60ef488f24468a1b4b397a3d77a04dbe6c26d12cc",
+    "source_manifest_sha256": "7bb5de554345d0c037488fb0ffc65eb8000f24767f051850be263573cbdf420a",
+    "filtered_rows": 60
+  }
+}

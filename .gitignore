@@ -68,6 +68,8 @@ results/*
 results/revision/*
 !results/revision/altruistic_50pct_retention_5rep/
 !results/revision/altruistic_50pct_retention_5rep/**
+!results/revision/selfish_5rep/
+!results/revision/selfish_5rep/**
 !results/revision/trigger_agent_v3_test_manifest.json
 !results/revision/trigger_agent_v3_test_summary.json
 !results/revision/stateful_rule_v3_test_summary.json
