@@ -37,6 +37,39 @@ def _trip_active(trip: dict[str, Any], timestep: int) -> bool:
     return int(trip["start_rt"]) <= timestep < int(trip["end_rt"])
 
 
+def bind_physical_trips(
+    context: dict[str, Any], assignments: dict[int, int]
+) -> dict[str, Any]:
+    """Attach public asset-identity bindings to a copied optimizer context."""
+
+    bound = copy.deepcopy(context)
+    bound["stochastic_physical_trip_bus_bindings"] = {
+        str(int(trip_id)): int(bus_id)
+        for trip_id, bus_id in assignments.items()
+    }
+    _validated_physical_trip_bindings(bound)
+    return bound
+
+
+def _validated_physical_trip_bindings(context: dict[str, Any]) -> dict[int, int]:
+    raw = context.get("stochastic_physical_trip_bus_bindings") or {}
+    bindings = {int(trip_id): int(bus_id) for trip_id, bus_id in raw.items()}
+    trips = {int(trip["trip_id"]): trip for trip in context["trips"]}
+    buses = {int(bus["bus_id"]) for bus in context["buses"]}
+    for trip_id, bus_id in bindings.items():
+        if trip_id not in trips:
+            raise ValueError(f"Physical binding names unknown trip {trip_id}")
+        if bus_id not in buses:
+            raise ValueError(f"Physical binding names unknown bus {bus_id}")
+        planned_bus_id = int(trips[trip_id]["planned_bus_id"])
+        if planned_bus_id != bus_id:
+            raise ValueError(
+                f"Physical binding for trip {trip_id} names bus {bus_id}, "
+                f"but the public schedule names bus {planned_bus_id}"
+            )
+    return bindings
+
+
 def validate_scenarios(
     scenarios: Iterable[StochasticScenario],
     *,
@@ -85,6 +118,7 @@ def validate_scenarios(
         int(charger["charger_id"]): charger
         for charger in reference["chargers"]
     }
+    reference_physical_bindings = _validated_physical_trip_bindings(reference)
 
     for item in items[1:]:
         context = item.context
@@ -100,6 +134,10 @@ def validate_scenarios(
             raise ValueError("All scenarios must contain the same chargers")
         if _ids(context["trips"], "trip_id") != reference_trip_ids:
             raise ValueError("All scenarios must contain the same remaining trips")
+        if _validated_physical_trip_bindings(context) != reference_physical_bindings:
+            raise ValueError(
+                "All scenarios must use the same public physical trip-to-bus bindings"
+            )
 
         buses = {int(bus["bus_id"]): bus for bus in context["buses"]}
         chargers = {
@@ -357,10 +395,23 @@ def build_extensive_form(
             item.context, build_only=True
         )
         scenario_model.obj.deactivate()
-        model.scenario[item.scenario_id].transfer_attributes_from(scenario_model)
+        block = model.scenario[item.scenario_id]
+        block.transfer_attributes_from(scenario_model)
+        block.physical_trip_bus_binding_constraints = pyo.ConstraintList()
+        for trip_id, bus_id in _validated_physical_trip_bindings(
+            item.context
+        ).items():
+            for timestep in block.T:
+                if int(pyo.value(block.start_rt[trip_id])) <= int(timestep) < int(
+                    pyo.value(block.end_rt[trip_id])
+                ):
+                    block.physical_trip_bus_binding_constraints.add(
+                        block.s[bus_id, trip_id, timestep] == 1
+                    )
 
     reference_id = scenario_ids[0]
     reference = model.scenario[reference_id]
+    physical_bindings = _validated_physical_trip_bindings(items[0].context)
     model.nonanticipativity = pyo.ConstraintList()
     for scenario_id in scenario_ids[1:]:
         block = model.scenario[scenario_id]
@@ -427,6 +478,7 @@ def build_extensive_form(
     )
     model._stochastic_reveal_timestep = reveal_timestep
     model._stochastic_reference_scenario = reference_id
+    model._stochastic_physical_trip_bus_bindings = physical_bindings
     return model, items
 
 
@@ -666,6 +718,9 @@ def solve_two_stage_stochastic(
         "probability_sum": sum(item.probability for item in items),
         "reveal_timestep": reveal_timestep,
         "nonanticipativity_timesteps": list(range(1, reveal_timestep)),
+        "physical_trip_bus_bindings": dict(
+            model._stochastic_physical_trip_bus_bindings
+        ),
         "expected": expected,
         "scenario_outcomes": outcomes,
         "first_stage": first_stage,

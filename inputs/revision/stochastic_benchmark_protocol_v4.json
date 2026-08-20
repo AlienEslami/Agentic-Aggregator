@@ -1,0 +1,31 @@
+{
+  "protocol_version": "event_receding_two_stage_stochastic_v4",
+  "status": "implemented_and_frozen_pending_confirmatory_full_day_execution",
+  "base_protocol_file": "stochastic_benchmark_protocol_v3.json",
+  "supersedes_for_future_runs": "inputs/revision/stochastic_benchmark_protocol_v3.json",
+  "historical_result_policy": "V1 and v2 are development records. V3 results remain an immutable diagnostic that exposed a physical-asset identity mismatch. V4 is the confirmatory protocol and must be reported separately.",
+  "change_reason": [
+    "the v3 route-delay diagnostic allowed the mathematical model to reassign the delayed route even though the public dispatcher message explicitly kept the scheduled departure on the named physical bus",
+    "bind each asset-specific late-return trip to the physical bus named by the public schedule in every stochastic scenario and in observed-outcome recourse",
+    "leave the shared deterministic optimizer, scenario probabilities, prices, disturbance truth, Agent results and economic objectives unchanged"
+  ],
+  "method": {
+    "asset_identity_constraint": "For each publicly named late-return bus, its scheduled trip must remain assigned to that physical bus during every active trip interval; this constraint is added only by the stochastic benchmark wrapper.",
+    "observed_outcome_recourse": "Use the same identity-bound feasibility-first formulation with a probability-one observed scenario.",
+    "shared_deterministic_optimizer_modified": false
+  },
+  "asset_identity_bindings": {
+    "aw_route6_late_return": {
+      "trip_to_physical_bus": {"6": 6},
+      "public_basis": "The dispatcher confirms Bus 6, states that its return is late, and explicitly says its departure remains at the scheduled time."
+    },
+    "aw_charger_bank_shutdown": {
+      "trip_to_physical_bus": {},
+      "public_basis": "The case concerns charger assets and declares no bus-trip identity uncertainty."
+    },
+    "aw_combined_evening": {
+      "trip_to_physical_bus": {"8": 8},
+      "public_basis": "The combined dispatch messages identify Bus 8 as the vehicle with the late return."
+    }
+  }
+}

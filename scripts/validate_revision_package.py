@@ -29,6 +29,7 @@ REQUIRED_FILES = (
     REVISION / "stochastic_benchmark_protocol_v1.json",
     REVISION / "stochastic_benchmark_protocol_v2.json",
     REVISION / "stochastic_benchmark_protocol_v3.json",
+    REVISION / "stochastic_benchmark_protocol_v4.json",
     REVISION / "independent_validation_checklist_v1.md",
     ROOT / "agentic_workflow" / "stochastic_programming.py",
     ROOT / "agentic_workflow" / "stochastic_benchmark.py",
@@ -191,7 +192,7 @@ def main(argv: list[str] | None = None) -> int:
             "benchmark",
             "solver_time_limit_seconds",
         ),
-        "stochastic_benchmark_protocol_v3.json": (
+        "stochastic_benchmark_protocol_v4.json": (
             "method",
             "solver_time_limit_seconds",
         ),
@@ -202,7 +203,14 @@ def main(argv: list[str] | None = None) -> int:
         if not path.exists():
             recorded_limits[name] = None
             continue
-        value: Any = validate_json(path)
+        if name == "stochastic_benchmark_protocol_v4.json":
+            from agentic_workflow.stochastic_benchmark import (
+                load_stochastic_protocol,
+            )
+
+            value: Any = load_stochastic_protocol(path)
+        else:
+            value = validate_json(path)
         for key in keys:
             value = value[key]
         recorded_limits[name] = float(value)
@@ -215,13 +223,14 @@ def main(argv: list[str] | None = None) -> int:
         }
     )
 
-    stochastic_path = REVISION / "stochastic_benchmark_protocol_v3.json"
+    stochastic_path = REVISION / "stochastic_benchmark_protocol_v4.json"
     if stochastic_path.exists():
         from agentic_workflow.stochastic_benchmark import load_stochastic_protocol
 
         stochastic = load_stochastic_protocol(stochastic_path)
         information = stochastic.get("information_contract") or {}
         method = stochastic.get("method") or {}
+        identity_bindings = stochastic.get("asset_identity_bindings") or {}
         probability_errors = []
         for case in stochastic.get("cases") or []:
             for stage in case.get("decision_stages") or []:
@@ -243,7 +252,12 @@ def main(argv: list[str] | None = None) -> int:
                 and information.get("canonical_hidden_truth_before_observation") is False
                 and method.get("solver") == "Gurobi only"
                 and float(method.get("solver_time_limit_seconds") or 0.0) == 300.0
-                and method.get("operational_feasibility_first") is True,
+                and method.get("operational_feasibility_first") is True
+                and set(identity_bindings)
+                == {str(case.get("case_id")) for case in stochastic.get("cases") or []},
+                "asset_identity_binding_cases": sorted(
+                    identity_bindings.keys()
+                ),
                 "operational_feasibility_first": method.get(
                     "operational_feasibility_first"
                 ),

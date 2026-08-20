@@ -60,6 +60,7 @@ def main() -> None:
         ROOT / "inputs" / "revision" / "scaling_and_second_depot_protocol_v2.json",
         ROOT / "inputs" / "revision" / "stochastic_benchmark_protocol_v2.json",
         ROOT / "inputs" / "revision" / "stochastic_benchmark_protocol_v3.json",
+        ROOT / "inputs" / "revision" / "stochastic_benchmark_protocol_v4.json",
         ROOT / "inputs" / "revision" / "independent_validation_checklist_v1.md",
         ROOT / "requirements-lock.txt",
         ROOT / "requirements-dev-lock.txt",

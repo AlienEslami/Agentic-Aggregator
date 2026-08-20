@@ -30,7 +30,7 @@ from agentic_workflow.stochastic_benchmark import (
 )
 
 
-PROTOCOL = ROOT / "inputs" / "revision" / "stochastic_benchmark_protocol_v3.json"
+PROTOCOL = ROOT / "inputs" / "revision" / "stochastic_benchmark_protocol_v4.json"
 CASES = (
     "aw_route6_late_return",
     "aw_charger_bank_shutdown",
@@ -218,7 +218,7 @@ def _comparison_row(
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--protocol", type=Path, default=PROTOCOL)
-    parser.add_argument("--output-root", type=Path, default=Path("results/revision/stochastic_v3"))
+    parser.add_argument("--output-root", type=Path, default=Path("results/revision/stochastic_v4"))
     parser.add_argument("--case", action="append", choices=CASES)
     parser.add_argument("--mode", action="append", choices=MODES)
     parser.add_argument("--time-limit", type=float, default=300.0)

@@ -944,6 +944,10 @@ v6 is left untouched so the published matrices keep validating against it.
 # 5. Matched non-agentic loop: 6 deterministic episodes, no API cost
 python scripts/run_advance_warning_matrix.py --output-root results/revision/nonagentic_baseline_v8_confirmatory --ablation-protocol inputs/revision/advance_warning_ablation_protocol_v8.json --include-nonagentic-baseline --only-nonagentic-baseline --require-clean-git --solver-time-limit 300
 python scripts/analyze_advance_warning_matrix.py --runs results/revision/nonagentic_baseline_v8_confirmatory/matrix_runs.csv --output-dir results/revision/nonagentic_baseline_v8_confirmatory/analysis
+python scripts/compare_agent_nonagentic.py --baseline-runs results/revision/nonagentic_baseline_v8_confirmatory/matrix_runs.csv --output-dir results/revision/nonagentic_baseline_v8_confirmatory
+
+# 6. Identity-bound stochastic programmer: 6 deterministic, zero-API episodes
+python scripts/run_stochastic_closed_loop.py --protocol inputs/revision/stochastic_benchmark_protocol_v4.json --output-root results/revision/stochastic_v4 --force
 ```
 
 The analyzer reports the new arm as the `agentic_stack_contribution` contrast

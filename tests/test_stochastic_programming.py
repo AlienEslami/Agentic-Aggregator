@@ -9,6 +9,7 @@ import pytest
 from agentic_workflow.stochastic_programming import (
     StochasticScenario,
     apply_future_updates,
+    bind_physical_trips,
     build_extensive_form,
     scenarios_from_definitions,
     validate_scenarios,
@@ -134,6 +135,28 @@ def test_extensive_form_reuses_rt_model_and_adds_nonanticipativity():
     assert int(model._stochastic_reveal_timestep) == 2
 
 
+def test_extensive_form_binds_publicly_named_trip_to_physical_bus():
+    base = bind_physical_trips(_context(), {1: 1})
+    high = apply_future_updates(base, reveal_timestep=2, price_multiplier=1.5)
+    model, _ = build_extensive_form(
+        (
+            StochasticScenario("reference", 0.5, base),
+            StochasticScenario("high_price", 0.5, high),
+        ),
+        reveal_timestep=2,
+    )
+    for scenario_id in model.Omega:
+        block = model.scenario[scenario_id]
+        assert len(block.physical_trip_bus_binding_constraints) == 1
+        assert block.physical_trip_bus_binding_constraints[1].body is block.s[1, 1, 2]
+    assert model._stochastic_physical_trip_bus_bindings == {1: 1}
+
+
+def test_physical_trip_binding_must_match_public_schedule():
+    with pytest.raises(ValueError, match="unknown bus 2"):
+        bind_physical_trips(_context(), {1: 2})
+
+
 def test_trip_changes_cannot_rewrite_pre_reveal_service():
     base = _context()
     base["trips"][0]["start_rt"] = 1
@@ -215,7 +238,7 @@ def test_frozen_stochastic_protocol_has_defensible_case_sets():
 
 def test_full_day_stochastic_protocol_has_causal_information_stages():
     root = Path(__file__).resolve().parents[1]
-    protocol_path = root / "inputs/revision/stochastic_benchmark_protocol_v3.json"
+    protocol_path = root / "inputs/revision/stochastic_benchmark_protocol_v4.json"
     from agentic_workflow.stochastic_benchmark import load_stochastic_protocol
 
     protocol = load_stochastic_protocol(protocol_path)
@@ -224,6 +247,10 @@ def test_full_day_stochastic_protocol_has_causal_information_stages():
     assert protocol["information_contract"]["external_llm"] is False
     assert protocol["method"]["solver_time_limit_seconds"] == 300
     assert protocol["method"]["operational_feasibility_first"] is True
+    assert protocol["method"]["shared_deterministic_optimizer_modified"] is False
+    assert protocol["asset_identity_bindings"]["aw_route6_late_return"][
+        "trip_to_physical_bus"
+    ] == {"6": 6}
     assert len(cases["aw_combined_evening"]["decision_stages"]) == 2
     for case in cases.values():
         for stage in case["decision_stages"]:
@@ -238,6 +265,7 @@ def test_full_day_stochastic_protocol_has_causal_information_stages():
             ) == pytest.approx(1.0)
 
     route = load_stochastic_case(protocol_path, "aw_route6_late_return")
+    assert route["physical_trip_bus_bindings"] == {"6": 6}
     backend = EventRecedingStochasticAgentBackend(route)
     decision = backend.trigger({"timestep": 6})
     assert decision.action == "optimize"

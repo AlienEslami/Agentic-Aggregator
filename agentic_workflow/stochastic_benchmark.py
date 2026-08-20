@@ -18,6 +18,8 @@ from .models import (
 )
 from .optimizer import DirectOptimizerBackend, OptimizerBackend
 from .stochastic_programming import (
+    StochasticScenario,
+    bind_physical_trips,
     scenarios_from_definitions,
     solve_two_stage_stochastic,
 )
@@ -55,7 +57,13 @@ def load_stochastic_case(protocol_path: Path, case_id: str) -> dict[str, Any]:
     cases = {str(case["case_id"]): case for case in protocol["cases"]}
     if case_id not in cases:
         raise ValueError(f"Unknown stochastic case: {case_id}")
-    return copy.deepcopy(cases[case_id])
+    case = copy.deepcopy(cases[case_id])
+    binding = (protocol.get("asset_identity_bindings") or {}).get(case_id) or {}
+    case["physical_trip_bus_bindings"] = copy.deepcopy(
+        binding.get("trip_to_physical_bus") or {}
+    )
+    case["asset_identity_binding_basis"] = binding.get("public_basis")
+    return case
 
 
 def _localize_updates(
@@ -111,6 +119,12 @@ class EventRecedingStochasticOptimizerBackend(OptimizerBackend):
         self.time_limit_seconds = float(time_limit_seconds)
         self.mip_gap = float(mip_gap)
         self.direct = DirectOptimizerBackend()
+        self.physical_trip_bus_bindings = {
+            int(trip_id): int(bus_id)
+            for trip_id, bus_id in (
+                self.case.get("physical_trip_bus_bindings") or {}
+            ).items()
+        }
         self.stages_by_first_executable = {
             int(stage["first_executable_timestep"]): stage
             for stage in self.case["decision_stages"]
@@ -119,7 +133,7 @@ class EventRecedingStochasticOptimizerBackend(OptimizerBackend):
     def optimize(self, payload: dict[str, Any]) -> dict[str, Any]:
         current_timestep = int(payload.get("current_timestep", 1))
         stage = self.stages_by_first_executable.get(current_timestep)
-        if stage is None:
+        if stage is None and not self.physical_trip_bus_bindings:
             result = self.direct.optimize(payload)
             result["optimization_strategy"] = "observed_outcome_deterministic_recourse"
             result["stochastic_stage_id"] = "observed_outcome_recourse"
@@ -135,6 +149,41 @@ class EventRecedingStochasticOptimizerBackend(OptimizerBackend):
             current_timestep,
             copy.deepcopy(payload.get("disturbances", [])),
         )
+        base_context = bind_physical_trips(
+            base_context, self.physical_trip_bus_bindings
+        )
+
+        if stage is None:
+            reveal_local = len(base_context["prices"]["spot"]) + 1
+            result = solve_two_stage_stochastic(
+                (
+                    StochasticScenario(
+                        "observed_physical_outcome",
+                        1.0,
+                        base_context,
+                    ),
+                ),
+                reveal_timestep=reveal_local,
+                solver_name=self.solver_name,
+                time_limit_seconds=self.time_limit_seconds,
+                mip_gap=self.mip_gap,
+            )
+            if result.get("status") == "complete":
+                underlying_strategy = result.get("optimization_strategy")
+                result.update(
+                    {
+                        "commitment_steps": len(result.get("w_buy") or []),
+                        "optimization_strategy": (
+                            "observed_outcome_identity_bound_deterministic_recourse"
+                        ),
+                        "underlying_optimization_strategy": underlying_strategy,
+                        "stochastic_stage_id": "observed_outcome_recourse",
+                        "asset_identity_binding_basis": self.case.get(
+                            "asset_identity_binding_basis"
+                        ),
+                    }
+                )
+            return result
 
         common_updates = stage.get("common_future_updates") or {}
         if common_updates:
@@ -185,6 +234,9 @@ class EventRecedingStochasticOptimizerBackend(OptimizerBackend):
                 "first_executable_timestep": current_timestep,
                 "first_recourse_timestep": first_recourse,
                 "structured_public_basis": stage["structured_public_basis"],
+                "asset_identity_binding_basis": self.case.get(
+                    "asset_identity_binding_basis"
+                ),
             }
         )
         return result
