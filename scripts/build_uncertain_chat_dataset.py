@@ -16,6 +16,17 @@ from agentic_workflow.uncertainty import select_operational_value
 
 
 OUTPUT = ROOT / "inputs" / "revision"
+
+
+def write_lf(path: Path, text: str) -> None:
+    """Write text with LF endings on every platform.
+
+    The dataset hashes recorded below are plain file digests, so a CRLF
+    translation on Windows would silently produce a manifest that no other
+    platform can verify.
+    """
+
+    path.write_text(text, encoding="utf-8", newline="\n")
 DATASET_VERSION = "trigger_uncertainty_chat_v3"
 VARIANTS = ("clean", "single_message", "driver_chat", "uncertain_chat")
 PHASES = (
@@ -529,11 +540,12 @@ def main() -> None:
     split_path = OUTPUT / "trigger_split_v3.json"
     manifest_path = OUTPUT / "trigger_dataset_manifest_v3.json"
     mapping_path = OUTPUT / "uncertainty_chat_mapping_v3.md"
-    scenario_path.write_text(json.dumps(canonical_rows, indent=2), encoding="utf-8")
-    notice_path.write_text(json.dumps(notices, indent=2), encoding="utf-8")
+    write_lf(scenario_path, json.dumps(canonical_rows, indent=2))
+    write_lf(notice_path, json.dumps(notices, indent=2))
     with csv_path.open("w", newline="", encoding="utf-8") as stream:
         writer = csv.DictWriter(
             stream,
+            lineterminator="\n",
             fieldnames=[
                 "notice_id",
                 "scenario_id",
@@ -557,7 +569,7 @@ def main() -> None:
         "development": [item["scenario_id"] for item in SCENARIOS if item["split"] == "development"],
         "test": [item["scenario_id"] for item in SCENARIOS if item["split"] == "test"],
     }
-    split_path.write_text(json.dumps(split, indent=2), encoding="utf-8")
+    write_lf(split_path, json.dumps(split, indent=2))
     manifest = {
         "dataset_version": DATASET_VERSION,
         "generation": "deterministic synthetic conversations; no personal data or real driver messages",
@@ -595,7 +607,7 @@ def main() -> None:
             if path.exists()
         },
     }
-    manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    write_lf(manifest_path, json.dumps(manifest, indent=2))
     print(json.dumps(manifest, indent=2))
 
 

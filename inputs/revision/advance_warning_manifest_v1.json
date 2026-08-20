@@ -2,8 +2,8 @@
   "version": "advance_warning_benchmark_v2",
   "notice_file": "inputs/revision/advance_warning_notices_v1.json",
   "physical_event_file": "inputs/revision/advance_warning_physical_events_v1.json",
-  "notice_sha256": "9e4e4860166f66dd99df0ee5e077df5661969e1c6b9a1522ae2a71a8dbec89d9",
-  "physical_event_sha256": "1f5ff94f13bd5728b7d0eff4c9fb49015a8b5a4d8675a475ef72860dbe959f2c",
+  "notice_sha256": "9ee43ecf03af7bba22a9aa53c8eaec6f32fcb96f8c901946293897a3f3cd6fc9",
+  "physical_event_sha256": "0bbdc6efec08ae0f0b2440ab05cd39d5cb74606c1e724d0db2118350a617c74a",
   "cases": [
     {
       "scenario_id": "aw_route6_late_return",

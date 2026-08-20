@@ -1,0 +1,15 @@
+# Frozen provenance depends on byte-identical files across platforms.
+# Every text artifact is stored and checked out with LF so that the SHA-256
+# values recorded in MANIFEST.sha256, in the dataset manifests and in the
+# experiment manifests verify on Linux, macOS and Windows alike.
+* text=auto eol=lf
+
+*.xlsx binary
+*.xlsb binary
+*.xlsm binary
+*.xls binary
+*.zip binary
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jpeg binary

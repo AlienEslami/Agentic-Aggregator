@@ -503,12 +503,22 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+
+def write_lf(path: Path, text: str) -> None:
+    """Write text with LF endings on every platform.
+
+    The dataset hashes recorded below are plain file digests, so a CRLF
+    translation on Windows would silently produce a manifest that no other
+    platform can verify.
+    """
+
+    path.write_text(text, encoding="utf-8", newline="\n")
+
+
 def main() -> None:
     notices, physical = build()
-    OUTPUT.write_text(json.dumps(notices, indent=2) + "\n", encoding="utf-8")
-    PHYSICAL_OUTPUT.write_text(
-        json.dumps({"events": physical}, indent=2) + "\n", encoding="utf-8"
-    )
+    write_lf(OUTPUT, json.dumps(notices, indent=2) + "\n")
+    write_lf(PHYSICAL_OUTPUT, json.dumps({"events": physical}, indent=2) + "\n")
     manifest = {
         "version": "advance_warning_benchmark_v2",
         "notice_file": str(OUTPUT.relative_to(ROOT)).replace("\\", "/"),
@@ -562,7 +572,7 @@ def main() -> None:
             "all_methods": "identical hidden physical-event file and causal ex-post settlement",
         },
     }
-    MANIFEST.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    write_lf(MANIFEST, json.dumps(manifest, indent=2) + "\n")
     print(f"Wrote {len(notices)} notices and {len(physical)} hidden physical events")
 
 
