@@ -96,6 +96,11 @@ def command_for(
     realtime_states: Path | str = "inputs/realtime_states",
     intraday_prices: Path | str = "inputs/intraday_prices",
     disturbances: Path | str = "inputs/rt_disturbance_scenarios_multiple.xlsx",
+    notices_file: Path | str = "inputs/revision/advance_warning_notices_v1.json",
+    physical_events_file: Path | str = (
+        "inputs/revision/advance_warning_physical_events_v1.json"
+    ),
+    scenarios: tuple[str, ...] = ("rt_none",),
     trigger_prompt_variant: str = "baseline",
     trigger_confidence_threshold: float = 0.0,
     pricing_guidance_variant: str = "base",
@@ -118,12 +123,15 @@ def command_for(
         str(intraday_prices),
         "--disturbances",
         str(disturbances),
-        "--scenario",
-        "rt_none",
+        *[
+            argument
+            for scenario in (scenarios or ("rt_none",))
+            for argument in ("--scenario", scenario)
+        ],
         "--notices-file",
-        "inputs/revision/advance_warning_notices_v1.json",
+        str(notices_file),
         "--physical-events-file",
-        "inputs/revision/advance_warning_physical_events_v1.json",
+        str(physical_events_file),
         "--notice-scenario",
         case,
         "--notice-variant",

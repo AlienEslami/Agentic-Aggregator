@@ -45,6 +45,15 @@ ABLATION_COMPARATORS = (
         "evaluator_removal",
         "What changes when the LLM evaluator is removed?",
     ),
+    # Unlike the three role ablations above, this one removes the agentic layer
+    # as a whole and leaves the matched indicator-driven loop the reviewers
+    # asked for.  The baseline is deterministic, so its cell holds a single run.
+    (
+        "agentic_stack_contribution",
+        "full_deterministic",
+        "What changes when the entire agentic layer is replaced by the matched "
+        "rule-based loop?",
+    ),
 )
 PAIR_COLUMNS = (
     "contrast",

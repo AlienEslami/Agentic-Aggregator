@@ -13,6 +13,7 @@ from scripts.analyze_advance_warning_matrix import (
 )
 from scripts.run_advance_warning_matrix import (
     ABLATION_PROTOCOL_PATH,
+    NONAGENTIC_BASELINE_CONFIGURATIONS,
     ROLE_ABLATION_CONFIGURATIONS,
     build_run_specs,
     read_solver_provenance,
@@ -23,6 +24,11 @@ from scripts.run_advance_warning_matrix import (
     validate_execution_budget,
     validate_resume_fingerprints,
     workbook_path,
+)
+
+
+NONAGENTIC_PROTOCOL_PATH = (
+    ABLATION_PROTOCOL_PATH.parent / "advance_warning_ablation_protocol_v7.json"
 )
 
 
@@ -142,7 +148,7 @@ def test_resume_rejects_changed_frozen_inputs(monkeypatch, tmp_path):
     )
     monkeypatch.setattr(
         "scripts.run_advance_warning_matrix.current_input_fingerprints",
-        lambda: {
+        lambda protocol_path=None, notice_path=None, physical_path=None: {
             "notice_sha256": "new",
             "physical_event_sha256": "new",
             "ablation_protocol_sha256": "new",
@@ -542,3 +548,94 @@ def test_evaluator_audit_treats_satisfied_operator_priority_as_lexicographic(
     assert decision[
         "accepted_rerun_economically_worse_than_earlier_usable_attempt"
     ]
+
+
+def test_nonagentic_stack_baseline_protocol_v7_is_frozen_and_matches_runner():
+    protocol = validate_ablation_protocol(NONAGENTIC_PROTOCOL_PATH)
+
+    assert NONAGENTIC_PROTOCOL_PATH.exists()
+    assert protocol["protocol_version"] == "advance_warning_ablation_v7"
+    assert protocol["design"]["modes"] == ["selfish", "altruistic"]
+    baseline = protocol["design"]["nonagentic_stack_baseline"]
+    assert tuple(baseline["configurations"]) == NONAGENTIC_BASELINE_CONFIGURATIONS
+    assert baseline["uses_external_llm"] is False
+    assert baseline["repetitions_per_configuration_case_mode"] == 1
+    # Three cases times two modes, one deterministic run each.
+    assert baseline["planned_runs"] == 6
+    assert any(
+        contrast["baseline"] == "full_deterministic"
+        for contrast in protocol["contrasts"]
+    )
+    # The v6 protocol must stay free of the new arm so the published matrices
+    # keep validating against it unchanged.
+    assert "nonagentic_stack_baseline" not in validate_ablation_protocol(
+        ABLATION_PROTOCOL_PATH
+    )["design"]
+
+
+def test_nonagentic_baseline_specs_are_deterministic_and_llm_free():
+    specs = build_run_specs(
+        cases=["aw_route6_late_return", "aw_charger_bank_shutdown"],
+        modes=["selfish", "altruistic"],
+        include_role_ablations=False,
+        include_nonagentic_baseline=True,
+        include_primary_deterministic=False,
+    )
+
+    assert len(specs) == 4
+    assert {spec.configuration for spec in specs} == {"full_deterministic"}
+    assert {spec.run_family for spec in specs} == {"nonagentic_stack_baseline"}
+    assert not any(spec.stochastic for spec in specs)
+    assert not any(spec.uses_external_llm for spec in specs)
+    assert all(spec.repetition == 1 for spec in specs)
+
+
+def test_nonagentic_baseline_workbooks_have_no_repetition_suffix(tmp_path):
+    spec = build_run_specs(
+        cases=["aw_combined_evening"],
+        modes=["selfish"],
+        include_nonagentic_baseline=True,
+        include_primary_deterministic=False,
+    )[0]
+
+    assert workbook_path(tmp_path, spec).name == "full_deterministic.xlsx"
+
+
+def test_nonagentic_baseline_run_does_not_require_external_llm_authorization():
+    specs = build_run_specs(
+        cases=["aw_combined_evening"],
+        modes=["selfish"],
+        include_nonagentic_baseline=True,
+        include_primary_deterministic=False,
+    )
+
+    # No exception: the gate only applies when a scheduled run calls the model.
+    validate_external_llm_gate(specs, allow_external_llm=False, dry_run=False)
+
+
+def test_agentic_stack_contrast_is_reported_against_the_full_stack():
+    runs = pd.DataFrame(
+        [
+            _ablation_run("full_agentic", 1, pto_cost=100.0),
+            _ablation_run("full_agentic", 2, pto_cost=101.0),
+            _ablation_run("full_deterministic", 1, pto_cost=110.0),
+        ]
+    )
+
+    contrasts = build_ablation_contrasts(annotate_runs(runs), bootstrap_iterations=25)
+
+    row = contrasts.loc[contrasts["contrast"].eq("agentic_stack_contribution")]
+    assert len(row) == 1
+    assert row.iloc[0]["baseline_configuration"] == "full_deterministic"
+    assert row.iloc[0]["candidate_runs"] == 2
+    assert row.iloc[0]["baseline_runs"] == 1
+
+
+def _ablation_run(configuration: str, repetition: int, *, pto_cost: float) -> dict:
+    row = _run(configuration, repetition, revenue=20.0, pto_cost=pto_cost)
+    row["run_family"] = (
+        "nonagentic_stack_baseline"
+        if configuration == "full_deterministic"
+        else "secondary_role_ablation"
+    )
+    return row

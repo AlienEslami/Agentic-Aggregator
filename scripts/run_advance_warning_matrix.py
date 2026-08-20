@@ -55,6 +55,13 @@ ROLE_ABLATION_CONFIGURATIONS = (
     "deterministic_pricing_substitution",
     "evaluator_removal",
 )
+# Every role ablation replaces exactly one agent, so none of them answers the
+# reviewers' question about the matched indicator-driven loop with no agentic
+# layer at all.  This configuration runs the rule trigger, the deterministic
+# price-zone pricing and the hard-check evaluator together against the same
+# optimizer, inputs and disturbances.  It consumes no external model calls and
+# is deterministic, so a single run per case and mode is sufficient.
+NONAGENTIC_BASELINE_CONFIGURATIONS = ("full_deterministic",)
 LLM_CONFIGURATIONS = frozenset(
     (PRIMARY_AGENT_CONFIGURATION, *ROLE_ABLATION_CONFIGURATIONS)
 )
@@ -68,6 +75,7 @@ METHOD_LABELS = {
     "rule_parser_trigger_substitution": "rule_trigger_ablation",
     "deterministic_pricing_substitution": "deterministic_price_zone_ablation",
     "evaluator_removal": "evaluator_ablation",
+    "full_deterministic": "nonagentic_stack_baseline",
 }
 
 
@@ -107,6 +115,7 @@ def build_run_specs(
     include_role_ablations: bool = False,
     ablation_repetitions: int = 5,
     role_ablation_configurations: Iterable[str] = ROLE_ABLATION_CONFIGURATIONS,
+    include_nonagentic_baseline: bool = False,
     include_fixed: bool = False,
     include_primary_deterministic: bool = True,
 ) -> list[RunSpec]:
@@ -180,6 +189,19 @@ def build_run_specs(
                                 stochastic=True,
                             )
                         )
+            if include_nonagentic_baseline:
+                for configuration in NONAGENTIC_BASELINE_CONFIGURATIONS:
+                    specs.append(
+                        RunSpec(
+                            case=case,
+                            mode=mode,
+                            variant=variant,
+                            configuration=configuration,
+                            repetition=1,
+                            run_family="nonagentic_stack_baseline",
+                            stochastic=False,
+                        )
+                    )
     return specs
 
 
@@ -272,12 +294,15 @@ def should_reuse_workbook(
     return workbook_is_complete(workbook, expected_timesteps)
 
 
-def validate_ablation_protocol() -> dict[str, Any]:
-    if not ABLATION_PROTOCOL_PATH.exists():
+def validate_ablation_protocol(
+    protocol_path: Path | None = None,
+) -> dict[str, Any]:
+    protocol_path = protocol_path or ABLATION_PROTOCOL_PATH
+    if not protocol_path.exists():
         raise FileNotFoundError(
-            f"Frozen ablation protocol not found: {ABLATION_PROTOCOL_PATH}"
+            f"Frozen ablation protocol not found: {protocol_path}"
         )
-    protocol = json.loads(ABLATION_PROTOCOL_PATH.read_text(encoding="utf-8"))
+    protocol = json.loads(protocol_path.read_text(encoding="utf-8"))
     configured = tuple(protocol["design"]["configurations"])
     if configured != ROLE_ABLATION_CONFIGURATIONS:
         raise ValueError(
@@ -296,6 +321,27 @@ def validate_ablation_protocol() -> dict[str, Any]:
             "Frozen ablation planned_runs does not match its factorial design: "
             f"{design['planned_runs']} != {expected_runs}"
         )
+    baseline_design = design.get("nonagentic_stack_baseline")
+    if baseline_design is not None:
+        baseline_configurations = tuple(baseline_design["configurations"])
+        if baseline_configurations != NONAGENTIC_BASELINE_CONFIGURATIONS:
+            raise ValueError(
+                "Frozen non-agentic baseline configurations do not match the "
+                f"matrix runner: {baseline_configurations!r} != "
+                f"{NONAGENTIC_BASELINE_CONFIGURATIONS!r}"
+            )
+        expected_baseline_runs = (
+            len(baseline_configurations)
+            * len(design["cases"])
+            * len(design["modes"])
+            * int(baseline_design["repetitions_per_configuration_case_mode"])
+        )
+        if int(baseline_design["planned_runs"]) != expected_baseline_runs:
+            raise ValueError(
+                "Frozen non-agentic baseline planned_runs does not match its "
+                f"design: {baseline_design['planned_runs']} != "
+                f"{expected_baseline_runs}"
+            )
     controls = protocol["controls"]
     if int(controls["maximum_optimizer_attempts_per_trigger"]) != (
         int(controls["maximum_pricing_reruns"]) + 1
@@ -322,11 +368,15 @@ def validate_ablation_protocol() -> dict[str, Any]:
     return protocol
 
 
-def current_input_fingerprints() -> dict[str, str]:
+def current_input_fingerprints(
+    protocol_path: Path | None = None,
+    notice_path: Path | None = None,
+    physical_path: Path | None = None,
+) -> dict[str, str]:
     return {
-        "notice_sha256": sha256(NOTICE_INPUT),
-        "physical_event_sha256": sha256(PHYSICAL_INPUT),
-        "ablation_protocol_sha256": sha256(ABLATION_PROTOCOL_PATH),
+        "notice_sha256": sha256(notice_path or NOTICE_INPUT),
+        "physical_event_sha256": sha256(physical_path or PHYSICAL_INPUT),
+        "ablation_protocol_sha256": sha256(protocol_path or ABLATION_PROTOCOL_PATH),
         **{
             f"prompt_{name}_sha256": sha256(path)
             for name, path in PROMPT_INPUTS.items()
@@ -338,6 +388,9 @@ def validate_resume_fingerprints(
     output_root: Path,
     *,
     force: bool,
+    protocol_path: Path | None = None,
+    notice_path: Path | None = None,
+    physical_path: Path | None = None,
 ) -> bool:
     """Reject reuse when a fingerprinted matrix used different frozen inputs.
 
@@ -351,7 +404,9 @@ def validate_resume_fingerprints(
         return False
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     recorded_inputs = manifest.get("inputs") or {}
-    current = current_input_fingerprints()
+    current = current_input_fingerprints(
+        protocol_path, notice_path, physical_path
+    )
     if not all(recorded_inputs.get(name) for name in current):
         return False
     mismatches = {
@@ -480,7 +535,11 @@ def write_manifest(
     args: argparse.Namespace,
     rows: list[dict[str, Any]],
 ) -> None:
-    input_fingerprints = current_input_fingerprints()
+    input_fingerprints = current_input_fingerprints(
+        Path(args.ablation_protocol),
+        Path(args.notices_file),
+        Path(args.physical_events_file),
+    )
     manifest = {
         "protocol_version": "advance_warning_matrix_v6",
         "created_utc": datetime.now(timezone.utc).isoformat(),
@@ -493,6 +552,16 @@ def write_manifest(
             "agent_repetitions": args.agent_repetitions if args.include_agent else 0,
             "role_ablation_repetitions": (
                 args.ablation_repetitions if args.include_role_ablations else 0
+            ),
+            "nonagentic_stack_baseline": (
+                {
+                    "configurations": list(NONAGENTIC_BASELINE_CONFIGURATIONS),
+                    "repetitions": 1,
+                    "deterministic": True,
+                    "uses_external_llm": False,
+                }
+                if args.include_nonagentic_baseline
+                else "not_scheduled"
             ),
             "primary_contrasts": [
                 "agent_vs_rule_text",
@@ -530,13 +599,13 @@ def write_manifest(
             "floor_formula": "fraction * reference",
         },
         "inputs": {
-            "notice_file": "inputs/revision/advance_warning_notices_v1.json",
-            "physical_event_file": (
-                "inputs/revision/advance_warning_physical_events_v1.json"
-            ),
-            "ablation_protocol_file": (
-                "inputs/revision/advance_warning_ablation_protocol_v6.json"
-            ),
+            "notice_file": Path(args.notices_file).as_posix(),
+            "physical_event_file": Path(args.physical_events_file).as_posix(),
+            "disturbance_workbook": Path(args.disturbances).as_posix(),
+            "disturbance_scenarios": list(args.scenario_ids or ["rt_none"]),
+            "ablation_protocol_file": Path(
+                args.ablation_protocol
+            ).as_posix(),
             **input_fingerprints,
             "prompt_sha256": {
                 name: input_fingerprints[f"prompt_{name}_sha256"]
@@ -607,6 +676,64 @@ def main() -> None:
         ),
     )
     parser.add_argument("--ablation-repetitions", type=int, default=5)
+    parser.add_argument(
+        "--include-nonagentic-baseline",
+        action="store_true",
+        help=(
+            "Schedule the matched indicator-driven loop with no agentic layer "
+            "(rule trigger, deterministic pricing, hard-check evaluator). It is "
+            "deterministic and consumes no external model calls."
+        ),
+    )
+    parser.add_argument(
+        "--only-nonagentic-baseline",
+        action="store_true",
+        help=(
+            "Schedule only the non-agentic baseline; requires "
+            "--include-nonagentic-baseline."
+        ),
+    )
+    parser.add_argument(
+        "--notices-file",
+        type=Path,
+        default=NOTICE_INPUT,
+        help=(
+            "Advance-warning notice dataset. Defaults to v1; the broader "
+            "disturbance cases live in the v2 dataset."
+        ),
+    )
+    parser.add_argument(
+        "--physical-events-file",
+        type=Path,
+        default=PHYSICAL_INPUT,
+        help="Hidden physical-event file matching --notices-file.",
+    )
+    parser.add_argument(
+        "--scenario",
+        action="append",
+        dest="scenario_ids",
+        help=(
+            "Disturbance scenario from the disturbance workbook. Repeat to "
+            "compose. Defaults to rt_none, where the advance-warning physical "
+            "events are the only disturbance."
+        ),
+    )
+    parser.add_argument(
+        "--disturbances",
+        type=Path,
+        default=Path("inputs/rt_disturbance_scenarios_multiple.xlsx"),
+        help="Disturbance workbook holding the scenarios sheet.",
+    )
+    parser.add_argument(
+        "--ablation-protocol",
+        type=Path,
+        default=ABLATION_PROTOCOL_PATH,
+        help=(
+            "Frozen protocol to validate against. Defaults to the v6 protocol "
+            "used by the published matrices; the non-agentic baseline requires "
+            "a protocol that declares it, such as the v7 protocol."
+        ),
+    )
     parser.add_argument("--include-fixed", action="store_true")
     parser.add_argument(
         "--allow-external-llm",
@@ -649,6 +776,10 @@ def main() -> None:
 
     if args.only_role_ablations and not args.include_role_ablations:
         raise SystemExit("--only-role-ablations requires --include-role-ablations")
+    if args.only_nonagentic_baseline and not args.include_nonagentic_baseline:
+        raise SystemExit(
+            "--only-nonagentic-baseline requires --include-nonagentic-baseline"
+        )
     if args.role_ablation_configuration and not args.include_role_ablations:
         raise SystemExit(
             "--role-ablation-configuration requires --include-role-ablations"
@@ -668,9 +799,18 @@ def main() -> None:
         raise SystemExit("--solver-mip-gap must be in [0,1)")
 
     try:
-        protocol = validate_ablation_protocol()
+        protocol = validate_ablation_protocol(args.ablation_protocol)
     except (FileNotFoundError, KeyError, TypeError, ValueError) as exc:
         raise SystemExit(str(exc)) from exc
+
+    if args.include_nonagentic_baseline and not protocol["design"].get(
+        "nonagentic_stack_baseline"
+    ):
+        raise SystemExit(
+            "The selected protocol does not declare a non-agentic stack "
+            "baseline; use inputs/revision/"
+            "advance_warning_ablation_protocol_v7.json"
+        )
 
     frozen_retention = protocol["controls"][
         "altruistic_baseline_revenue_retention"
@@ -697,8 +837,11 @@ def main() -> None:
         role_ablation_configurations=(
             args.role_ablation_configuration or ROLE_ABLATION_CONFIGURATIONS
         ),
+        include_nonagentic_baseline=args.include_nonagentic_baseline,
         include_fixed=args.include_fixed,
-        include_primary_deterministic=not args.only_role_ablations,
+        include_primary_deterministic=not (
+            args.only_role_ablations or args.only_nonagentic_baseline
+        ),
     )
     try:
         validate_external_llm_gate(
@@ -713,7 +856,13 @@ def main() -> None:
     if not output_root.is_absolute():
         output_root = ROOT / output_root
     try:
-        validate_resume_fingerprints(output_root, force=args.force)
+        validate_resume_fingerprints(
+            output_root,
+            force=args.force,
+            protocol_path=Path(args.ablation_protocol),
+            notice_path=Path(args.notices_file),
+            physical_path=Path(args.physical_events_file),
+        )
     except (KeyError, TypeError, ValueError) as exc:
         raise SystemExit(str(exc)) from exc
     expected_timesteps = args.end - args.start + 1
@@ -782,6 +931,10 @@ def main() -> None:
                         altruistic_revenue_retention_fraction=(
                             args.altruistic_revenue_retention_fraction
                         ),
+                        notices_file=args.notices_file,
+                        physical_events_file=args.physical_events_file,
+                        disturbances=args.disturbances,
+                        scenarios=tuple(args.scenario_ids or ("rt_none",)),
                     ),
                     cwd=ROOT,
                     check=True,
