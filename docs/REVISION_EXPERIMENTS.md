@@ -924,6 +924,13 @@ python scripts/build_scaling_inputs.py --depot depot_a --fleet-size 8
 python scripts/build_scaling_inputs.py --depot depot_a --fleet-size 16
 python scripts/build_scaling_inputs.py --depot depot_a --fleet-size 32
 python scripts/build_scaling_inputs.py --depot depot_b --fleet-size 8
+# The benchmark has two arms. rule_text_event_trigger issues no model calls,
+# so it runs without an API key or an authorization flag; full_agentic does.
+# Runners index complete workbooks and re-execute only what is missing, so the
+# arms can be run separately into the same output root. Check what is left
+# before spending budget.
+python scripts/run_scaling_study.py --output-root results/revision/scaling_v2 --repetitions 3 --configuration rule_text_event_trigger --require-clean-git --solver-time-limit 300
+python scripts/report_study_status.py scaling --output-root results/revision/scaling_v2
 python scripts/run_scaling_study.py --output-root results/revision/scaling_v2 --repetitions 3 --allow-external-llm --require-clean-git --solver-time-limit 300 --max-approximate-api-cost-usd 2.00
 python scripts/analyze_scaling_study.py --runs results/revision/scaling_v2/scaling_runs.csv --output-dir results/revision/scaling_v2/analysis
 ```

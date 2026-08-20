@@ -1,0 +1,152 @@
+# Revision handoff — TRC-26-02380
+
+State of the revision work as of 2026-08-20, and what is left. Written for the
+second author picking this up on another machine.
+
+## Before anything else
+
+```powershell
+git config core.autocrlf false
+```
+
+Run this once in your clone, then re-checkout. Every frozen hash in this
+repository — prompt hashes in the ablation protocols, dataset hashes in the
+input manifests, and `MANIFEST.sha256` — is taken over LF bytes, and
+`.gitattributes` now pins text artifacts to LF. Without this setting the
+checkout writes CRLF, the hashes stop matching, and the runners refuse to
+start.
+
+Verify the package the way a reviewer would before trusting any run:
+
+```powershell
+python -m pytest -q                              # expect 142 passed
+python scripts/validate_revision_package.py      # expect no failed checks
+```
+
+## Runtime inputs are not in the repository
+
+Every `.xlsx` is excluded from version control, so the five workflow inputs
+must be supplied privately: `inputs/State.xlsx`, `inputs/Forecasted.xlsx`,
+`inputs/SpotPrices.xlsx`, `inputs/realtime_states/` (48 workbooks),
+`inputs/intraday_prices/` (48 workbooks), and
+`inputs/rt_disturbance_scenarios_multiple.xlsx`.
+
+They are the frozen reference. Confirm before running anything:
+`State.xlsx` must report `aggregator_revenue = 18.4285133072` for
+`mode=altruistic`. If it differs, the inputs are not the ones the published
+results came from and nothing run against them is comparable.
+
+Gurobi: the licence that ships with the pip package is size limited and cannot
+solve these models. Install a full licence and point `GRB_LICENSE_FILE` at it.
+
+## Done
+
+**Reproducibility.** The package verifies from a clean clone: 142 tests,
+`MANIFEST.sha256` 131/131, package validator 22/22. The dataset builders now
+write LF explicitly; regenerating them changed no content, only the recorded
+hash lines, which confirms the datasets themselves never drifted.
+
+**Day-ahead baseline corrected.** The dumb-charging model never prices energy,
+so its optimal face held schedules differing by about ten percent in cost, and
+each solver returned a different one. The tie is now broken by charging as
+early as the constraints allow, which is what uncontrolled charging means.
+Gurobi and HiGHS both return 218.9827. The reported saving of optimized
+charging over dumb charging rises from 40.2 to 40.96 percent on the summary
+basis.
+
+**Matched non-agentic baseline.** `full_deterministic` — rule trigger,
+deterministic pricing, hard-check evaluator — is declared in ablation protocol
+v7 and has been executed: six deterministic episodes, no API cost. It is
+infeasible in every run of the charger-bank case, because the frozen parser
+cannot represent a charger outage announced in chat text; it then replans
+against chargers that are not there, re-optimizes at 37 of 48 timesteps and
+ends 533 kWh short on reserve. Where the disturbance is fully numerical it
+reproduces the full workflow exactly. Written up in the manuscript as the
+ablation subsection.
+
+**Day-ahead V2G benchmark.** Smart charging with V2G and without agents, under
+a fixed regulated band and under spot passthrough, frozen by
+`scripts/build_day_ahead_ladder.py` with a manifest.
+
+**Scaling, optimizer side.** The deterministic arm of the scaling benchmark is
+complete: 24 episodes over 8, 16 and 32 buses plus the second depot, no API
+cost. The model is quadratic in fleet size and solver time follows it, while
+the number of supervisory decisions is invariant at two per episode. Written up
+as the scalability subsection.
+
+**Broader disturbances.** The v2 advance-warning dataset adds clustered delays
+and a sustained route-energy shift, and a disturbance workbook adds a
+three-step price escalation. Implemented, not yet executed.
+
+**Manuscript.** The reproducibility appendix is filled from the published run
+manifests, and two subsections were added. All revision text is inside the
+`\rev` / `\revon` markup, so it prints in red until `\revisionmarkupfalse` is
+set. The response document tracks each comment's status.
+
+## Left to run
+
+Check what a study still needs before spending budget:
+
+```powershell
+python scripts/report_study_status.py scaling --output-root results/revision/scaling_v1
+```
+
+The runners index complete workbooks and execute only what is missing, so an
+arm can be added to an existing output root without repeating work.
+
+**Scaling, agentic arm** — the half of R2.6 the deterministic arm cannot
+answer, namely how agent latency and token usage grow with fleet size:
+
+```powershell
+python scripts/run_scaling_study.py --output-root results/revision/scaling_v1 --repetitions 3 --allow-external-llm --require-clean-git --max-approximate-api-cost-usd 2.00
+python scripts/analyze_scaling_study.py --runs results/revision/scaling_v1/scaling_runs.csv --output-dir results/revision/scaling_v1/analysis
+```
+
+**One-factor sensitivity** — R1.5, over the confidence threshold, the tariff
+bounds and the paraphrased prompt variants:
+
+```powershell
+python scripts/run_revision_sensitivity.py --output-root results/revision/sensitivity_v1 --repetitions 5 --allow-external-llm --require-clean-git --max-approximate-api-cost-usd 4.00
+```
+
+**Controlled evaluator ablation** — 48 episodes:
+
+```powershell
+python scripts/run_evaluator_ablation.py --output-root results/revision/evaluator_ablation_v2 --agent-repetitions 5 --allow-external-llm --require-clean-git
+```
+
+**Extended disturbance cases** — R1.6, after `build_extended_disturbance_cases.py`:
+see the broader-disturbance block in `REVISION_EXPERIMENTS.md`.
+
+## Left to decide or write
+
+- **SOC recomputation.** The manuscript's day-ahead numbers are SOC-derived, not
+  the workbook summary values, and the script that produces them has absolute
+  paths from one machine hardcoded. Until it is ported into this repository,
+  the new day-ahead rows cannot enter Table 6: the two bases differ by 2 to 4
+  units, the same order as the effects being reported. Reproduce these four
+  values to validate any port: dumb charging 218.101387, smart charging without
+  V2G 130.470605, selfish FS+CoT 140.586078, altruistic FS+CoT 118.908348.
+- **n8n version.** The only bracketed placeholder left in the reproducibility
+  appendix. The workflow export carries no version metadata, so it has to be
+  read off the instance that produced it.
+- **Altruistic README.** It states that the evaluator audit found one decision
+  where an economically worse rerun was accepted. The `analysis_summary.json`
+  beside it records 27 in raw cost terms, 1 under the full ordering, and 49 of
+  100 decisions where the selected schedule was not the cheapest, with a
+  maximum regret of 6.09 USD. All three should be reported, with the regret
+  framed as the explicit price of the retention floor.
+- **Team decisions D1 and D2** — how many of the suggested fuel-cell references
+  to cite, and whether a stochastic-programming or RL benchmark is in scope.
+
+## Constraints that must hold
+
+- Do not edit anything under `agentic_workflow/prompts/`. Those SHA-256 values
+  are frozen in protocols v6 and v7 and checked before every run; changing them
+  breaks validation and makes new runs non-comparable with the published
+  matrices.
+- Do not re-run or modify `results/revision/selfish_5rep/` or
+  `results/revision/altruistic_50pct_retention_5rep/`.
+- Final evidence excludes any episode that used a fallback solver.
+- Protocol v6 stays untouched so the published matrices keep validating against
+  the protocol they were run under; v7 adds the non-agentic arm.
