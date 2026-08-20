@@ -19,6 +19,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.run_closed_loop_trigger_comparison import SUMMARY_COLUMNS, command_for
+from scripts.run_index import write_run_index as merge_and_write_index
 
 
 PRIMARY_CASES = (
@@ -533,12 +534,9 @@ def run_row(
 
 
 def write_run_index(output_root: Path, rows: list[dict[str, Any]]) -> None:
-    output_root.mkdir(parents=True, exist_ok=True)
-    frame = pd.DataFrame(rows)
-    frame.to_csv(output_root / "matrix_runs.csv", index=False)
-    (output_root / "matrix_runs.json").write_text(
-        frame.to_json(orient="records", indent=2) + "\n", encoding="utf-8"
-    )
+    """Merge into any recorded index so a filtered run cannot truncate it."""
+
+    merge_and_write_index(output_root, rows, stem="matrix_runs")
 
 
 def write_manifest(

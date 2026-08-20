@@ -144,6 +144,26 @@ see the broader-disturbance block in `REVISION_EXPERIMENTS.md`.
 - **Team decisions D1 and D2** — how many of the suggested fuel-cell references
   to cite, and whether a stochastic-programming or RL benchmark is in scope.
 
+## Verification notes
+
+**Exact ties between methods are price ties, not identical behaviour.** In the
+stochastic-benchmark comparison, three of six cells report a realized value
+identical to another configuration's to six decimals: the charger/profit cell
+matches the agentic median, and both combined-disturbance cells match the
+non-agentic loop. These are not duplicated workbooks. The files differ, and for
+the combined altruistic cell the realized plans differ at two timesteps: the
+stochastic program exports 0 and 200 kWh at t=40 and t=41 where the non-agentic
+loop exports 100 and 100. Total energy and total cost are identical because
+those two intervals carry the same price.
+
+This matters for how results are worded. A cell reported as a tie is a tie in
+realized cost, not evidence that two methods behaved the same way, and the
+export profile behind it can differ. It is also the third place where
+equal-price intervals have produced a degenerate optimal face in this codebase,
+after the dumb-charging baseline and the zero-spread day-ahead variant.
+Anywhere a claim rests on an exact tie, check whether the tie is a price tie
+before describing it as agreement between methods.
+
 ## Constraints that must hold
 
 - Do not edit anything under `agentic_workflow/prompts/`. Those SHA-256 values

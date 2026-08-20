@@ -20,6 +20,7 @@ if str(ROOT) not in sys.path:
 
 from scripts.build_scaling_inputs import build_instance, sha256
 from scripts.run_closed_loop_trigger_comparison import SUMMARY_COLUMNS, command_for
+from scripts.run_index import write_run_index as merge_and_write_index
 
 
 PROTOCOL = ROOT / "inputs" / "revision" / "scaling_and_second_depot_protocol_v2.json"
@@ -213,11 +214,9 @@ def read_row(
 
 
 def write_index(output_root: Path, rows: list[dict[str, Any]]) -> None:
-    output_root.mkdir(parents=True, exist_ok=True)
-    pd.DataFrame(rows).to_csv(output_root / "scaling_runs.csv", index=False)
-    (output_root / "scaling_runs.json").write_text(
-        json.dumps(rows, indent=2, default=str) + "\n", encoding="utf-8"
-    )
+    """Merge into any recorded index so a filtered run cannot truncate it."""
+
+    merge_and_write_index(output_root, rows, stem="scaling_runs")
 
 
 def main(argv: list[str] | None = None) -> int:
