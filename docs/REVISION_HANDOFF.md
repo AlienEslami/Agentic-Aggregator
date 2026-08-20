@@ -69,10 +69,15 @@ a fixed regulated band and under spot passthrough, frozen by
 `scripts/build_day_ahead_ladder.py` with a manifest.
 
 **Scaling, optimizer side.** The deterministic arm of the scaling benchmark is
-complete: 24 episodes over 8, 16 and 32 buses plus the second depot, no API
-cost. The model is quadratic in fleet size and solver time follows it, while
-the number of supervisory decisions is invariant at two per episode. Written up
-as the scalability subsection.
+complete under the v8 protocol, in `results/revision/scaling_v2`: 24 episodes
+over 8, 16 and 32 buses plus the second depot, at the 300-second stage limit,
+no API cost. The model is quadratic in fleet size and solver time follows it at
+an exponent near 2.15, while the number of supervisory decisions is invariant
+at two per episode. The longest single solve was 13.4 s, so no run was
+truncated by the limit. Written up as the scalability subsection. An earlier
+`scaling_v1` was executed at the superseded 60-second limit; its numbers are
+close but its provenance is a different protocol generation, so it should not
+be reported.
 
 **Broader disturbances.** The v2 advance-warning dataset adds clustered delays
 and a sustained route-energy shift, and a disturbance workbook adds a
