@@ -1,0 +1,231 @@
+{
+  "protocol_version": "event_receding_two_stage_stochastic_v4",
+  "protocol_file": "inputs/revision/stochastic_benchmark_protocol_v4.json",
+  "protocol_sha256": "b22ad636c6bf03bbe8375489f62c570aa6309aa682942771a0a19f54906ef8d6",
+  "protocol_dependencies": {
+    "inputs/revision/stochastic_benchmark_protocol_v4.json": "b22ad636c6bf03bbe8375489f62c570aa6309aa682942771a0a19f54906ef8d6",
+    "inputs/revision/stochastic_benchmark_protocol_v3.json": "14f2d2039512ff2edea744bb4c5a02467d6ade6091d6aa9cdc559383df56eb35"
+  },
+  "created_utc": "2026-08-20T17:22:39.543875+00:00",
+  "git_commit": "4c07a62534d4d0e2ea877a1018001add11b66b3e",
+  "external_llm_used": false,
+  "api_key_accessed": false,
+  "solver": {
+    "name": "gurobi",
+    "time_limit_seconds": 300.0,
+    "mip_gap": 0.02
+  },
+  "comparison_note": "Positive agent_advantage values favor the Agent. Historical Agent solves terminated ok/optimal before their 60-second cap, so that cap was nonbinding; stochastic runs use the current 300-second protocol.",
+  "rows": [
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "primary_metric": "realized_aggregator_revenue",
+      "better_direction": "higher",
+      "agent_repetitions": 5,
+      "agent_feasible_repetitions": 5,
+      "agent_retention_compliant_repetitions": 5,
+      "stochastic_operationally_feasible": true,
+      "agent_mean": 24.80918376021766,
+      "agent_median": 24.80918376021766,
+      "agent_min": 24.80918376021766,
+      "agent_max": 24.80918376021766,
+      "stochastic_value": 12.9292857650693,
+      "agent_advantage_absolute": 11.87989799514836,
+      "agent_advantage_percent_of_stochastic": 91.88363696967669,
+      "outcome": "agent_win",
+      "stochastic_retention_compliant": true,
+      "stochastic_realized_aggregator_revenue": 12.9292857650693,
+      "stochastic_realized_pto_cost": 142.2221434157622,
+      "stochastic_realized_grid_net_cost": 129.2928576506928,
+      "stochastic_optimizer_calls": 2,
+      "stochastic_llm_request_attempts": 0,
+      "stochastic_llm_total_tokens": 0,
+      "stochastic_llm_approximate_cost_usd": 0,
+      "stochastic_workbook": "results/revision/stochastic_v4/aw_route6_late_return/selfish/stochastic_programming.xlsx",
+      "solver_names": [
+        "gurobi"
+      ],
+      "solver_statuses": [
+        "ok/optimal"
+      ],
+      "solver_wall_seconds": 6.614504,
+      "optimizer_attempts": 2
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "altruistic",
+      "primary_metric": "realized_pto_cost",
+      "better_direction": "lower",
+      "agent_repetitions": 5,
+      "agent_feasible_repetitions": 5,
+      "agent_retention_compliant_repetitions": 5,
+      "stochastic_operationally_feasible": true,
+      "agent_mean": 123.71009962788098,
+      "agent_median": 123.710099627881,
+      "agent_min": 123.710099627881,
+      "agent_max": 123.710099627881,
+      "stochastic_value": 124.0194473092161,
+      "agent_advantage_absolute": 0.3093476813351259,
+      "agent_advantage_percent_of_stochastic": 0.24943481691531272,
+      "outcome": "agent_win",
+      "stochastic_retention_compliant": true,
+      "stochastic_realized_aggregator_revenue": 9.47432078539597,
+      "stochastic_realized_pto_cost": 124.0194473092161,
+      "stochastic_realized_grid_net_cost": 114.5451265238202,
+      "stochastic_optimizer_calls": 3,
+      "stochastic_llm_request_attempts": 0,
+      "stochastic_llm_total_tokens": 0,
+      "stochastic_llm_approximate_cost_usd": 0,
+      "stochastic_workbook": "results/revision/stochastic_v4/aw_route6_late_return/altruistic/stochastic_programming.xlsx",
+      "solver_names": [
+        "gurobi"
+      ],
+      "solver_statuses": [
+        "ok/optimal"
+      ],
+      "solver_wall_seconds": 7.027558,
+      "optimizer_attempts": 3
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "selfish",
+      "primary_metric": "realized_aggregator_revenue",
+      "better_direction": "higher",
+      "agent_repetitions": 5,
+      "agent_feasible_repetitions": 5,
+      "agent_retention_compliant_repetitions": 5,
+      "stochastic_operationally_feasible": true,
+      "agent_mean": 13.691190701306889,
+      "agent_median": 13.01761689373298,
+      "agent_min": 10.33975416893734,
+      "agent_max": 21.50231051771119,
+      "stochastic_value": 13.01761689373298,
+      "agent_advantage_absolute": 0.6735738075739093,
+      "agent_advantage_percent_of_stochastic": 5.174325017186405,
+      "outcome": "agent_win",
+      "stochastic_retention_compliant": true,
+      "stochastic_realized_aggregator_revenue": 13.01761689373298,
+      "stochastic_realized_pto_cost": 143.1937858310627,
+      "stochastic_realized_grid_net_cost": 130.1761689373297,
+      "stochastic_optimizer_calls": 1,
+      "stochastic_llm_request_attempts": 0,
+      "stochastic_llm_total_tokens": 0,
+      "stochastic_llm_approximate_cost_usd": 0,
+      "stochastic_workbook": "results/revision/stochastic_v4/aw_charger_bank_shutdown/selfish/stochastic_programming.xlsx",
+      "solver_names": [
+        "gurobi"
+      ],
+      "solver_statuses": [
+        "ok/optimal"
+      ],
+      "solver_wall_seconds": 3.723374,
+      "optimizer_attempts": 1
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "altruistic",
+      "primary_metric": "realized_pto_cost",
+      "better_direction": "lower",
+      "agent_repetitions": 5,
+      "agent_feasible_repetitions": 5,
+      "agent_retention_compliant_repetitions": 5,
+      "stochastic_operationally_feasible": true,
+      "agent_mean": 124.94867218682832,
+      "agent_median": 125.1344718883869,
+      "agent_min": 124.205473380594,
+      "agent_max": 125.1344718883869,
+      "stochastic_value": 124.0429768527793,
+      "agent_advantage_absolute": -0.9056953340490139,
+      "agent_advantage_percent_of_stochastic": -0.7301464033098307,
+      "outcome": "agent_loss",
+      "stochastic_retention_compliant": true,
+      "stochastic_realized_aggregator_revenue": 9.496404645694806,
+      "stochastic_realized_pto_cost": 124.0429768527793,
+      "stochastic_realized_grid_net_cost": 114.5465722070845,
+      "stochastic_optimizer_calls": 2,
+      "stochastic_llm_request_attempts": 0,
+      "stochastic_llm_total_tokens": 0,
+      "stochastic_llm_approximate_cost_usd": 0,
+      "stochastic_workbook": "results/revision/stochastic_v4/aw_charger_bank_shutdown/altruistic/stochastic_programming.xlsx",
+      "solver_names": [
+        "gurobi"
+      ],
+      "solver_statuses": [
+        "ok/optimal"
+      ],
+      "solver_wall_seconds": 12.208209,
+      "optimizer_attempts": 2
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "selfish",
+      "primary_metric": "realized_aggregator_revenue",
+      "better_direction": "higher",
+      "agent_repetitions": 5,
+      "agent_feasible_repetitions": 5,
+      "agent_retention_compliant_repetitions": 5,
+      "stochastic_operationally_feasible": true,
+      "agent_mean": 32.35604669984328,
+      "agent_median": 33.12492536716248,
+      "agent_min": 28.73251583205412,
+      "agent_max": 33.75788866906208,
+      "stochastic_value": 28.73251583205427,
+      "agent_advantage_absolute": 3.6235308677890146,
+      "agent_advantage_percent_of_stochastic": 12.61125509847129,
+      "outcome": "agent_win",
+      "stochastic_retention_compliant": true,
+      "stochastic_realized_aggregator_revenue": 28.73251583205427,
+      "stochastic_realized_pto_cost": 138.8214489737055,
+      "stochastic_realized_grid_net_cost": 110.0889331416512,
+      "stochastic_optimizer_calls": 3,
+      "stochastic_llm_request_attempts": 0,
+      "stochastic_llm_total_tokens": 0,
+      "stochastic_llm_approximate_cost_usd": 0,
+      "stochastic_workbook": "results/revision/stochastic_v4/aw_combined_evening/selfish/stochastic_programming.xlsx",
+      "solver_names": [
+        "gurobi"
+      ],
+      "solver_statuses": [
+        "ok/optimal"
+      ],
+      "solver_wall_seconds": 1.1839589999999998,
+      "optimizer_attempts": 3
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "altruistic",
+      "primary_metric": "realized_pto_cost",
+      "better_direction": "lower",
+      "agent_repetitions": 5,
+      "agent_feasible_repetitions": 5,
+      "agent_retention_compliant_repetitions": 5,
+      "stochastic_operationally_feasible": true,
+      "agent_mean": 121.37941960942942,
+      "agent_median": 121.1640464878433,
+      "agent_min": 121.1640464878433,
+      "agent_max": 122.2409120957739,
+      "stochastic_value": 122.2409120957734,
+      "agent_advantage_absolute": 0.8614924863439768,
+      "agent_advantage_percent_of_stochastic": 0.7047497205101138,
+      "outcome": "agent_win",
+      "stochastic_retention_compliant": true,
+      "stochastic_realized_aggregator_revenue": 12.15193135986429,
+      "stochastic_realized_pto_cost": 122.2409120957734,
+      "stochastic_realized_grid_net_cost": 110.0889807359091,
+      "stochastic_optimizer_calls": 3,
+      "stochastic_llm_request_attempts": 0,
+      "stochastic_llm_total_tokens": 0,
+      "stochastic_llm_approximate_cost_usd": 0,
+      "stochastic_workbook": "results/revision/stochastic_v4/aw_combined_evening/altruistic/stochastic_programming.xlsx",
+      "solver_names": [
+        "gurobi"
+      ],
+      "solver_statuses": [
+        "ok/optimal"
+      ],
+      "solver_wall_seconds": 1.2319749999999998,
+      "optimizer_attempts": 3
+    }
+  ]
+}
