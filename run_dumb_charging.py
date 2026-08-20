@@ -169,19 +169,33 @@ def solve_dumb_charging(sc: dict):
     model.charging_cost = pyo.Expression(
         expr=sum(s_buy[t - 1] * model.w_buy[t] for t in model.T)
     )
+    # Uncontrolled charging starts as soon as a bus is plugged in, so among the
+    # schedules that tie on the benchmark objective the faithful one is the
+    # earliest.  Minimising this moment shifts every kWh as early as the
+    # constraints allow.
+    model.charging_moment = pyo.Expression(
+        expr=sum(t * model.w_buy[t] for t in model.T)
+    )
     model.obj = pyo.Objective(expr=model.benchmark_score, sense=pyo.maximize)
 
     return solve_dumb_charging_model(model)
 
 
 def solve_dumb_charging_model(model):
-    """Solve the benchmark objective, then break ties by charging cost.
+    """Solve the benchmark objective, then break ties by charging as early as possible.
 
     The benchmark objective scores pre-service energy and penalises daytime
     sessions; it never prices energy.  Many schedules therefore reach the same
-    score with a different charging cost, and which one is returned is up to
-    the solver.  A second, cost-minimising stage over the optimal face of the
-    first makes the reported baseline cost reproducible across solvers.
+    score with very different charging costs, and which one the solver returns
+    is arbitrary: on this case study Gurobi reported 215.05 and HiGHS 196.20
+    for the same model, a spread that does not shrink when the gap is
+    tightened.
+
+    The second stage resolves that face deterministically by charging as early
+    as the constraints allow, which is what uncontrolled charging means: plug
+    in, draw power, ignore price.  Minimising cost instead would pick the
+    least dumb schedule on the face and understate the baseline by about 24
+    currency units, flattering every saving measured against it.
     """
 
     time_limit = float(os.environ.get('DA_SOLVER_TIME_LIMIT', '60'))
@@ -226,12 +240,12 @@ def solve_dumb_charging_model(model):
         )
         model.obj.deactivate()
         model.cost_obj = pyo.Objective(
-            expr=model.charging_cost, sense=pyo.minimize
+            expr=model.charging_moment, sense=pyo.minimize
         )
         try:
             tie_results = opt.solve(model, load_solutions=False, tee=solver_tee)
         except Exception as exc:
-            print(f'Cost tie-break stage failed on {solver_name}: {exc}')
+            print(f'Earliest-charging tie-break failed on {solver_name}: {exc}')
             model.cost_obj.deactivate()
             model.obj.activate()
             print('Dumb charging done (benchmark stage only)')
@@ -240,9 +254,9 @@ def solve_dumb_charging_model(model):
         tie_tc = tie_results.solver.termination_condition
         if tie_tc in (pyo.TerminationCondition.optimal, pyo.TerminationCondition.feasible):
             model.solutions.load_from(tie_results)
-            print(f'Cost tie-break termination: {tie_tc}')
+            print(f'Earliest-charging tie-break termination: {tie_tc}')
         else:
-            print(f'Cost tie-break not applied ({tie_tc}); benchmark solution kept')
+            print(f'Tie-break not applied ({tie_tc}); benchmark solution kept')
         model.cost_obj.deactivate()
         model.obj.activate()
         print('Dumb charging done')
