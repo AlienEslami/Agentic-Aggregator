@@ -1,0 +1,26 @@
+{
+  "protocol_version": "event_receding_two_stage_stochastic_v3",
+  "status": "implemented_and_frozen_pending_confirmatory_full_day_execution",
+  "base_protocol_file": "stochastic_benchmark_protocol_v2.json",
+  "supersedes_for_future_runs": "inputs/revision/stochastic_benchmark_protocol_v2.json",
+  "historical_result_policy": "Outputs under v2 are implementation diagnostics and are excluded from confirmatory comparison. V3 changes only the ordering of the already prespecified operational-feasibility and economic objectives.",
+  "change_reason": [
+    "the v2 pilot exposed that a weighted currency penalty could trade a small realized reserve violation against economics",
+    "apply the experiment-wide rule operational feasibility first by minimizing expected nonnegative service and SOC slack before the economic objective",
+    "because all scenario probabilities are positive, a zero expected feasibility score implies zero modeled slack in every scenario"
+  ],
+  "method": {
+    "formulation": "event-receding two-stage stochastic mixed-integer linear program",
+    "first_stage": "common executable decisions until the next declared information update",
+    "second_stage": "scenario-specific recourse from the first executable interval after that update",
+    "policy": "solve again only when the public uncertainty set changes or the physical outcome becomes causally observable; preserve all already settled intervals",
+    "physical_model": "unchanged app_rt.py bus, trip, charger, SOC, service and V2G model",
+    "objective": "lexicographically minimize probability-weighted service and SOC slack, then optimize mode-aligned expected PTO economics under the same tariffs",
+    "operational_feasibility_first": true,
+    "risk_measure": "risk-neutral expected value",
+    "solver": "Gurobi only",
+    "solver_time_limit_seconds": 300,
+    "solver_time_limit_scope": "per standalone or lexicographic optimization stage",
+    "solver_mip_gap": 0.02
+  }
+}

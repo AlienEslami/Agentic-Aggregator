@@ -708,7 +708,7 @@ def _extract_solver_telemetry(solved, model, measured):
     return telemetry
 
 
-def solve_rt_rescheduling(ctx):
+def solve_rt_rescheduling(ctx, *, build_only=False):
     buses = ctx["buses"]
     chargers = ctx["chargers"]
     trips = ctx["trips"]
@@ -975,6 +975,16 @@ def solve_rt_rescheduling(ctx):
         expr=model.baseline_weighted_score,
         sense=pyo.minimize,
     )
+
+    # The stochastic-programming benchmark reuses this exact physical model
+    # inside one extensive form.  Returning before solver configuration keeps
+    # the production deterministic path unchanged while avoiding a redundant
+    # per-scenario solve during model construction.
+    if build_only:
+        return model, {
+            "solver_status": "not_solved/model_built",
+            "optimization_strategy": "model_construction_only",
+        }
 
     time_limit = float(os.environ.get("RT_SOLVER_TIME_LIMIT", "60"))
     mip_gap = float(os.environ.get("RT_SOLVER_MIP_GAP", "0.02"))

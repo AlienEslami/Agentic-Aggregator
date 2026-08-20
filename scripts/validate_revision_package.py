@@ -22,7 +22,14 @@ REQUIRED_FILES = (
     REVISION / "information_and_evaluator_ablation_protocol_v2.json",
     REVISION / "revision_sensitivity_protocol_v1.json",
     REVISION / "scaling_and_second_depot_protocol_v1.json",
+    REVISION / "stochastic_benchmark_protocol_v1.json",
+    REVISION / "stochastic_benchmark_protocol_v2.json",
+    REVISION / "stochastic_benchmark_protocol_v3.json",
     REVISION / "independent_validation_checklist_v1.md",
+    ROOT / "agentic_workflow" / "stochastic_programming.py",
+    ROOT / "agentic_workflow" / "stochastic_benchmark.py",
+    ROOT / "scripts" / "run_stochastic_decision.py",
+    ROOT / "scripts" / "run_stochastic_closed_loop.py",
     ROOT / "agentic_workflow" / "prompts" / "trigger_system.txt",
     ROOT / "agentic_workflow" / "prompts" / "pricing_selfish_system.txt",
     ROOT / "agentic_workflow" / "prompts" / "pricing_altruistic_system.txt",
@@ -140,6 +147,42 @@ def main(argv: list[str] | None = None) -> int:
                 "passed": recorded_prompt_hashes == current_prompt_hashes,
                 "recorded": recorded_prompt_hashes,
                 "current": current_prompt_hashes,
+            }
+        )
+
+    stochastic_path = REVISION / "stochastic_benchmark_protocol_v3.json"
+    if stochastic_path.exists():
+        from agentic_workflow.stochastic_benchmark import load_stochastic_protocol
+
+        stochastic = load_stochastic_protocol(stochastic_path)
+        information = stochastic.get("information_contract") or {}
+        method = stochastic.get("method") or {}
+        probability_errors = []
+        for case in stochastic.get("cases") or []:
+            for stage in case.get("decision_stages") or []:
+                probability_sum = sum(
+                    float(scenario.get("probability") or 0.0)
+                    for scenario in stage.get("scenarios") or []
+                )
+                if abs(probability_sum - 1.0) > 1e-9:
+                    probability_errors.append(
+                        f"{case.get('case_id')}/{stage.get('stage_id')}: "
+                        f"probabilities sum to {probability_sum}"
+                    )
+        checks.append(
+            {
+                "check": "stochastic_protocol_information_and_probability_contract",
+                "passed": bool(stochastic.get("cases"))
+                and not probability_errors
+                and information.get("external_llm") is False
+                and information.get("canonical_hidden_truth_before_observation") is False
+                and method.get("solver") == "Gurobi only"
+                and float(method.get("solver_time_limit_seconds") or 0.0) == 300.0
+                and method.get("operational_feasibility_first") is True,
+                "operational_feasibility_first": method.get(
+                    "operational_feasibility_first"
+                ),
+                "probability_errors": probability_errors,
             }
         )
 

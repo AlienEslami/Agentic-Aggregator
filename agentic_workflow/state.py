@@ -172,7 +172,12 @@ class WorkflowState:
         start_state_index = timestep
         if "decision_timestep" not in self.realtime_plan:
             self.realtime_plan["decision_timestep"] = None
-        for offset in range(min(len(w_buy), 48 - start_state_index)):
+        commitment_steps = int(result.get("commitment_steps") or len(w_buy))
+        if commitment_steps < 1:
+            return
+        for offset in range(
+            min(len(w_buy), commitment_steps, 48 - start_state_index)
+        ):
             state_index = start_state_index + offset
             matches = self.realtime_plan.index[self.realtime_plan["timestep"].astype(int) == state_index]
             if len(matches) == 0:

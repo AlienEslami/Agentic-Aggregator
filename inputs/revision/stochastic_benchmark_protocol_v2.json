@@ -1,0 +1,195 @@
+{
+  "protocol_version": "event_receding_two_stage_stochastic_v2",
+  "status": "implemented_and_frozen_pending_full_day_execution",
+  "supersedes_for_future_runs": "inputs/revision/stochastic_benchmark_protocol_v1.json",
+  "change_reason": [
+    "integrate the stochastic decisions into complete 48-timestep episodes so realized feasibility and economics can be compared with the Agent",
+    "make causal timing explicit: an observation at t can change only intervals t+1 onward",
+    "represent the combined-case dispatch correction as a new public information stage instead of leaking the correction into the earlier decision"
+  ],
+  "purpose": "Strong no-LLM stochastic-programming benchmark requested by Reviewer 2.",
+  "method": {
+    "formulation": "event-receding two-stage stochastic mixed-integer linear program",
+    "first_stage": "common executable decisions until the next declared information update",
+    "second_stage": "scenario-specific recourse from the first executable interval after that update",
+    "policy": "solve again only when the public uncertainty set changes or the physical outcome becomes causally observable; preserve all already settled intervals",
+    "physical_model": "unchanged app_rt.py bus, trip, charger, SOC, service and V2G model",
+    "objective": "probability-weighted service-feasibility penalty plus mode-aligned PTO economic dispatch under the same tariffs",
+    "risk_measure": "risk-neutral expected value",
+    "solver": "Gurobi only",
+    "solver_time_limit_seconds": 300,
+    "solver_time_limit_scope": "per standalone or lexicographic optimization stage",
+    "solver_mip_gap": 0.02
+  },
+  "information_contract": {
+    "external_llm": false,
+    "raw_notice_text": false,
+    "canonical_hidden_truth_before_observation": false,
+    "input": "prespecified structured public uncertainty sets containing only ranges, assets and time windows available by each decision observation",
+    "realized_truth_use": "only after the physical event is observable at its frozen sensor-detection timestep",
+    "probability_basis": "equal endpoint weights where a range is given and probability one for a confirmed deterministic event",
+    "probability_claim": "stress-test weights, not calibrated real-world forecasts"
+  },
+  "controls": {
+    "same_v2g_setting": true,
+    "same_initial_state": true,
+    "same_realized_hidden_physical_event_for_scoring": true,
+    "causal_interval_settlement": "settle interval t before any decision at observation t and optimize t+1 onward",
+    "same_altruistic_baseline_revenue_retention_fraction": 0.5,
+    "canonical_hidden_truth_sent_to_openai": false,
+    "llm_tokens": 0,
+    "llm_api_cost_usd": 0
+  },
+  "cases": [
+    {
+      "case_id": "aw_route6_late_return",
+      "physical_observation_timestep": 44,
+      "physical_end_timestep": 48,
+      "decision_stages": [
+        {
+          "stage_id": "confirmed_delay_range",
+          "decision_observation_timestep": 6,
+          "first_executable_timestep": 7,
+          "first_recourse_timestep": 45,
+          "structured_public_basis": "confirmed Bus 6 return-delay range of 60 to 90 minutes",
+          "scenarios": [
+            {
+              "scenario_id": "route6_delay_60",
+              "probability": 0.5,
+              "future_updates": {
+                "trip_return_delay_minutes": {"6": 60}
+              }
+            },
+            {
+              "scenario_id": "route6_delay_90",
+              "probability": 0.5,
+              "future_updates": {
+                "trip_return_delay_minutes": {"6": 90}
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "aw_charger_bank_shutdown",
+      "physical_observation_timestep": 8,
+      "physical_end_timestep": 10,
+      "decision_stages": [
+        {
+          "stage_id": "confirmed_deterministic_outage",
+          "decision_observation_timestep": 5,
+          "first_executable_timestep": 6,
+          "first_recourse_timestep": 8,
+          "commitment_policy": "full_horizon_deterministic_collapse",
+          "structured_public_basis": "confirmed EVSE 6-8 outage over timesteps 8-10",
+          "scenarios": [
+            {
+              "scenario_id": "confirmed_evse_6_8_outage",
+              "probability": 1.0,
+              "future_updates": {
+                "charger_power_windows": [
+                  {
+                    "charger_ids": [6, 7, 8],
+                    "absolute_timestep_start": 8,
+                    "absolute_timestep_end": 10,
+                    "multiplier": 0.0
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "interpretation": "Prespecified deterministic-collapse check; no unsupported uncertainty is fabricated."
+    },
+    {
+      "case_id": "aw_combined_evening",
+      "physical_observation_timestep": 41,
+      "physical_end_timestep": 48,
+      "decision_stages": [
+        {
+          "stage_id": "confirmed_range_and_six_chargers",
+          "decision_observation_timestep": 30,
+          "first_executable_timestep": 31,
+          "first_recourse_timestep": 32,
+          "structured_public_basis": "confirmed Bus 8 return-delay range of 120 to 150 minutes and six unavailable chargers; the later correction is not available yet",
+          "scenarios": [
+            {
+              "scenario_id": "delay120_six_charger_bank",
+              "probability": 0.5,
+              "future_updates": {
+                "trip_return_delay_minutes": {"8": 120},
+                "charger_power_windows": [
+                  {
+                    "charger_ids": [3, 4, 5, 6, 7, 8],
+                    "absolute_timestep_start": 41,
+                    "absolute_timestep_end": 48,
+                    "multiplier": 0.0
+                  }
+                ]
+              }
+            },
+            {
+              "scenario_id": "delay150_six_charger_bank",
+              "probability": 0.5,
+              "future_updates": {
+                "trip_return_delay_minutes": {"8": 150},
+                "charger_power_windows": [
+                  {
+                    "charger_ids": [3, 4, 5, 6, 7, 8],
+                    "absolute_timestep_start": 41,
+                    "absolute_timestep_end": 48,
+                    "multiplier": 0.0
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "stage_id": "corrected_three_chargers_delay_range_unchanged",
+          "decision_observation_timestep": 31,
+          "first_executable_timestep": 32,
+          "first_recourse_timestep": 42,
+          "structured_public_basis": "dispatch correction confirms EVSE 6-8 remain available; only EVSE 3-5 are unavailable and the Bus 8 delay range remains 120 to 150 minutes",
+          "common_future_update_reveal_absolute_timestep": 41,
+          "common_future_updates": {
+            "charger_power_windows": [
+              {
+                "charger_ids": [3, 4, 5],
+                "absolute_timestep_start": 41,
+                "absolute_timestep_end": 48,
+                "multiplier": 0.0
+              }
+            ]
+          },
+          "scenarios": [
+            {
+              "scenario_id": "delay120_three_charger_bank",
+              "probability": 0.5,
+              "future_updates": {
+                "trip_return_delay_minutes": {"8": 120}
+              }
+            },
+            {
+              "scenario_id": "delay150_three_charger_bank",
+              "probability": 0.5,
+              "future_updates": {
+                "trip_return_delay_minutes": {"8": 150}
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "primary_reporting": [
+    "complete 48-timestep operational feasibility",
+    "selfish realized full-day aggregator revenue",
+    "altruistic realized full-day PTO cost subject to the same 50% baseline-revenue retention floor",
+    "Agent mean, stochastic value, absolute difference and percentage difference for each case-mode cell",
+    "Gurobi status, time, gap and model size",
+    "zero LLM requests, tokens and API cost"
+  ]
+}

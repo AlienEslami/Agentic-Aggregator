@@ -1,0 +1,136 @@
+{
+  "protocol_version": "rolling_two_stage_stochastic_v1",
+  "status": "implementation_protocol_pending_pilot",
+  "purpose": "Strong no-LLM benchmark requested by Reviewer 2 for real-time PTO and energy-market interaction.",
+  "method": {
+    "formulation": "rolling two-stage stochastic mixed-integer linear program",
+    "first_stage": "all executable scheduling, charging and V2G decisions before the declared information-revelation timestep",
+    "second_stage": "scenario-specific recourse at and after the information-revelation timestep",
+    "rolling_policy": "implement only the next executable interval, update observed state and the public scenario set, then solve again",
+    "physical_model": "the unchanged app_rt.py bus, trip, charger, SOC, service and V2G model",
+    "objective": "probability-weighted service-feasibility penalty plus PTO economic dispatch cost under the same tariffs",
+    "risk_measure": "risk-neutral expected value in the primary benchmark; no CVaR tuning in the primary result",
+    "solver": "Gurobi only",
+    "solver_time_limit_seconds": 300,
+    "solver_mip_gap": 0.02
+  },
+  "information_contract": {
+    "external_llm": false,
+    "raw_notice_text": false,
+    "canonical_hidden_truth": false,
+    "input": "a human-authored structured uncertainty set containing only ranges and asset/time references available in the public confirmed notice",
+    "market_information": "the same causal time-varying price trajectory and tariff schedule supplied to the other methods",
+    "probability_basis": "equal weights over the stated range endpoints because the 30-minute model grid cannot represent the 75- or 135-minute midpoints exactly and no empirical conditional frequency data are available",
+    "probability_claim": "stress-test weights, not calibrated real-world forecasts",
+    "probability_sensitivity_required": true
+  },
+  "controls": {
+    "same_v2g_setting": true,
+    "same_optimizer_physics": true,
+    "same_initial_state": true,
+    "same_causal_settlement": true,
+    "same_realized_hidden_physical_event_for_scoring": true,
+    "nonanticipativity_before_revelation": true,
+    "only_first_stage_action_implemented": true,
+    "deterministic_collapse_check": true,
+    "llm_tokens": 0,
+    "llm_api_cost_usd": 0
+  },
+  "cases": [
+    {
+      "case_id": "aw_route6_late_return",
+      "decision_observation_timestep": 6,
+      "first_executable_timestep": 7,
+      "reveal_absolute_timestep": 44,
+      "structured_public_basis": "confirmed Bus 6 return-delay range of 60 to 90 minutes",
+      "scenarios": [
+        {
+          "scenario_id": "route6_delay_60",
+          "probability": 0.5,
+          "future_updates": {
+            "trip_return_delay_minutes": {"6": 60}
+          }
+        },
+        {
+          "scenario_id": "route6_delay_90",
+          "probability": 0.5,
+          "future_updates": {
+            "trip_return_delay_minutes": {"6": 90}
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "aw_charger_bank_shutdown",
+      "decision_observation_timestep": 5,
+      "first_executable_timestep": 6,
+      "reveal_absolute_timestep": 8,
+      "structured_public_basis": "confirmed EVSE 6-8 outage over timesteps 8-10; no unsupported uncertainty is invented",
+      "scenarios": [
+        {
+          "scenario_id": "confirmed_evse_6_8_outage",
+          "probability": 1.0,
+          "future_updates": {
+            "charger_power_windows": [
+              {
+                "charger_ids": [6, 7, 8],
+                "absolute_timestep_start": 8,
+                "absolute_timestep_end": 10,
+                "multiplier": 0.0
+              }
+            ]
+          }
+        }
+      ],
+      "interpretation": "This cell is the prespecified deterministic-collapse check rather than a fabricated stochastic case."
+    },
+    {
+      "case_id": "aw_combined_evening",
+      "decision_observation_timestep": 30,
+      "first_executable_timestep": 31,
+      "reveal_absolute_timestep": 32,
+      "structured_public_basis": "confirmed Bus 8 return-delay range of 120 to 150 minutes and the six unavailable chargers stated at timestep 30; the later correction is not leaked into this decision",
+      "scenarios": [
+        {
+          "scenario_id": "delay120_six_charger_bank",
+          "probability": 0.5,
+          "future_updates": {
+            "trip_return_delay_minutes": {"8": 120},
+            "charger_power_windows": [
+              {
+                "charger_ids": [3, 4, 5, 6, 7, 8],
+                "absolute_timestep_start": 41,
+                "absolute_timestep_end": 48,
+                "multiplier": 0.0
+              }
+            ]
+          }
+        },
+        {
+          "scenario_id": "delay150_six_charger_bank",
+          "probability": 0.5,
+          "future_updates": {
+            "trip_return_delay_minutes": {"8": 150},
+            "charger_power_windows": [
+              {
+                "charger_ids": [3, 4, 5, 6, 7, 8],
+                "absolute_timestep_start": 41,
+                "absolute_timestep_end": 48,
+                "multiplier": 0.0
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "primary_reporting": [
+    "operational feasibility and service shortfall by realized case",
+    "selfish full-day aggregator revenue",
+    "altruistic full-day PTO cost subject to the same 50% baseline-revenue retention floor",
+    "expected and realized objective values",
+    "worst-scenario outcome",
+    "Gurobi time, gap, nodes, CPU and memory",
+    "model variables and constraints"
+  ]
+}
