@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 
 import pyomo.environ as pyo
@@ -164,19 +165,93 @@ def solve_dumb_charging(sc: dict):
             - 0.1 * total_charge
         )
 
-    model.obj = pyo.Objective(rule=rule_obj, sense=pyo.maximize)
+    model.benchmark_score = pyo.Expression(rule=rule_obj)
+    model.charging_cost = pyo.Expression(
+        expr=sum(s_buy[t - 1] * model.w_buy[t] for t in model.T)
+    )
+    model.obj = pyo.Objective(expr=model.benchmark_score, sense=pyo.maximize)
 
-    opt, solver_name = configure_milp_solver(time_limit=60, mip_gap=0.04)
-    print(f'Solving dumb charging model with {solver_name}')
-    results = opt.solve(model, load_solutions=False, tee=True)
+    return solve_dumb_charging_model(model)
 
-    tc = results.solver.termination_condition
-    print(f'Dumb charging termination: {tc}')
-    if tc in (pyo.TerminationCondition.optimal, pyo.TerminationCondition.feasible):
+
+def solve_dumb_charging_model(model):
+    """Solve the benchmark objective, then break ties by charging cost.
+
+    The benchmark objective scores pre-service energy and penalises daytime
+    sessions; it never prices energy.  Many schedules therefore reach the same
+    score with a different charging cost, and which one is returned is up to
+    the solver.  A second, cost-minimising stage over the optimal face of the
+    first makes the reported baseline cost reproducible across solvers.
+    """
+
+    time_limit = float(os.environ.get('DA_SOLVER_TIME_LIMIT', '60'))
+    mip_gap = float(os.environ.get('DA_DUMB_CHARGING_MIP_GAP', '0.0'))
+    solver_tee = str(os.environ.get('DA_SOLVER_TEE', '')).strip().lower() in {
+        '1', 'true', 'yes', 'on'
+    }
+    configured_order = os.environ.get(
+        'DA_SOLVER_ORDER', 'gurobi,appsi_highs,highs,cbc,glpk'
+    )
+    candidates = [name.strip() for name in configured_order.split(',') if name.strip()]
+
+    solver_errors = []
+    for candidate in candidates:
+        try:
+            opt, solver_name = configure_milp_solver(
+                time_limit=time_limit,
+                mip_gap=mip_gap,
+                solver_candidates=(candidate,),
+            )
+        except RuntimeError:
+            continue
+        print(f'Solving dumb charging model with {solver_name}')
+        try:
+            results = opt.solve(model, load_solutions=False, tee=solver_tee)
+        except Exception as exc:  # a size-limited or misconfigured licence
+            solver_errors.append(f'{solver_name}: {exc}')
+            print(f'Solver {solver_name} failed, trying the next candidate: {exc}')
+            continue
+
+        tc = results.solver.termination_condition
+        print(f'Dumb charging termination: {tc}')
+        if tc not in (pyo.TerminationCondition.optimal, pyo.TerminationCondition.feasible):
+            solver_errors.append(f'{solver_name}: {tc}')
+            continue
         model.solutions.load_from(results)
+
+        best_score = float(pyo.value(model.benchmark_score))
+        tolerance = 1e-6 * max(1.0, abs(best_score))
+        model.tie_break = pyo.Constraint(
+            expr=model.benchmark_score >= best_score - tolerance
+        )
+        model.obj.deactivate()
+        model.cost_obj = pyo.Objective(
+            expr=model.charging_cost, sense=pyo.minimize
+        )
+        try:
+            tie_results = opt.solve(model, load_solutions=False, tee=solver_tee)
+        except Exception as exc:
+            print(f'Cost tie-break stage failed on {solver_name}: {exc}')
+            model.cost_obj.deactivate()
+            model.obj.activate()
+            print('Dumb charging done (benchmark stage only)')
+            return model
+
+        tie_tc = tie_results.solver.termination_condition
+        if tie_tc in (pyo.TerminationCondition.optimal, pyo.TerminationCondition.feasible):
+            model.solutions.load_from(tie_results)
+            print(f'Cost tie-break termination: {tie_tc}')
+        else:
+            print(f'Cost tie-break not applied ({tie_tc}); benchmark solution kept')
+        model.cost_obj.deactivate()
+        model.obj.activate()
         print('Dumb charging done')
         return model
-    print(f'Dumb charging infeasible: {tc}')
+
+    if solver_errors:
+        print('Dumb charging infeasible or unsolvable: ' + '; '.join(solver_errors))
+    else:
+        print('No supported MILP solver was available for dumb charging.')
     return None
 
 
