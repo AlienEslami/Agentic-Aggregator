@@ -12,7 +12,6 @@ from agentic_workflow.physical_events import PhysicalEventSeries
 from scripts.build_extended_disturbance_cases import (
     CLUSTERED_BUSES,
     CLUSTERED_EFFECTIVE,
-    DISTURBANCE_OUTPUT,
     ENERGY_BUSES,
     ENERGY_EFFECTIVE,
     ENERGY_MULTIPLIER,
@@ -115,10 +114,17 @@ def test_price_escalation_is_monotone_and_contiguous():
     assert all(start == end + 1 for start, end in zip(starts[1:], ends[:-1]))
 
 
-def test_price_scenarios_load_through_the_workflow_loader():
+def test_price_scenarios_load_through_the_workflow_loader(tmp_path):
+    # The workbook itself is a build artifact and stays out of version control,
+    # so the contract under test is that what the builder emits round-trips
+    # through the workflow loader, not that a generated file happens to exist.
+    workbook = tmp_path / "scenarios.xlsx"
+    multistep_price_scenarios().to_excel(
+        workbook, sheet_name="scenarios", index=False
+    )
+
     rows = load_disturbances(
-        DISTURBANCE_OUTPUT,
-        ("price_step_up_1", "price_step_up_2", "price_step_up_3"),
+        workbook, ("price_step_up_1", "price_step_up_2", "price_step_up_3")
     )
 
     assert [row["scenario_level"] for row in rows] == [25, 50, 75]
