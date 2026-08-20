@@ -18,6 +18,7 @@ REQUIRED_FILES = (
     ROOT / "requirements-lock.txt",
     ROOT / "requirements-dev-lock.txt",
     REVISION / "advance_warning_ablation_protocol_v6.json",
+    REVISION / "advance_warning_ablation_protocol_v7.json",
     REVISION / "information_and_evaluator_ablation_protocol_v2.json",
     REVISION / "revision_sensitivity_protocol_v1.json",
     REVISION / "scaling_and_second_depot_protocol_v1.json",

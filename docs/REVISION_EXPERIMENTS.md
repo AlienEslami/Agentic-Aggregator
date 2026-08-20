@@ -919,9 +919,66 @@ python scripts/run_revision_sensitivity.py --output-root results/revision/sensit
 python scripts/analyze_revision_sensitivity.py --runs results/revision/sensitivity_v1/sensitivity_runs.csv --output-dir results/revision/sensitivity_v1/analysis
 
 # 4. Fleet scaling and Depot B: 48 episodes
-python scripts/build_scaling_inputs.py
+# The builder writes one instance per call; the study needs all four.
+python scripts/build_scaling_inputs.py --depot depot_a --fleet-size 8
+python scripts/build_scaling_inputs.py --depot depot_a --fleet-size 16
+python scripts/build_scaling_inputs.py --depot depot_a --fleet-size 32
+python scripts/build_scaling_inputs.py --depot depot_b --fleet-size 8
 python scripts/run_scaling_study.py --output-root results/revision/scaling_v1 --repetitions 3 --allow-external-llm --require-clean-git --max-approximate-api-cost-usd 2.00
 python scripts/analyze_scaling_study.py --runs results/revision/scaling_v1/scaling_runs.csv --output-dir results/revision/scaling_v1/analysis
+```
+
+### Matched non-agentic baseline
+
+Every role ablation above substitutes exactly one agent, so none of them
+isolates the contribution of the agentic layer as a whole. The
+`full_deterministic` configuration runs the rule trigger, the deterministic
+price-zone pricing and the hard-check evaluator over the identical optimizer,
+inputs, disturbances and settlement. It is the conventional event-triggered
+re-optimization scheme, it is deterministic, and it issues no external model
+calls, so one run per case and mode is sufficient and no API budget or
+`--allow-external-llm` authorization is required. Protocol v7 declares this arm;
+v6 is left untouched so the published matrices keep validating against it.
+
+```powershell
+# 5. Matched non-agentic loop: 6 deterministic episodes, no API cost
+python scripts/run_advance_warning_matrix.py --output-root results/revision/nonagentic_baseline_v7 --ablation-protocol inputs/revision/advance_warning_ablation_protocol_v7.json --include-nonagentic-baseline --only-nonagentic-baseline --require-clean-git
+python scripts/analyze_advance_warning_matrix.py --runs results/revision/nonagentic_baseline_v7/matrix_runs.csv --output-dir results/revision/nonagentic_baseline_v7/analysis
+```
+
+The analyzer reports the new arm as the `agentic_stack_contribution` contrast
+against `full_agentic`. To place it next to the already published agentic runs,
+concatenate the two `matrix_runs.csv` files before analysis; the contrast uses
+an independent-sample difference, so a single deterministic baseline run per
+cell is admissible.
+
+On the day-ahead side the matching benchmark is smart charging **with** V2G and
+**without** agents, which Reviewer 2 identified as missing from the day-ahead
+table. Two tariff policies are available: spot passthrough, which isolates the
+value of V2G with no aggregator margin, and a fixed regulated band.
+
+```powershell
+python run_nonagentic_v2g_optimization.py --input data/inputs/case_study_inputs.xlsx --spot-prices-file data/inputs/spot_prices.xlsx --output results/revision/day_ahead/nonagentic_v2g_passthrough.json --summary-workbook results/revision/day_ahead/day_ahead_local_comparison.xlsx
+python run_nonagentic_v2g_optimization.py --input data/inputs/case_study_inputs.xlsx --spot-prices-file data/inputs/spot_prices.xlsx --tariffs-file data/inputs/aggregator_tariffs.xlsx --tariff-policy fixed_margin --output results/revision/day_ahead/nonagentic_v2g_fixed_margin.json --summary-workbook results/revision/day_ahead/day_ahead_local_comparison.xlsx
+```
+
+### Broader disturbance patterns
+
+`build_extended_disturbance_cases.py` writes a v2 advance-warning dataset that
+keeps the three v1 cases byte-identical and adds delays clustered on three buses
+inside one window and a sustained route-energy shift that persists to the end of
+the horizon. Multi-step price escalation reaches the model through the
+disturbance workbook rather than through a notice, because the physical-event
+schema carries fleet and charger updates but no prices. The harness simulates a
+single 48-timestep day, so persistence is exercised within the horizon; a
+genuine multi-day study would require extending the optimizer horizon.
+
+```powershell
+python scripts/build_extended_disturbance_cases.py
+python scripts/run_advance_warning_matrix.py --output-root results/revision/extended_disturbances_v2 --ablation-protocol inputs/revision/advance_warning_ablation_protocol_v7.json --notices-file inputs/revision/advance_warning_notices_v2.json --physical-events-file inputs/revision/advance_warning_physical_events_v2.json --case aw_clustered_late_returns --case aw_extended_energy_shift --include-role-ablations --only-role-ablations --ablation-repetitions 5 --allow-external-llm --require-clean-git --max-approximate-api-cost-usd 2.50
+
+# Multi-step price escalation: composed from the three step scenarios
+python scripts/run_advance_warning_matrix.py --output-root results/revision/price_escalation_v2 --ablation-protocol inputs/revision/advance_warning_ablation_protocol_v7.json --disturbances inputs/revision/rt_disturbance_scenarios_revision_e6.xlsx --scenario price_step_up_1 --scenario price_step_up_2 --scenario price_step_up_3 --case aw_route6_late_return --include-role-ablations --only-role-ablations --ablation-repetitions 5 --allow-external-llm --require-clean-git --max-approximate-api-cost-usd 2.50
 ```
 
 Final evidence excludes any episode with solver fallback. The runner manifests

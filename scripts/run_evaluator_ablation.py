@@ -101,7 +101,13 @@ def validate_protocol() -> dict[str, object]:
 
 
 def command_for(
-    *, case: str, mode: str, configuration: str, model: str, output: Path
+    *,
+    case: str,
+    mode: str,
+    configuration: str,
+    model: str,
+    output: Path,
+    altruistic_revenue_retention_fraction: float = 0.50,
 ) -> list[str]:
     return [
         sys.executable,
@@ -134,6 +140,10 @@ def command_for(
         "--realize-notice-truth",
         "--mode",
         mode,
+        # Stated explicitly so this study cannot drift from the frozen matrix
+        # if the workflow default ever changes.
+        "--altruistic-revenue-retention-fraction",
+        str(altruistic_revenue_retention_fraction),
         "--start-timestep",
         "1",
         "--end-timestep",
@@ -167,6 +177,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--solver-order", default="gurobi")
     parser.add_argument("--solver-time-limit", type=float, default=60.0)
     parser.add_argument("--solver-mip-gap", type=float, default=0.02)
+    parser.add_argument(
+        "--altruistic-revenue-retention-fraction",
+        type=float,
+        default=0.50,
+        help="Must match the frozen ablation protocol (v6/v7 default: 0.50).",
+    )
     parser.add_argument("--allow-external-llm", action="store_true")
     parser.add_argument("--require-clean-git", action="store_true")
     parser.add_argument("--force", action="store_true")
@@ -227,6 +243,9 @@ def main(argv: list[str] | None = None) -> int:
                         configuration=configuration,
                         model=args.model,
                         output=output,
+                        altruistic_revenue_retention_fraction=(
+                            args.altruistic_revenue_retention_fraction
+                        ),
                     )
                     if args.dry_run:
                         print(subprocess.list2cmdline(command))
