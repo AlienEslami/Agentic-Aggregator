@@ -252,6 +252,9 @@ def test_role_ablation_factory_changes_only_the_named_role(monkeypatch):
     evaluator_removal = create_experiment_backend(
         "evaluator_removal", "rule", "test-model"
     )
+    full_deterministic = create_experiment_backend(
+        "full_deterministic", "rule", "test-model"
+    )
 
     assert isinstance(full, EvidenceGatedAgentBackend)
     assert full.backend.allow_deterministic_trigger_fallback is False
@@ -265,6 +268,12 @@ def test_role_ablation_factory_changes_only_the_named_role(monkeypatch):
     assert rule_trigger.pricing_backend is rule_trigger.evaluator_backend
     assert isinstance(mathematical_pricing.pricing_backend, RuleBasedAgentBackend)
     assert isinstance(evaluator_removal.evaluator_backend, HardCheckAgentBackend)
+    assert isinstance(full_deterministic, EvidenceGatedAgentBackend)
+    assert type(full_deterministic.backend) is RuleBasedAgentBackend
+    deterministic_provenance = describe_agent_roles(full_deterministic)
+    assert deterministic_provenance["trigger"]["evidence_gate"] is True
+    assert deterministic_provenance["pricing"]["evidence_gate"] is False
+    assert deterministic_provenance["evaluator"]["evidence_gate"] is False
 
 
 def test_agent_role_provenance_records_shared_trigger_gate():

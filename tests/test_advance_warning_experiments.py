@@ -23,10 +23,14 @@ from scripts.run_advance_warning_matrix import (
     validate_external_llm_gate,
     validate_execution_budget,
     validate_resume_fingerprints,
+    validate_solver_time_limit,
     workbook_path,
 )
 
 
+HISTORICAL_ABLATION_PROTOCOL_PATH = (
+    ABLATION_PROTOCOL_PATH.parent / "advance_warning_ablation_protocol_v6.json"
+)
 NONAGENTIC_PROTOCOL_PATH = (
     ABLATION_PROTOCOL_PATH.parent / "advance_warning_ablation_protocol_v7.json"
 )
@@ -123,14 +127,15 @@ def test_ablation_protocol_is_frozen_and_matches_runner():
     protocol = validate_ablation_protocol()
     assert ABLATION_PROTOCOL_PATH.exists()
     assert protocol["status"] == (
-        "implemented_and_frozen_pending_altruistic_reexecution"
+        "implemented_and_frozen_pending_300_second_execution"
     )
     assert tuple(protocol["design"]["configurations"]) == ROLE_ABLATION_CONFIGURATIONS
-    assert protocol["design"]["planned_runs"] == 60
-    assert protocol["design"]["modes"] == ["altruistic"]
+    assert protocol["design"]["planned_runs"] == 120
+    assert protocol["design"]["modes"] == ["selfish", "altruistic"]
     assert protocol["controls"]["shared_trigger_evidence_change_gate"] is True
     assert protocol["controls"]["maximum_pricing_reruns"] == 1
     assert protocol["controls"]["maximum_optimizer_attempts_per_trigger"] == 2
+    assert protocol["controls"]["solver_time_limit_seconds"] == 300
     retention = protocol["controls"]["altruistic_baseline_revenue_retention"]
     assert retention["active"] is True
     assert retention["retention_fraction"] == 0.5
@@ -138,6 +143,18 @@ def test_ablation_protocol_is_frozen_and_matches_runner():
     assert protocol["outcomes"][
         "battery_throughput_in_primary_or_secondary_contrasts"
     ] is False
+
+
+def test_solver_time_limit_must_match_selected_frozen_protocol():
+    current = validate_ablation_protocol()
+    historical = validate_ablation_protocol(HISTORICAL_ABLATION_PROTOCOL_PATH)
+
+    validate_solver_time_limit(current, 300.0)
+    validate_solver_time_limit(historical, 60.0)
+    with pytest.raises(ValueError, match="must match the frozen protocol value"):
+        validate_solver_time_limit(current, 60.0)
+    with pytest.raises(ValueError, match="must match the frozen protocol value"):
+        validate_solver_time_limit(historical, 300.0)
 
 
 def test_resume_rejects_changed_frozen_inputs(monkeypatch, tmp_path):
@@ -566,10 +583,10 @@ def test_nonagentic_stack_baseline_protocol_v7_is_frozen_and_matches_runner():
         contrast["baseline"] == "full_deterministic"
         for contrast in protocol["contrasts"]
     )
-    # The v6 protocol must stay free of the new arm so the published matrices
+    # The v6 protocol must stay free of the new arm so the historical matrices
     # keep validating against it unchanged.
     assert "nonagentic_stack_baseline" not in validate_ablation_protocol(
-        ABLATION_PROTOCOL_PATH
+        HISTORICAL_ABLATION_PROTOCOL_PATH
     )["design"]
 
 

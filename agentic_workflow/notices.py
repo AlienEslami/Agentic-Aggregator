@@ -481,7 +481,7 @@ def frozen_rule_parse(record: NoticeRecord, bus_route_map: dict[int, int] | None
     )
     faulted = bool(
         re.search(
-            r"\b(faulted|unavailable|unavailability|out of service|offline|locked out|lockout)\b",
+            r"\b(faulted|unavailable|unavailability|out of service|offline|locked out|lockout|isolate|isolated|isolating|isolation)\b",
             lowered,
         )
     )
@@ -647,7 +647,7 @@ def resolve_notice_coreferences(
                     {charger: float(match.group(1)) for charger in chargers}
                 )
         if chargers and re.search(
-            r"\b(faulted|unavailable|unavailability|out of service|offline|locked out|lockout)\b",
+            r"\b(faulted|unavailable|unavailability|out of service|offline|locked out|lockout|isolate|isolated|isolating|isolation)\b",
             record.text,
             re.IGNORECASE,
         ):

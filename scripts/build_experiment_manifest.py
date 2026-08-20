@@ -54,10 +54,10 @@ def main() -> None:
         ROOT / "inputs" / "revision" / "advance_warning_notices_v1.json",
         ROOT / "inputs" / "revision" / "advance_warning_physical_events_v1.json",
         ROOT / "inputs" / "revision" / "advance_warning_manifest_v1.json",
-        ROOT / "inputs" / "revision" / "advance_warning_ablation_protocol_v4.json",
-        ROOT / "inputs" / "revision" / "information_and_evaluator_ablation_protocol_v2.json",
-        ROOT / "inputs" / "revision" / "revision_sensitivity_protocol_v1.json",
-        ROOT / "inputs" / "revision" / "scaling_and_second_depot_protocol_v1.json",
+        ROOT / "inputs" / "revision" / "advance_warning_ablation_protocol_v8.json",
+        ROOT / "inputs" / "revision" / "information_and_evaluator_ablation_protocol_v3.json",
+        ROOT / "inputs" / "revision" / "revision_sensitivity_protocol_v2.json",
+        ROOT / "inputs" / "revision" / "scaling_and_second_depot_protocol_v2.json",
         ROOT / "inputs" / "revision" / "stochastic_benchmark_protocol_v2.json",
         ROOT / "inputs" / "revision" / "stochastic_benchmark_protocol_v3.json",
         ROOT / "inputs" / "revision" / "independent_validation_checklist_v1.md",
@@ -170,7 +170,7 @@ def main() -> None:
         },
         "solver_settings": {
             "order": os.environ.get("RT_SOLVER_ORDER", "gurobi,appsi_highs,highs,cbc,glpk"),
-            "time_limit_seconds": os.environ.get("RT_SOLVER_TIME_LIMIT", "60"),
+            "time_limit_seconds": os.environ.get("RT_SOLVER_TIME_LIMIT", "300"),
             "mip_gap": os.environ.get("RT_SOLVER_MIP_GAP", "0.02"),
             "lexicographic_mip_gap": os.environ.get(
                 "RT_LEXICOGRAPHIC_MIP_GAP", "0.0"

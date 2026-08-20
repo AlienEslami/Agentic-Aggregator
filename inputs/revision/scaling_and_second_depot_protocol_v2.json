@@ -1,0 +1,61 @@
+{
+  "protocol_version": "scaling_and_second_depot_v2",
+  "status": "implemented_not_yet_executed",
+  "supersedes_for_future_runs": "inputs/revision/scaling_and_second_depot_protocol_v1.json",
+  "change_reason": "Increase the Gurobi limit to 300 seconds per optimization stage; instances, methods, repetitions and measured outcomes are unchanged.",
+  "base_instance": {
+    "name": "depot_a",
+    "fleet_size": 8,
+    "chargers": 8,
+    "horizon_intervals": 48,
+    "interval_minutes": 30,
+    "terminal_soc_fraction": 0.2
+  },
+  "scaling_instances": [
+    {"name": "depot_a_8", "fleet_size": 8, "replication_factor": 1},
+    {"name": "depot_a_16", "fleet_size": 16, "replication_factor": 2},
+    {"name": "depot_a_32", "fleet_size": 32, "replication_factor": 4}
+  ],
+  "replication_rule": {
+    "buses": "replicate the complete eight-bus block with new contiguous IDs",
+    "trips": "replicate every route block with the corresponding new bus and trip IDs",
+    "chargers": "one charger per bus; replicate nameplate power exactly",
+    "depot_power": "increase linearly with replication factor",
+    "prices": "hold the same 48-interval price process fixed",
+    "initial_and_terminal_soc": "hold the same per-bus fractions fixed",
+    "day_ahead_energy_and_site_exchange": "replicate per-bus trajectories and scale site buy/sell linearly"
+  },
+  "second_depot": {
+    "name": "depot_b_8",
+    "fleet_size": 8,
+    "construction": "deterministic distinct synthetic instance, not a scaling clone",
+    "differences": [
+      "route-energy coefficients use prespecified deviations of up to three percent",
+      "route timetables, charger count, and depot power are held fixed to isolate the different route-energy and price data",
+      "the price profile is shifted by two hours and scaled by 1.02"
+    ]
+  },
+  "benchmark": {
+    "case": "aw_combined_evening",
+    "modes": ["selfish", "altruistic"],
+    "methods": ["rule_text_event_trigger", "full_agentic"],
+    "solver_order": ["gurobi"],
+    "solver_fallback_permitted_in_final_results": false,
+    "solver_time_limit_seconds": 300,
+    "solver_time_limit_scope": "per optimization stage or standalone solve",
+    "solver_mip_gap": 0.02,
+    "maximum_pricing_reruns": 0,
+    "reason": "Measure one pricing/optimization/evaluation attempt per genuine event decision without multiplying solver time by evaluator reruns.",
+    "timing_repetitions": 3,
+    "separate_metrics": [
+      "workflow wall time",
+      "LLM latency and token usage",
+      "optimizer wrapper latency and CPU",
+      "solver wall time, variables, constraints, gap, nodes, and iterations",
+      "peak process memory",
+      "operational feasibility and full-day economics"
+    ]
+  },
+  "storage": "Generated Excel inputs and run workbooks remain ignored local artifacts; code, protocol, manifests, and compact summaries are versioned.",
+  "reporting": "Report solver limit and termination condition for every indexed run."
+}

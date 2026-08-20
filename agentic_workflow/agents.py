@@ -1837,7 +1837,11 @@ def create_experiment_backend(
     if configuration == "numerical_event_trigger":
         return NumericalOnlyAgentBackend()
     if configuration == "full_deterministic":
-        return rule
+        # The frozen comparison protocol requires the same evidence-change gate
+        # for Agent and non-Agent triggers.  Without it, a persistent deviation
+        # is treated as a new event every interval, creating trigger chattering
+        # that is unrelated to the presence or absence of an LLM.
+        return EvidenceGatedAgentBackend(rule)
     if configuration == "agent_trigger_only":
         trigger_llm = EvidenceGatedAgentBackend(llm_backend())
         return CompositeAgentBackend(trigger_llm, rule, rule)

@@ -198,7 +198,7 @@ def solve_dumb_charging_model(model):
     currency units, flattering every saving measured against it.
     """
 
-    time_limit = float(os.environ.get('DA_SOLVER_TIME_LIMIT', '60'))
+    time_limit = float(os.environ.get('DA_SOLVER_TIME_LIMIT', '300'))
     mip_gap = float(os.environ.get('DA_DUMB_CHARGING_MIP_GAP', '0.0'))
     solver_tee = str(os.environ.get('DA_SOLVER_TEE', '')).strip().lower() in {
         '1', 'true', 'yes', 'on'

@@ -19,9 +19,13 @@ REQUIRED_FILES = (
     ROOT / "requirements-dev-lock.txt",
     REVISION / "advance_warning_ablation_protocol_v6.json",
     REVISION / "advance_warning_ablation_protocol_v7.json",
+    REVISION / "advance_warning_ablation_protocol_v8.json",
     REVISION / "information_and_evaluator_ablation_protocol_v2.json",
+    REVISION / "information_and_evaluator_ablation_protocol_v3.json",
     REVISION / "revision_sensitivity_protocol_v1.json",
+    REVISION / "revision_sensitivity_protocol_v2.json",
     REVISION / "scaling_and_second_depot_protocol_v1.json",
+    REVISION / "scaling_and_second_depot_protocol_v2.json",
     REVISION / "stochastic_benchmark_protocol_v1.json",
     REVISION / "stochastic_benchmark_protocol_v2.json",
     REVISION / "stochastic_benchmark_protocol_v3.json",
@@ -149,6 +153,67 @@ def main(argv: list[str] | None = None) -> int:
                 "current": current_prompt_hashes,
             }
         )
+
+    current_protocol_path = REVISION / "advance_warning_ablation_protocol_v8.json"
+    if current_protocol_path.exists() and all(
+        path.exists() for path in prompt_paths.values()
+    ):
+        protocol = validate_json(current_protocol_path)
+        recorded_prompt_hashes = (protocol.get("controls") or {}).get(
+            "prompt_sha256"
+        ) or {}
+        current_prompt_hashes = {
+            name: sha256(path) for name, path in prompt_paths.items()
+        }
+        checks.append(
+            {
+                "check": "current_v8_prompt_hashes_match_protocol",
+                "passed": recorded_prompt_hashes == current_prompt_hashes,
+                "recorded": recorded_prompt_hashes,
+                "current": current_prompt_hashes,
+            }
+        )
+
+    current_limit_locations = {
+        "advance_warning_ablation_protocol_v8.json": (
+            "controls",
+            "solver_time_limit_seconds",
+        ),
+        "revision_sensitivity_protocol_v2.json": (
+            "common_controls",
+            "solver_time_limit_seconds",
+        ),
+        "information_and_evaluator_ablation_protocol_v3.json": (
+            "planning_and_accounting",
+            "solver_time_limit_seconds",
+        ),
+        "scaling_and_second_depot_protocol_v2.json": (
+            "benchmark",
+            "solver_time_limit_seconds",
+        ),
+        "stochastic_benchmark_protocol_v3.json": (
+            "method",
+            "solver_time_limit_seconds",
+        ),
+    }
+    recorded_limits: dict[str, float | None] = {}
+    for name, keys in current_limit_locations.items():
+        path = REVISION / name
+        if not path.exists():
+            recorded_limits[name] = None
+            continue
+        value: Any = validate_json(path)
+        for key in keys:
+            value = value[key]
+        recorded_limits[name] = float(value)
+    checks.append(
+        {
+            "check": "current_protocols_use_300_second_solver_limit",
+            "passed": bool(recorded_limits)
+            and all(value == 300.0 for value in recorded_limits.values()),
+            "recorded_limits": recorded_limits,
+        }
+    )
 
     stochastic_path = REVISION / "stochastic_benchmark_protocol_v3.json"
     if stochastic_path.exists():

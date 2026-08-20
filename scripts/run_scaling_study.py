@@ -22,7 +22,7 @@ from scripts.build_scaling_inputs import build_instance, sha256
 from scripts.run_closed_loop_trigger_comparison import SUMMARY_COLUMNS, command_for
 
 
-PROTOCOL = ROOT / "inputs" / "revision" / "scaling_and_second_depot_protocol_v1.json"
+PROTOCOL = ROOT / "inputs" / "revision" / "scaling_and_second_depot_protocol_v2.json"
 NOTICE_FILE = ROOT / "inputs" / "revision" / "advance_warning_notices_v1.json"
 PHYSICAL_FILE = (
     ROOT / "inputs" / "revision" / "advance_warning_physical_events_v1.json"
@@ -225,7 +225,7 @@ def main(argv: list[str] | None = None) -> int:
         description="Run separated workflow/LLM/optimizer scaling and Depot B tests."
     )
     parser.add_argument(
-        "--output-root", type=Path, default=Path("results/revision/scaling_v1")
+        "--output-root", type=Path, default=Path("results/revision/scaling_v2")
     )
     parser.add_argument(
         "--generated-input-root",
@@ -235,7 +235,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--repetitions", type=int, default=3)
     parser.add_argument("--model", default="gpt-5.6-luna")
     parser.add_argument("--solver-order", default="gurobi")
-    parser.add_argument("--solver-time-limit", type=float, default=60.0)
+    parser.add_argument("--solver-time-limit", type=float, default=300.0)
     parser.add_argument("--solver-mip-gap", type=float, default=0.02)
     parser.add_argument("--configuration", action="append", choices=CONFIGURATIONS)
     parser.add_argument("--instance", action="append", choices=[f"{d}_{n}" for d, n in INSTANCES])
@@ -280,6 +280,13 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit("--solver-time-limit must be positive")
     if not 0 <= args.solver_mip_gap < 1:
         raise SystemExit("--solver-mip-gap must be in [0,1)")
+    protocol = json.loads(PROTOCOL.read_text(encoding="utf-8"))
+    frozen_time_limit = float(protocol["benchmark"]["solver_time_limit_seconds"])
+    if abs(args.solver_time_limit - frozen_time_limit) > 1e-12:
+        raise SystemExit(
+            "--solver-time-limit must match the frozen protocol value "
+            f"({frozen_time_limit:g} seconds)"
+        )
 
     if not args.dry_run:
         for depot, fleet_size in INSTANCES:
@@ -325,7 +332,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"[{index}/{len(specs)}] indexed {spec.run_id}", flush=True)
 
     manifest = {
-        "protocol_version": "scaling_and_second_depot_v1",
+        "protocol_version": protocol["protocol_version"],
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "git_commit": git_revision(),
         "git_worktree_clean": git_clean(),

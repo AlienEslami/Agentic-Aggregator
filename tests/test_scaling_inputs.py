@@ -50,3 +50,51 @@ def test_bus_discovery_and_plan_application_support_16_buses():
     assert state.realtime_plan.loc[1, "bus_16_kwh"] == 115.0
     assert state.forecast_energy.loc[1, "bus_16_kwh"] == 115.0
     assert state.realtime_plan.loc[1, "decision_timestep"] == 1
+
+
+def test_rolling_stochastic_result_commits_only_declared_first_stage():
+    plan = pd.DataFrame(
+        [
+            {
+                "timestep": step,
+                "w_buy": 0.0,
+                "w_sell": 0.0,
+                "bus_1_kwh": 100.0,
+            }
+            for step in range(3)
+        ]
+    )
+    state = WorkflowState(
+        realtime_plan=plan,
+        forecast_prices=pd.DataFrame(),
+        forecast_energy=plan[["timestep", "bus_1_kwh"]].copy(),
+    )
+    from agentic_workflow.models import PricingDecision, TriggerDecision
+
+    state.apply_optimized_plan(
+        timestep=1,
+        trigger=TriggerDecision(
+            action="optimize",
+            reasoning="rolling stochastic",
+            confidence=1.0,
+            trigger_type="deviation",
+            flagged_buses=[],
+        ),
+        pricing=PricingDecision(
+            buy_multipliers=[1.1, 1.1],
+            sell_multipliers=[0.7, 0.7],
+            reasoning="deterministic comparator tariff",
+            confidence=1.0,
+        ),
+        result={
+            "w_buy": [4.0, 9.0],
+            "w_sell": [0.0, 0.0],
+            "energy": [[104.0, 109.0]],
+            "commitment_steps": 1,
+        },
+        intraday_prices=[],
+    )
+    assert state.realtime_plan.loc[1, "w_buy"] == 4.0
+    assert state.realtime_plan.loc[2, "w_buy"] == 0.0
+    assert state.realtime_plan.loc[1, "bus_1_kwh"] == 104.0
+    assert state.realtime_plan.loc[2, "bus_1_kwh"] == 100.0

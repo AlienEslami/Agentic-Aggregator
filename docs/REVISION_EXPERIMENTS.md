@@ -477,7 +477,7 @@ The deterministic oracle/rule/numerical matrix has been validated in both modes;
 generated results remain ignored. Run repeated nondeterministic Agent Trigger
 trials before making an Agent-over-rule economic-superiority claim.
 The 8/16/32 scaling and second-depot implementation is now prespecified in
-`scaling_and_second_depot_protocol_v1.json`. Generated workbooks remain ignored
+`scaling_and_second_depot_protocol_v2.json`. Generated workbooks remain ignored
 local artifacts. `build_scaling_inputs.py` applies a declared replication rule
 for buses, trips, charger ratio, depot power, day-ahead exchange, and terminal
 SOC, while constructing a distinct Depot B from different route-energy and
@@ -906,17 +906,17 @@ ceilings, not expected costs; change them only through an explicitly recorded
 authorization.
 
 ```powershell
-# 1. Corrected altruistic role ablation: 60 episodes
-python scripts/run_advance_warning_matrix.py --output-root results/revision/ablation_altruistic_v6 --mode altruistic --altruistic-revenue-retention-fraction 0.50 --include-role-ablations --only-role-ablations --ablation-repetitions 5 --allow-external-llm --require-clean-git --max-approximate-api-cost-usd 2.50
-python scripts/analyze_advance_warning_matrix.py --runs results/revision/ablation_altruistic_v6/matrix_runs.csv --output-dir results/revision/ablation_altruistic_v6/analysis
+# 1. Current role ablation: 120 episodes
+python scripts/run_advance_warning_matrix.py --output-root results/revision/ablation_v8 --ablation-protocol inputs/revision/advance_warning_ablation_protocol_v8.json --altruistic-revenue-retention-fraction 0.50 --include-role-ablations --only-role-ablations --ablation-repetitions 5 --allow-external-llm --require-clean-git --solver-time-limit 300 --max-approximate-api-cost-usd 5.00
+python scripts/analyze_advance_warning_matrix.py --runs results/revision/ablation_v8/matrix_runs.csv --output-dir results/revision/ablation_v8/analysis
 
 # 2. Controlled Evaluator ablation: 48 episodes
-python scripts/run_evaluator_ablation.py --output-root results/revision/evaluator_ablation_v2 --agent-repetitions 5 --allow-external-llm --require-clean-git
-python scripts/analyze_evaluator_ablation.py --input-root results/revision/evaluator_ablation_v2 --output-root results/revision/evaluator_ablation_v2/analysis
+python scripts/run_evaluator_ablation.py --output-root results/revision/evaluator_ablation_v3 --agent-repetitions 5 --allow-external-llm --require-clean-git --solver-time-limit 300
+python scripts/analyze_evaluator_ablation.py --input-root results/revision/evaluator_ablation_v3 --output-root results/revision/evaluator_ablation_v3/analysis
 
 # 3. One-factor sensitivity: 55 runs
-python scripts/run_revision_sensitivity.py --output-root results/revision/sensitivity_v1 --repetitions 5 --allow-external-llm --require-clean-git --max-approximate-api-cost-usd 4.00
-python scripts/analyze_revision_sensitivity.py --runs results/revision/sensitivity_v1/sensitivity_runs.csv --output-dir results/revision/sensitivity_v1/analysis
+python scripts/run_revision_sensitivity.py --output-root results/revision/sensitivity_v2 --repetitions 5 --allow-external-llm --require-clean-git --solver-time-limit 300 --max-approximate-api-cost-usd 4.00
+python scripts/analyze_revision_sensitivity.py --runs results/revision/sensitivity_v2/sensitivity_runs.csv --output-dir results/revision/sensitivity_v2/analysis
 
 # 4. Fleet scaling and Depot B: 48 episodes
 # The builder writes one instance per call; the study needs all four.
@@ -924,8 +924,8 @@ python scripts/build_scaling_inputs.py --depot depot_a --fleet-size 8
 python scripts/build_scaling_inputs.py --depot depot_a --fleet-size 16
 python scripts/build_scaling_inputs.py --depot depot_a --fleet-size 32
 python scripts/build_scaling_inputs.py --depot depot_b --fleet-size 8
-python scripts/run_scaling_study.py --output-root results/revision/scaling_v1 --repetitions 3 --allow-external-llm --require-clean-git --max-approximate-api-cost-usd 2.00
-python scripts/analyze_scaling_study.py --runs results/revision/scaling_v1/scaling_runs.csv --output-dir results/revision/scaling_v1/analysis
+python scripts/run_scaling_study.py --output-root results/revision/scaling_v2 --repetitions 3 --allow-external-llm --require-clean-git --solver-time-limit 300 --max-approximate-api-cost-usd 2.00
+python scripts/analyze_scaling_study.py --runs results/revision/scaling_v2/scaling_runs.csv --output-dir results/revision/scaling_v2/analysis
 ```
 
 ### Matched non-agentic baseline
@@ -942,8 +942,8 @@ v6 is left untouched so the published matrices keep validating against it.
 
 ```powershell
 # 5. Matched non-agentic loop: 6 deterministic episodes, no API cost
-python scripts/run_advance_warning_matrix.py --output-root results/revision/nonagentic_baseline_v7 --ablation-protocol inputs/revision/advance_warning_ablation_protocol_v7.json --include-nonagentic-baseline --only-nonagentic-baseline --require-clean-git
-python scripts/analyze_advance_warning_matrix.py --runs results/revision/nonagentic_baseline_v7/matrix_runs.csv --output-dir results/revision/nonagentic_baseline_v7/analysis
+python scripts/run_advance_warning_matrix.py --output-root results/revision/nonagentic_baseline_v8_confirmatory --ablation-protocol inputs/revision/advance_warning_ablation_protocol_v8.json --include-nonagentic-baseline --only-nonagentic-baseline --require-clean-git --solver-time-limit 300
+python scripts/analyze_advance_warning_matrix.py --runs results/revision/nonagentic_baseline_v8_confirmatory/matrix_runs.csv --output-dir results/revision/nonagentic_baseline_v8_confirmatory/analysis
 ```
 
 The analyzer reports the new arm as the `agentic_stack_contribution` contrast

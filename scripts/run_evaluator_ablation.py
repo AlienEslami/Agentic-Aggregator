@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 NOTICE_FILE = ROOT / "inputs" / "revision" / "evaluator_priority_notices_v1.json"
 PHYSICAL_FILE = ROOT / "inputs" / "revision" / "advance_warning_physical_events_v1.json"
 PROTOCOL_FILE = (
-    ROOT / "inputs" / "revision" / "information_and_evaluator_ablation_protocol_v2.json"
+    ROOT / "inputs" / "revision" / "information_and_evaluator_ablation_protocol_v3.json"
 )
 CASES = (
     "aw_route6_late_return",
@@ -175,20 +175,20 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--agent-repetitions", type=int, default=5)
     parser.add_argument("--model", default="gpt-5.6-luna")
     parser.add_argument("--solver-order", default="gurobi")
-    parser.add_argument("--solver-time-limit", type=float, default=60.0)
+    parser.add_argument("--solver-time-limit", type=float, default=300.0)
     parser.add_argument("--solver-mip-gap", type=float, default=0.02)
     parser.add_argument(
         "--altruistic-revenue-retention-fraction",
         type=float,
         default=0.50,
-        help="Must match the frozen ablation protocol (v6/v7 default: 0.50).",
+        help="Must match the frozen advance-warning protocol (v8: 0.50).",
     )
     parser.add_argument("--allow-external-llm", action="store_true")
     parser.add_argument("--require-clean-git", action="store_true")
     parser.add_argument("--force", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args(argv)
-    validate_protocol()
+    protocol = validate_protocol()
 
     cases = tuple(args.case or CASES)
     modes = tuple(args.mode or MODES)
@@ -201,6 +201,16 @@ def main(argv: list[str] | None = None) -> int:
         raise ValueError("--solver-time-limit must be positive")
     if not 0 <= args.solver_mip_gap < 1:
         raise ValueError("--solver-mip-gap must be in [0, 1)")
+    frozen_time_limit = float(
+        (protocol.get("planning_and_accounting") or {})[
+            "solver_time_limit_seconds"
+        ]
+    )
+    if abs(args.solver_time_limit - frozen_time_limit) > 1e-12:
+        raise ValueError(
+            "--solver-time-limit must match the frozen protocol value "
+            f"({frozen_time_limit:g} seconds)"
+        )
     if args.require_clean_git and not git_clean():
         raise ValueError("Refusing execution because the Git worktree is not clean")
     if LLM_CONFIGURATION in configurations and not args.dry_run:
@@ -268,7 +278,7 @@ def main(argv: list[str] | None = None) -> int:
 
     args.output_root.mkdir(parents=True, exist_ok=True)
     manifest = {
-        "protocol": "controlled_evaluator_ablation_v2",
+        "protocol": protocol["protocol_version"],
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "git_commit": git_revision(),
         "git_worktree_clean": git_clean(),

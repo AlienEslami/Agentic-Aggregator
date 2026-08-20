@@ -26,7 +26,7 @@ from agentic_workflow.experiment_controls import (
 from scripts.run_closed_loop_trigger_comparison import SUMMARY_COLUMNS, command_for
 
 
-PROTOCOL = ROOT / "inputs" / "revision" / "revision_sensitivity_protocol_v1.json"
+PROTOCOL = ROOT / "inputs" / "revision" / "revision_sensitivity_protocol_v2.json"
 TRIGGER_DATA = ROOT / "inputs" / "revision" / "trigger_notices_v3.json"
 NOTICE_DATA = ROOT / "inputs" / "revision" / "advance_warning_notices_v1.json"
 PHYSICAL_DATA = (
@@ -285,7 +285,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--output-root",
         type=Path,
-        default=Path("results/revision/sensitivity_v1"),
+        default=Path("results/revision/sensitivity_v2"),
     )
     parser.add_argument("--component", choices=("all", "trigger", "pricing"), default="all")
     parser.add_argument("--repetitions", type=int, default=5)
@@ -294,7 +294,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--require-clean-git", action="store_true")
     parser.add_argument("--max-approximate-api-cost-usd", type=float)
     parser.add_argument("--solver-order", default="gurobi")
-    parser.add_argument("--solver-time-limit", type=float, default=60.0)
+    parser.add_argument("--solver-time-limit", type=float, default=300.0)
     parser.add_argument("--solver-mip-gap", type=float, default=0.02)
     parser.add_argument("--force", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
@@ -325,6 +325,15 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit("--solver-time-limit must be positive")
     if not 0 <= args.solver_mip_gap < 1:
         raise SystemExit("--solver-mip-gap must be in [0, 1)")
+    protocol = json.loads(PROTOCOL.read_text(encoding="utf-8"))
+    frozen_time_limit = float(
+        protocol["common_controls"]["solver_time_limit_seconds"]
+    )
+    if abs(args.solver_time_limit - frozen_time_limit) > 1e-12:
+        raise SystemExit(
+            "--solver-time-limit must match the frozen protocol value "
+            f"({frozen_time_limit:g} seconds)"
+        )
 
     solver_environment = os.environ.copy()
     solver_environment.update(
@@ -374,7 +383,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"[{index}/{len(specs)}] indexed {spec.run_id}", flush=True)
 
     manifest = {
-        "protocol_version": "revision_sensitivity_v1",
+        "protocol_version": protocol["protocol_version"],
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "git_commit": git_revision(),
         "git_worktree_clean": git_clean(),

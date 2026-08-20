@@ -1,0 +1,156 @@
+{
+  "protocol_version": "advance_warning_ablation_v8",
+  "status": "implemented_and_frozen_pending_300_second_execution",
+  "frozen_date_utc": "2026-08-20",
+  "prompt_freeze_commit": "f3ece72811bfdd9c6acb27738e51e9832d8e63da",
+  "supersedes_for_future_runs": "inputs/revision/advance_warning_ablation_protocol_v7.json",
+  "historical_result_policy": "All earlier outputs remain immutable and retain their recorded protocol and solver limit. V8 governs new executions only; diagnostic and confirmatory outputs must be identified separately and must not be silently pooled.",
+  "change_reason": [
+    "increase the Gurobi time allowance from 60 to 300 seconds per optimization stage so difficult real-time, scaling and stochastic instances have more opportunity to prove or improve their incumbent solution",
+    "make the full no-AI trigger stateful across messages from the same event so a later confirmation can reuse the assets named in the earlier public maintenance message",
+    "apply the same evidence-change gate to the Agent and full no-AI triggers so persistent evidence does not create trigger chattering",
+    "leave the optimizer formulation, Agent prompts, hidden truth, cases, settlement and revenue-retention policy unchanged",
+    "make the requested limit part of the frozen protocol and reject executions whose command-line limit does not match it"
+  ],
+  "design": {
+    "candidate_configuration": "full_agentic",
+    "configurations": [
+      "full_agentic",
+      "rule_parser_trigger_substitution",
+      "deterministic_pricing_substitution",
+      "evaluator_removal"
+    ],
+    "cases": [
+      "aw_route6_late_return",
+      "aw_charger_bank_shutdown",
+      "aw_combined_evening"
+    ],
+    "modes": [
+      "selfish",
+      "altruistic"
+    ],
+    "notice_variant": "uncertain_chat",
+    "repetitions_per_configuration_case_mode": 5,
+    "case_mode_cells": 6,
+    "planned_runs": 120,
+    "experimental_unit": "one complete 48-timestep closed-loop episode",
+    "analysis": "descriptive difference in repeated-episode means within each case-mode cell; operational feasibility is reported before economic outcomes",
+    "nonagentic_stack_baseline": {
+      "configurations": [
+        "full_deterministic"
+      ],
+      "repetitions_per_configuration_case_mode": 1,
+      "planned_runs": 6,
+      "deterministic": true,
+      "uses_external_llm": false,
+      "components": {
+        "trigger": "frozen stateful text rule over the same public notice sequence, with same-event coreference and the shared evidence-change gate",
+        "pricing": "deterministic price-zone multiplier heuristic",
+        "evaluator": "hard feasibility and bound checks only",
+        "notice_path": "rule"
+      }
+    }
+  },
+  "contrasts": [
+    {
+      "name": "llm_trigger_contribution",
+      "candidate": "full_agentic",
+      "baseline": "rule_parser_trigger_substitution",
+      "single_component_changed": "Replace only the LLM Trigger interpreter with the frozen text parser."
+    },
+    {
+      "name": "llm_pricing_contribution",
+      "candidate": "full_agentic",
+      "baseline": "deterministic_pricing_substitution",
+      "single_component_changed": "Replace only LLM pricing with the deterministic price-zone heuristic under the same 50% baseline-revenue retention policy."
+    },
+    {
+      "name": "llm_evaluator_contribution",
+      "candidate": "full_agentic",
+      "baseline": "evaluator_removal",
+      "single_component_changed": "Remove only the LLM evaluator while retaining solver, feasibility and method-independent baseline-revenue retention guards."
+    },
+    {
+      "name": "agentic_stack_contribution",
+      "candidate": "full_agentic",
+      "baseline": "full_deterministic",
+      "single_component_changed": "Replace the entire agentic layer with the matched rule-based loop; optimizer, inputs, disturbances and settlement are unchanged."
+    }
+  ],
+  "controls": {
+    "common_hidden_physical_truth": true,
+    "canonical_hidden_truth_sent_to_llm": false,
+    "causal_interval_settlement": "settle interval t before the decision and optimize t+1 through 48",
+    "same_workbooks_tariffs_solver_and_case_inputs": true,
+    "v2g_enabled_in_every_arm": true,
+    "shared_trigger_evidence_change_gate": true,
+    "llm_deterministic_numerical_trigger_fallback": false,
+    "maximum_pricing_reruns": 1,
+    "maximum_optimizer_attempts_per_trigger": 2,
+    "altruistic_baseline_revenue_retention": {
+      "active": true,
+      "baseline_source": "frozen day_ahead_summary.aggregator_revenue for the altruistic mode",
+      "retention_fraction": 0.5,
+      "floor_formula": "0.5 * frozen day_ahead_summary.aggregator_revenue",
+      "expected_reference_revenue_for_current_input": 18.428513,
+      "expected_retention_floor_for_current_input": 9.214257,
+      "full_day_rule": "projected full-day aggregator revenue must be at least the frozen floor",
+      "remaining_rule": "remaining revenue required equals max(0, frozen full-day floor minus realized settled-prefix revenue)",
+      "average_multiplier_constraint": false
+    },
+    "candidate_selection": "operational priority first; for altruistic candidates require the 50% baseline-revenue retention floor before comparing projected full-day PTO cost",
+    "trigger_prompt_variant": "baseline",
+    "trigger_confidence_threshold": 0.0,
+    "pricing_guidance_variant": "base",
+    "pricing_guidance_is_optional": true,
+    "pricing_hard_bounds_changed_by_guidance": false,
+    "prompt_sha256": {
+      "trigger_system.txt": "ab19e952cb147b0693a7bee9ea23403cbefd3a1ca28a006cb069facce1e0dbba",
+      "pricing_selfish_system.txt": "cd36c75d95e425dea89c76ae1e71d3bd636908b3edf98bfa16050402659fcfe1",
+      "pricing_altruistic_system.txt": "934b806ef1481b0d0650c21faca65184412830078bb3254c1b49a6ae5fde8537",
+      "evaluator_system.txt": "fe1a30f2bcd29b4bc836edb383490088c4503b71e0e5df4dbd91309fc1fcbf59"
+    },
+    "model": "gpt-5.6-luna",
+    "reasoning_effort": "low",
+    "solver_order": [
+      "gurobi"
+    ],
+    "solver_fallback_permitted_in_final_results": false,
+    "solver_time_limit_seconds": 300,
+    "solver_time_limit_scope": "per optimization stage or standalone solve, not a whole-episode wall-clock cap",
+    "solver_mip_gap": 0.02,
+    "confirmatory_requires_clean_git": true
+  },
+  "outcomes": {
+    "operational_feasibility_first": true,
+    "complete_48_timesteps_required": true,
+    "maximum_reserve_shortfall_kwh": 0.000001,
+    "reserve_violation_timesteps": 0,
+    "minimum_observed_soc_fraction": 0.2,
+    "terminal_minimum_soc_fraction": 0.2,
+    "baseline_revenue_retention_compliance_before_altruistic_cost_comparison": true,
+    "economic_comparison_only_when_both_runs_are_operationally_feasible_and_meet_retention_floor": true,
+    "altruistic_score": "among runs meeting the 50% baseline-revenue retention floor, use the negative of realized full-day PTO cost so that higher is better",
+    "secondary_outcomes": [
+      "realized full-day grid net cost",
+      "cheap-period charging",
+      "expensive-period V2G export",
+      "price-aligned flexibility",
+      "curtailed energy",
+      "peak net import"
+    ],
+    "battery_throughput_in_primary_or_secondary_contrasts": false,
+    "economic_tie_tolerance": 0.001,
+    "bootstrap_iterations": 10000
+  },
+  "reporting": {
+    "report_each_case_mode_contrast": true,
+    "report_operational_feasibility_before_baseline_revenue_retention_and_economics": true,
+    "report_retention_floor_compliance_and_shortfall": true,
+    "report_tokens_api_cost_latency_cpu_memory_and_solver_telemetry": true,
+    "do_not_pool_case_modes": true,
+    "report_nonagentic_stack_baseline_before_role_ablations": true,
+    "nonagentic_baseline_is_deterministic_single_run_per_cell": true,
+    "report_solver_limit_and_termination_condition_for_every_run": true
+  }
+}

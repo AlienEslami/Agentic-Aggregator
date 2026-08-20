@@ -33,6 +33,12 @@ from agentic_workflow.uncertainty import select_operational_value
 
 DATA = Path(__file__).parents[1] / "inputs" / "revision" / "trigger_notices.json"
 V3_DATA = Path(__file__).parents[1] / "inputs" / "revision" / "trigger_notices_v3.json"
+ADVANCE_WARNING_DATA = (
+    Path(__file__).parents[1]
+    / "inputs"
+    / "revision"
+    / "advance_warning_notices_v1.json"
+)
 
 
 def test_public_clock_window_has_one_deterministic_timestep_mapping():
@@ -378,6 +384,31 @@ def test_rule_baseline_resolves_same_event_coreferences_without_truth():
     assert severity.updates.delay_minutes_by_bus == {8: 28}
     assert severity.updates.charger_power_kw == {8: 25.0}
     assert "same_event_memory_v1" in severity.evidence
+
+
+def test_rule_baseline_carries_confirmed_isolation_assets_into_updates():
+    series = NoticeSeries(ADVANCE_WARNING_DATA)
+    warning_record = series.at(
+        4,
+        scenario_ids=("aw_charger_bank_shutdown",),
+        wording_variant="uncertain_chat",
+    )[0]
+    warning = frozen_rule_parse(warning_record)
+    assert warning.affected_chargers == [6, 7, 8]
+    assert warning.updates.unavailable_chargers == []
+
+    confirmation_record = series.at(
+        5,
+        scenario_ids=("aw_charger_bank_shutdown",),
+        wording_variant="uncertain_chat",
+    )[0]
+    confirmation = resolve_notice_coreferences(
+        confirmation_record,
+        frozen_rule_parse(confirmation_record),
+        {warning.event_id: warning.model_dump()},
+    )
+    assert confirmation.affected_chargers == [6, 7, 8]
+    assert confirmation.updates.unavailable_chargers == [6, 7, 8]
 
 
 def test_notice_only_context_never_exposes_hidden_benchmark_labels():

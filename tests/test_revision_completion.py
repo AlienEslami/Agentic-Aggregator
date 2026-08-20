@@ -150,11 +150,11 @@ def test_depot_b_transform_is_distinct_and_scaling_ids_are_contiguous():
     assert shifted.loc[0, "spot_market"] == pytest.approx(45 * 1.02)
 
 
-def test_evaluator_v2_protocol_has_no_currency_penalty():
+def test_current_evaluator_protocol_has_no_currency_penalty():
     protocol = json.loads(
         (
             __import__("pathlib").Path(__file__).resolve().parents[1]
-            / "inputs/revision/information_and_evaluator_ablation_protocol_v2.json"
+            / "inputs/revision/information_and_evaluator_ablation_protocol_v3.json"
         ).read_text(encoding="utf-8")
     )
     rerun = protocol["rerun_mechanism"]
@@ -166,13 +166,19 @@ def test_evaluator_v2_protocol_has_no_currency_penalty():
         "solver_fallback_permitted_in_final_results"
     ] is False
     assert validate_evaluator_protocol()["protocol_version"] == (
-        "information_and_evaluator_ablation_v2"
+        "information_and_evaluator_ablation_v3"
     )
+    assert protocol["planning_and_accounting"]["solver_time_limit_seconds"] == 300
 
 
-def test_revision_package_validator_tracks_final_v6_protocol_and_prompts():
+def test_revision_package_validator_tracks_historical_and_current_protocols():
     required_names = {path.name for path in REQUIRED_FILES}
     assert "advance_warning_ablation_protocol_v6.json" in required_names
+    assert "advance_warning_ablation_protocol_v7.json" in required_names
+    assert "advance_warning_ablation_protocol_v8.json" in required_names
+    assert "information_and_evaluator_ablation_protocol_v3.json" in required_names
+    assert "revision_sensitivity_protocol_v2.json" in required_names
+    assert "scaling_and_second_depot_protocol_v2.json" in required_names
     assert "advance_warning_ablation_protocol_v5.json" not in required_names
     assert {
         "trigger_system.txt",

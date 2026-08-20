@@ -32,7 +32,7 @@ PHYSICAL_INPUT = (
     ROOT / "inputs" / "revision" / "advance_warning_physical_events_v1.json"
 )
 ABLATION_PROTOCOL_PATH = (
-    ROOT / "inputs" / "revision" / "advance_warning_ablation_protocol_v6.json"
+    ROOT / "inputs" / "revision" / "advance_warning_ablation_protocol_v8.json"
 )
 PROMPT_INPUTS = {
     name: ROOT / "agentic_workflow" / "prompts" / name
@@ -368,6 +368,19 @@ def validate_ablation_protocol(
     return protocol
 
 
+def validate_solver_time_limit(
+    protocol: dict[str, Any], requested_time_limit: float
+) -> None:
+    """Require an execution to use the limit recorded by its frozen protocol."""
+
+    frozen_time_limit = float(protocol["controls"]["solver_time_limit_seconds"])
+    if abs(float(requested_time_limit) - frozen_time_limit) > 1e-12:
+        raise ValueError(
+            "--solver-time-limit must match the frozen protocol value "
+            f"({frozen_time_limit:g} seconds)"
+        )
+
+
 def current_input_fingerprints(
     protocol_path: Path | None = None,
     notice_path: Path | None = None,
@@ -540,8 +553,9 @@ def write_manifest(
         Path(args.notices_file),
         Path(args.physical_events_file),
     )
+    protocol = json.loads(Path(args.ablation_protocol).read_text(encoding="utf-8"))
     manifest = {
-        "protocol_version": "advance_warning_matrix_v6",
+        "protocol_version": protocol["protocol_version"],
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "git_commit": git_revision(),
         "git_worktree_clean": git_worktree_is_clean(),
@@ -652,7 +666,7 @@ def main() -> None:
         ),
     )
     parser.add_argument("--solver-order", default="gurobi")
-    parser.add_argument("--solver-time-limit", type=float, default=60.0)
+    parser.add_argument("--solver-time-limit", type=float, default=300.0)
     parser.add_argument("--solver-mip-gap", type=float, default=0.02)
     parser.add_argument("--include-agent", action="store_true")
     parser.add_argument("--agent-repetitions", type=int, default=5)
@@ -729,9 +743,9 @@ def main() -> None:
         type=Path,
         default=ABLATION_PROTOCOL_PATH,
         help=(
-            "Frozen protocol to validate against. Defaults to the v6 protocol "
-            "used by the published matrices; the non-agentic baseline requires "
-            "a protocol that declares it, such as the v7 protocol."
+            "Frozen protocol to validate against. Defaults to the v8 protocol "
+            "for new 300-second executions. Pass an older protocol and its "
+            "recorded solver limit only when reproducing historical results."
         ),
     )
     parser.add_argument("--include-fixed", action="store_true")
@@ -792,7 +806,7 @@ def main() -> None:
     ):
         raise SystemExit("--max-approximate-api-cost-usd must be positive")
     if args.solver_order.strip().lower() != "gurobi":
-        raise SystemExit("Final v6 matrix requires --solver-order gurobi")
+        raise SystemExit("Final matrix requires --solver-order gurobi")
     if args.solver_time_limit <= 0:
         raise SystemExit("--solver-time-limit must be positive")
     if not 0 <= args.solver_mip_gap < 1:
@@ -800,6 +814,7 @@ def main() -> None:
 
     try:
         protocol = validate_ablation_protocol(args.ablation_protocol)
+        validate_solver_time_limit(protocol, args.solver_time_limit)
     except (FileNotFoundError, KeyError, TypeError, ValueError) as exc:
         raise SystemExit(str(exc)) from exc
 
@@ -809,7 +824,7 @@ def main() -> None:
         raise SystemExit(
             "The selected protocol does not declare a non-agentic stack "
             "baseline; use inputs/revision/"
-            "advance_warning_ablation_protocol_v7.json"
+            "advance_warning_ablation_protocol_v8.json"
         )
 
     frozen_retention = protocol["controls"][

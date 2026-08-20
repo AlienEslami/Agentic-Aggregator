@@ -33,7 +33,7 @@ def get_job(job_id):
     return load_jobs().get(job_id)
 
 
-def configure_milp_solver(time_limit=60, mip_gap=0.04, solver_candidates=None):
+def configure_milp_solver(time_limit=300, mip_gap=0.04, solver_candidates=None):
     """Return the first available MILP solver supported by this project."""
     solver_candidates = solver_candidates or (
         'gurobi', 'appsi_highs', 'highs', 'cbc', 'glpk'
@@ -913,7 +913,7 @@ def solvePTO(sc):
 
     model.obj = pyo.Objective(rule=rule_obj, sense=pyo.minimize)
 
-    time_limit = float(os.environ.get('DA_SOLVER_TIME_LIMIT', '60'))
+    time_limit = float(os.environ.get('DA_SOLVER_TIME_LIMIT', '300'))
     mip_gap = float(os.environ.get('DA_SOLVER_MIP_GAP', '0.04'))
     solver_tee = parse_bool(os.environ.get('DA_SOLVER_TEE'), default=False)
     configured_order = os.environ.get(
