@@ -1,0 +1,69 @@
+{
+  "version": "advance_warning_benchmark_v2_extended",
+  "supersedes_for_future_runs": "inputs/revision/advance_warning_manifest_v1.json",
+  "frozen_v1_cases_unchanged": true,
+  "notice_file": "inputs/revision/advance_warning_notices_v2.json",
+  "physical_event_file": "inputs/revision/advance_warning_physical_events_v2.json",
+  "disturbance_workbook": "inputs/revision/rt_disturbance_scenarios_revision_e6.xlsx",
+  "notice_sha256": "19914b97362607590885cf0c1f565bba1b99ca898b3f6e67afb28bebf82ef585",
+  "physical_event_sha256": "7f33eea34befaaff1db637f9a4bc64cc15b9eb49d31fcfba41f8dfd791b6dfa6",
+  "cases": [
+    {
+      "scenario_id": "aw_route6_late_return",
+      "origin": "v1",
+      "pattern": "single-bus late return"
+    },
+    {
+      "scenario_id": "aw_charger_bank_shutdown",
+      "origin": "v1",
+      "pattern": "charger-bank failure"
+    },
+    {
+      "scenario_id": "aw_combined_evening",
+      "origin": "v1",
+      "pattern": "combined delay and charger failure"
+    },
+    {
+      "scenario_id": "aw_clustered_late_returns",
+      "origin": "v2",
+      "pattern": "three buses delayed inside one window",
+      "buses": [
+        2,
+        3,
+        5
+      ],
+      "return_delay_minutes_by_bus": {
+        "2": 45,
+        "3": 60,
+        "5": 75
+      },
+      "effective_timestep": 40
+    },
+    {
+      "scenario_id": "aw_extended_energy_shift",
+      "origin": "v2",
+      "pattern": "sustained route-energy increase held to the end of the horizon",
+      "buses": [
+        1,
+        4
+      ],
+      "energy_multiplier": 1.25,
+      "effective_timestep": 20,
+      "persistence_reports": [
+        26,
+        38
+      ]
+    }
+  ],
+  "price_scenarios": {
+    "delivery": "numerical disturbance workbook, not a notice",
+    "scenario_ids": [
+      "price_step_up_1",
+      "price_step_up_2",
+      "price_step_up_3",
+      "price_step_down_recovery"
+    ],
+    "composition": "select the three step scenarios together to obtain a monotone escalation of 25, 50 and 75 percent, optionally followed by the recovery scenario"
+  },
+  "horizon_limitation": "The harness simulates one 48-timestep day. Persistence is exercised within the horizon; a multi-day study requires extending the optimizer horizon."
+}

@@ -1,0 +1,74 @@
+{
+  "events": [
+    {
+      "scenario_id": "aw_route6_late_return",
+      "event_id": "AW-ROUTE6",
+      "effective_timestep": 44,
+      "end_timestep": 48,
+      "sensor_detection_timestep": 44,
+      "updates": {
+        "return_delay_minutes_by_bus": {
+          "6": 90
+        }
+      }
+    },
+    {
+      "scenario_id": "aw_charger_bank_shutdown",
+      "event_id": "AW-BANK",
+      "effective_timestep": 8,
+      "end_timestep": 10,
+      "sensor_detection_timestep": 8,
+      "updates": {
+        "unavailable_chargers": [
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    {
+      "scenario_id": "aw_combined_evening",
+      "event_id": "AW-COMBINED",
+      "effective_timestep": 41,
+      "end_timestep": 48,
+      "sensor_detection_timestep": 41,
+      "updates": {
+        "return_delay_minutes_by_bus": {
+          "8": 150
+        },
+        "unavailable_chargers": [
+          3,
+          4,
+          5
+        ]
+      }
+    },
+    {
+      "scenario_id": "aw_clustered_late_returns",
+      "event_id": "AW-CLUSTER",
+      "effective_timestep": 40,
+      "end_timestep": 48,
+      "sensor_detection_timestep": 40,
+      "updates": {
+        "return_delay_minutes_by_bus": {
+          "2": 45,
+          "3": 60,
+          "5": 75
+        }
+      }
+    },
+    {
+      "scenario_id": "aw_extended_energy_shift",
+      "event_id": "AW-ENERGY",
+      "effective_timestep": 20,
+      "end_timestep": 48,
+      "sensor_detection_timestep": 20,
+      "updates": {
+        "energy_multiplier_by_bus": {
+          "1": 1.25,
+          "4": 1.25
+        }
+      }
+    }
+  ]
+}
