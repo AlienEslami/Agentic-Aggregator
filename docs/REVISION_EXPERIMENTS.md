@@ -986,10 +986,10 @@ genuine multi-day study would require extending the optimizer horizon.
 
 ```powershell
 python scripts/build_extended_disturbance_cases.py
-python scripts/run_advance_warning_matrix.py --output-root results/revision/extended_disturbances_v2 --ablation-protocol inputs/revision/advance_warning_ablation_protocol_v7.json --notices-file inputs/revision/advance_warning_notices_v2.json --physical-events-file inputs/revision/advance_warning_physical_events_v2.json --case aw_clustered_late_returns --case aw_extended_energy_shift --include-role-ablations --only-role-ablations --ablation-repetitions 5 --allow-external-llm --require-clean-git --max-approximate-api-cost-usd 2.50
+python scripts/run_advance_warning_matrix.py --output-root results/revision/extended_disturbances_v3 --ablation-protocol inputs/revision/advance_warning_ablation_protocol_extended_v1.json --notices-file inputs/revision/advance_warning_notices_v2.json --physical-events-file inputs/revision/advance_warning_physical_events_v2.json --case aw_clustered_late_returns --case aw_extended_energy_shift --include-agent --agent-repetitions 5 --allow-external-llm --require-clean-git --solver-time-limit 300 --max-approximate-api-cost-usd 2.00
 
 # Multi-step price escalation: composed from the three step scenarios
-python scripts/run_advance_warning_matrix.py --output-root results/revision/price_escalation_v2 --ablation-protocol inputs/revision/advance_warning_ablation_protocol_v7.json --disturbances inputs/revision/rt_disturbance_scenarios_revision_e6.xlsx --scenario price_step_up_1 --scenario price_step_up_2 --scenario price_step_up_3 --case aw_route6_late_return --include-role-ablations --only-role-ablations --ablation-repetitions 5 --allow-external-llm --require-clean-git --max-approximate-api-cost-usd 2.50
+python scripts/run_advance_warning_matrix.py --output-root results/revision/price_escalation_v3 --ablation-protocol inputs/revision/advance_warning_ablation_protocol_v8.json --disturbances inputs/revision/rt_disturbance_scenarios_revision_e6.xlsx --scenario price_step_up_1 --scenario price_step_up_2 --scenario price_step_up_3 --case aw_route6_late_return --include-agent --agent-repetitions 5 --allow-external-llm --require-clean-git --solver-time-limit 300 --max-approximate-api-cost-usd 1.00
 ```
 
 Final evidence excludes any episode with solver fallback. The runner manifests

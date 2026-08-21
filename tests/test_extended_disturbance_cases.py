@@ -15,6 +15,7 @@ from scripts.build_extended_disturbance_cases import (
     ENERGY_BUSES,
     ENERGY_EFFECTIVE,
     ENERGY_MULTIPLIER,
+    EXTENDED_PROTOCOL_OUTPUT,
     MANIFEST_OUTPUT,
     NOTICE_OUTPUT,
     PHYSICAL_OUTPUT,
@@ -141,3 +142,15 @@ def test_extended_manifest_records_the_horizon_limitation():
     assert "multi-day" in manifest["horizon_limitation"]
     recorded = {case["scenario_id"] for case in manifest["cases"]}
     assert set(NEW_CASES).issubset(recorded)
+
+
+def test_extended_protocol_is_separate_and_has_consistent_run_counts():
+    protocol = load(EXTENDED_PROTOCOL_OUTPUT)
+    design = protocol["design"]
+
+    assert protocol["protocol_version"] == "advance_warning_ablation_extended_v1"
+    assert design["cases"] == list(NEW_CASES)
+    assert design["case_mode_cells"] == 4
+    assert design["planned_runs"] == 80
+    assert design["nonagentic_stack_baseline"]["planned_runs"] == 4
+    assert protocol["controls"]["solver_time_limit_seconds"] == 300

@@ -1,0 +1,64 @@
+{
+  "ladder_version": "day_ahead_ladder_v1",
+  "created_utc": "2026-08-21T02:52:21.642867+00:00",
+  "git_commit": "aacfa4c5d99733908aaa7ede3504c11b8a192ad3",
+  "git_worktree_clean": false,
+  "basis": "workbook summary values, not the SOC-derived recomputation",
+  "basis_warning": "The manuscript reports SOC-derived values. Do not mix bases in one table: the gap between them is 2 to 4 currency units.",
+  "solver": {
+    "order": "gurobi",
+    "priced_mip_gap": "0.000001",
+    "passthrough_mip_gap": "0.04",
+    "dumb_charging_mip_gap": "0.0",
+    "tie_break": "earliest charging over the benchmark-optimal face"
+  },
+  "inputs": {
+    "case_study": "data/inputs/case_study_inputs.xlsx",
+    "case_study_sha256": "05db7642daf50d4062302916978c9ca3a4be92d1d306bf36d24ee5215edfca15",
+    "spot_prices": "data/inputs/spot_prices.xlsx",
+    "spot_prices_sha256": "e40a2e467c188fbf6f7eaa3ed65e5de4c9bcb9b9021041737ed2402ae97cb1e6"
+  },
+  "scenarios": [
+    {
+      "scenario": "S1_dumb_charging",
+      "description": "uncontrolled charging, no V2G; earliest-charging tie-break",
+      "mip_gap": "0.000001",
+      "pto_daily_cost": 218.98269209809263,
+      "total_kwh_bought": 2400.0,
+      "total_kwh_sold": 0.0,
+      "result_file": "S1_dumb_charging.json",
+      "result_sha256": "70553966a8cb2c67452daeff7e00f75e870097882ccf0ee35fbc0da79240078a"
+    },
+    {
+      "scenario": "S2_smart_no_v2g",
+      "description": "optimized charging, no V2G, spot passthrough",
+      "mip_gap": "0.000001",
+      "pto_daily_cost": 129.29286103542233,
+      "total_kwh_bought": 1600.0,
+      "total_kwh_sold": 0.0,
+      "result_file": "S2_smart_no_v2g.json",
+      "result_sha256": "5addf52516e937f2f6be8c1125f403dc25e44f6eb1ffd13aae2c9cf8190124ec"
+    },
+    {
+      "scenario": "S2p5_v2g_fixed_margin",
+      "description": "V2G with a constant regulated tariff band and no agents",
+      "mip_gap": "0.000001",
+      "pto_daily_cost": 131.48184817716128,
+      "total_kwh_bought": 1999.9999961790563,
+      "total_kwh_sold": 400.0,
+      "result_file": "S2p5_v2g_fixed_margin.json",
+      "result_sha256": "b1246e16cfc7d0f39c44490da2f931cad7d4800b8be2f9a50b7419912117c0db"
+    },
+    {
+      "scenario": "S2p5_v2g_passthrough",
+      "description": "V2G at spot on both sides: no aggregator margin, a no-aggregator counterfactual",
+      "mip_gap": "0.04",
+      "pto_daily_cost": 113.66326188731827,
+      "total_kwh_bought": 1999.9999999612842,
+      "total_kwh_sold": 400.0000237846085,
+      "result_file": "S2p5_v2g_passthrough.json",
+      "result_sha256": "264109a163ac1c1def11cb130d02761575007c78d57fad7737116f3bd7000e30"
+    }
+  ],
+  "optimization_saving_vs_dumb_charging_pct": 40.9575
+}

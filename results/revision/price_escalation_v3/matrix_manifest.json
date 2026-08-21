@@ -1,0 +1,236 @@
+{
+  "protocol_version": "advance_warning_ablation_v8",
+  "created_utc": "2026-08-21T04:37:15.529588+00:00",
+  "git_commit": "aacfa4c5d99733908aaa7ede3504c11b8a192ad3",
+  "git_worktree_clean": false,
+  "design": {
+    "cases": [
+      "aw_route6_late_return"
+    ],
+    "modes": [
+      "selfish",
+      "altruistic"
+    ],
+    "variant": "uncertain_chat",
+    "agent_repetitions": 5,
+    "role_ablation_repetitions": 0,
+    "nonagentic_stack_baseline": "not_scheduled",
+    "primary_contrasts": [
+      "agent_vs_rule_text",
+      "agent_vs_numerical",
+      "agent_vs_oracle"
+    ],
+    "secondary_role_ablations": [],
+    "operational_feasibility_first": true
+  },
+  "external_llm": {
+    "scheduled": true,
+    "explicit_cli_authorization": true,
+    "payload_scope": "synthetic public notice/chat text plus operational numerical context; canonical hidden truth is not included",
+    "api_key_recorded": false,
+    "model": "gpt-5.6-luna"
+  },
+  "solver_settings": {
+    "order": "gurobi",
+    "time_limit_seconds": 300.0,
+    "mip_gap": 0.02,
+    "fallback_permitted_in_final_results": false
+  },
+  "altruistic_baseline_revenue_retention": {
+    "fraction": 0.5,
+    "reference": "frozen day-ahead full-day aggregator revenue",
+    "floor_formula": "fraction * reference"
+  },
+  "inputs": {
+    "notice_file": "inputs/revision/advance_warning_notices_v1.json",
+    "physical_event_file": "inputs/revision/advance_warning_physical_events_v1.json",
+    "disturbance_workbook": "inputs/revision/rt_disturbance_scenarios_revision_e6.xlsx",
+    "disturbance_scenarios": [
+      "price_step_up_1",
+      "price_step_up_2",
+      "price_step_up_3"
+    ],
+    "ablation_protocol_file": "inputs/revision/advance_warning_ablation_protocol_v8.json",
+    "notice_sha256": "9ee43ecf03af7bba22a9aa53c8eaec6f32fcb96f8c901946293897a3f3cd6fc9",
+    "physical_event_sha256": "0bbdc6efec08ae0f0b2440ab05cd39d5cb74606c1e724d0db2118350a617c74a",
+    "ablation_protocol_sha256": "d08529f02cea140d74216843ea179ea38db13d47d8f4bde8848eb3a26c207188",
+    "prompt_trigger_system.txt_sha256": "ab19e952cb147b0693a7bee9ea23403cbefd3a1ca28a006cb069facce1e0dbba",
+    "prompt_pricing_selfish_system.txt_sha256": "cd36c75d95e425dea89c76ae1e71d3bd636908b3edf98bfa16050402659fcfe1",
+    "prompt_pricing_altruistic_system.txt_sha256": "934b806ef1481b0d0650c21faca65184412830078bb3254c1b49a6ae5fde8537",
+    "prompt_evaluator_system.txt_sha256": "fe1a30f2bcd29b4bc836edb383490088c4503b71e0e5df4dbd91309fc1fcbf59",
+    "prompt_sha256": {
+      "trigger_system.txt": "ab19e952cb147b0693a7bee9ea23403cbefd3a1ca28a006cb069facce1e0dbba",
+      "pricing_selfish_system.txt": "cd36c75d95e425dea89c76ae1e71d3bd636908b3edf98bfa16050402659fcfe1",
+      "pricing_altruistic_system.txt": "934b806ef1481b0d0650c21faca65184412830078bb3254c1b49a6ae5fde8537",
+      "evaluator_system.txt": "fe1a30f2bcd29b4bc836edb383490088c4503b71e0e5df4dbd91309fc1fcbf59"
+    }
+  },
+  "planned_runs": 16,
+  "indexed_completed_runs": 16,
+  "execution_budget": {
+    "maximum_approximate_api_cost_usd": 1.0,
+    "indexed_approximate_api_cost_usd": 0.08006344
+  },
+  "runs": [
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "oracle_event_trigger",
+      "repetition": 1,
+      "run_family": "primary_trigger_comparison",
+      "stochastic": false,
+      "run_id": "aw_route6_late_return__selfish__uncertain_chat__oracle_event_trigger__r001"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "numerical_event_trigger",
+      "repetition": 1,
+      "run_family": "primary_trigger_comparison",
+      "stochastic": false,
+      "run_id": "aw_route6_late_return__selfish__uncertain_chat__numerical_event_trigger__r001"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "rule_text_event_trigger",
+      "repetition": 1,
+      "run_family": "primary_trigger_comparison",
+      "stochastic": false,
+      "run_id": "aw_route6_late_return__selfish__uncertain_chat__rule_text_event_trigger__r001"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "agent_trigger_only",
+      "repetition": 1,
+      "run_family": "primary_trigger_comparison",
+      "stochastic": true,
+      "run_id": "aw_route6_late_return__selfish__uncertain_chat__agent_trigger_only__r001"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "agent_trigger_only",
+      "repetition": 2,
+      "run_family": "primary_trigger_comparison",
+      "stochastic": true,
+      "run_id": "aw_route6_late_return__selfish__uncertain_chat__agent_trigger_only__r002"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "agent_trigger_only",
+      "repetition": 3,
+      "run_family": "primary_trigger_comparison",
+      "stochastic": true,
+      "run_id": "aw_route6_late_return__selfish__uncertain_chat__agent_trigger_only__r003"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "agent_trigger_only",
+      "repetition": 4,
+      "run_family": "primary_trigger_comparison",
+      "stochastic": true,
+      "run_id": "aw_route6_late_return__selfish__uncertain_chat__agent_trigger_only__r004"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "variant": "uncertain_chat",
+      "configuration": "agent_trigger_only",
+      "repetition": 5,
+      "run_family": "primary_trigger_comparison",
+      "stochastic": true,
+      "run_id": "aw_route6_late_return__selfish__uncertain_chat__agent_trigger_only__r005"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "altruistic",
+      "variant": "uncertain_chat",
+      "configuration": "oracle_event_trigger",
+      "repetition": 1,
+      "run_family": "primary_trigger_comparison",
+      "stochastic": false,
+      "run_id": "aw_route6_late_return__altruistic__uncertain_chat__oracle_event_trigger__r001"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "altruistic",
+      "variant": "uncertain_chat",
+      "configuration": "numerical_event_trigger",
+      "repetition": 1,
+      "run_family": "primary_trigger_comparison",
+      "stochastic": false,
+      "run_id": "aw_route6_late_return__altruistic__uncertain_chat__numerical_event_trigger__r001"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "altruistic",
+      "variant": "uncertain_chat",
+      "configuration": "rule_text_event_trigger",
+      "repetition": 1,
+      "run_family": "primary_trigger_comparison",
+      "stochastic": false,
+      "run_id": "aw_route6_late_return__altruistic__uncertain_chat__rule_text_event_trigger__r001"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "altruistic",
+      "variant": "uncertain_chat",
+      "configuration": "agent_trigger_only",
+      "repetition": 1,
+      "run_family": "primary_trigger_comparison",
+      "stochastic": true,
+      "run_id": "aw_route6_late_return__altruistic__uncertain_chat__agent_trigger_only__r001"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "altruistic",
+      "variant": "uncertain_chat",
+      "configuration": "agent_trigger_only",
+      "repetition": 2,
+      "run_family": "primary_trigger_comparison",
+      "stochastic": true,
+      "run_id": "aw_route6_late_return__altruistic__uncertain_chat__agent_trigger_only__r002"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "altruistic",
+      "variant": "uncertain_chat",
+      "configuration": "agent_trigger_only",
+      "repetition": 3,
+      "run_family": "primary_trigger_comparison",
+      "stochastic": true,
+      "run_id": "aw_route6_late_return__altruistic__uncertain_chat__agent_trigger_only__r003"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "altruistic",
+      "variant": "uncertain_chat",
+      "configuration": "agent_trigger_only",
+      "repetition": 4,
+      "run_family": "primary_trigger_comparison",
+      "stochastic": true,
+      "run_id": "aw_route6_late_return__altruistic__uncertain_chat__agent_trigger_only__r004"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "altruistic",
+      "variant": "uncertain_chat",
+      "configuration": "agent_trigger_only",
+      "repetition": 5,
+      "run_family": "primary_trigger_comparison",
+      "stochastic": true,
+      "run_id": "aw_route6_late_return__altruistic__uncertain_chat__agent_trigger_only__r005"
+    }
+  ]
+}

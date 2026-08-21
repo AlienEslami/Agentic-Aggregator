@@ -48,6 +48,22 @@ def test_final_matrix_rejects_solver_fallback(tmp_path):
         )
 
 
+def test_final_matrix_accepts_explicit_zero_optimizer_call_episode(tmp_path):
+    workbook = tmp_path / "no-trigger.xlsx"
+
+    require_gurobi_only(
+        {"solver_names": [], "solver_fallback_errors": []},
+        workbook,
+        optimizer_calls=0,
+    )
+    with pytest.raises(ValueError, match="requires Gurobi with no fallback"):
+        require_gurobi_only(
+            {"solver_names": [], "solver_fallback_errors": []},
+            workbook,
+            optimizer_calls=1,
+        )
+
+
 def test_matrix_design_separates_primary_and_secondary_repetitions(tmp_path):
     specs = build_run_specs(
         cases=["aw_route6_late_return"],

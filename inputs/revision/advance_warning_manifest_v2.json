@@ -5,8 +5,10 @@
   "notice_file": "inputs/revision/advance_warning_notices_v2.json",
   "physical_event_file": "inputs/revision/advance_warning_physical_events_v2.json",
   "disturbance_workbook": "inputs/revision/rt_disturbance_scenarios_revision_e6.xlsx",
+  "extended_ablation_protocol": "inputs/revision/advance_warning_ablation_protocol_extended_v1.json",
   "notice_sha256": "19914b97362607590885cf0c1f565bba1b99ca898b3f6e67afb28bebf82ef585",
   "physical_event_sha256": "7f33eea34befaaff1db637f9a4bc64cc15b9eb49d31fcfba41f8dfd791b6dfa6",
+  "extended_ablation_protocol_sha256": "9bcc9e78aa5dee85a47b58d540a614f1c9242327693c053b34a1b771f1125e9e",
   "cases": [
     {
       "scenario_id": "aw_route6_late_return",

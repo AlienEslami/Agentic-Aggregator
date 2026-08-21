@@ -22,6 +22,7 @@ require extending the optimizer horizon and is out of scope here.
 from __future__ import annotations
 
 import json
+from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
@@ -48,6 +49,10 @@ NOTICE_OUTPUT = OUTPUT_DIR / "advance_warning_notices_v2.json"
 PHYSICAL_OUTPUT = OUTPUT_DIR / "advance_warning_physical_events_v2.json"
 MANIFEST_OUTPUT = OUTPUT_DIR / "advance_warning_manifest_v2.json"
 DISTURBANCE_OUTPUT = OUTPUT_DIR / "rt_disturbance_scenarios_revision_e6.xlsx"
+BASE_PROTOCOL_INPUT = OUTPUT_DIR / "advance_warning_ablation_protocol_v8.json"
+EXTENDED_PROTOCOL_OUTPUT = (
+    OUTPUT_DIR / "advance_warning_ablation_protocol_extended_v1.json"
+)
 
 CLUSTERED_BUSES = {2: 45, 3: 60, 5: 75}
 CLUSTERED_EFFECTIVE = 40
@@ -381,6 +386,60 @@ def multistep_price_scenarios() -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def extended_ablation_protocol() -> dict[str, Any]:
+    """Freeze the extended cases separately from the original v8 experiment.
+
+    The Agent prompts, optimizer, solver controls and role configurations remain
+    identical to v8.  Only the declared case set and its derived run counts
+    change, which prevents extended-case results from being silently pooled with
+    the original three-case matrix.
+    """
+
+    protocol = deepcopy(json.loads(BASE_PROTOCOL_INPUT.read_text(encoding="utf-8")))
+    cases = ["aw_clustered_late_returns", "aw_extended_energy_shift"]
+    design = protocol["design"]
+    modes = design["modes"]
+    repetitions = int(design["repetitions_per_configuration_case_mode"])
+    configurations = design["configurations"]
+
+    protocol.update(
+        {
+            "protocol_version": "advance_warning_ablation_extended_v1",
+            "status": "implemented_and_frozen_pending_execution",
+            "frozen_date_utc": "2026-08-21",
+            "supersedes_for_future_runs": None,
+            "parent_protocol": (
+                "inputs/revision/advance_warning_ablation_protocol_v8.json"
+            ),
+            "change_reason": [
+                "broaden the disturbance patterns to clustered late returns and a sustained route-energy shift",
+                "keep prompts, optimizer, settlement, solver controls and the 50 percent revenue-retention policy identical to v8",
+                "freeze the extended cases separately so they are not silently pooled with the original v8 case matrix",
+            ],
+        }
+    )
+    design["cases"] = cases
+    design["case_mode_cells"] = len(cases) * len(modes)
+    design["planned_runs"] = (
+        len(configurations) * len(cases) * len(modes) * repetitions
+    )
+    baseline = design.get("nonagentic_stack_baseline")
+    if baseline is not None:
+        baseline["planned_runs"] = (
+            len(baseline["configurations"])
+            * len(cases)
+            * len(modes)
+            * int(baseline["repetitions_per_configuration_case_mode"])
+        )
+    protocol["controls"]["notice_dataset"] = (
+        "inputs/revision/advance_warning_notices_v2.json"
+    )
+    protocol["controls"]["physical_event_dataset"] = (
+        "inputs/revision/advance_warning_physical_events_v2.json"
+    )
+    return protocol
+
+
 def main() -> None:
     v1_notices, v1_physical = build_v1()
 
@@ -392,6 +451,10 @@ def main() -> None:
 
     write_lf(NOTICE_OUTPUT, json.dumps(notices, indent=2) + "\n")
     write_lf(PHYSICAL_OUTPUT, json.dumps({"events": physical}, indent=2) + "\n")
+    write_lf(
+        EXTENDED_PROTOCOL_OUTPUT,
+        json.dumps(extended_ablation_protocol(), indent=2) + "\n",
+    )
 
     scenarios = multistep_price_scenarios()
     DISTURBANCE_OUTPUT.parent.mkdir(parents=True, exist_ok=True)
@@ -411,8 +474,12 @@ def main() -> None:
         "disturbance_workbook": str(DISTURBANCE_OUTPUT.relative_to(ROOT)).replace(
             "\\", "/"
         ),
+        "extended_ablation_protocol": str(
+            EXTENDED_PROTOCOL_OUTPUT.relative_to(ROOT)
+        ).replace("\\", "/"),
         "notice_sha256": sha256(NOTICE_OUTPUT),
         "physical_event_sha256": sha256(PHYSICAL_OUTPUT),
+        "extended_ablation_protocol_sha256": sha256(EXTENDED_PROTOCOL_OUTPUT),
         "cases": [
             {
                 "scenario_id": "aw_route6_late_return",
@@ -474,7 +541,7 @@ def main() -> None:
     print(
         f"Wrote {len(notices)} notices and {len(physical)} physical events "
         f"({len(physical) - len(v1_physical)} new cases) plus "
-        f"{len(scenarios)} disturbance scenarios"
+        f"{len(scenarios)} disturbance scenarios and an extended protocol"
     )
 
 

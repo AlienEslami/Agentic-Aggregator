@@ -1,0 +1,377 @@
+{
+  "protocol": "information_and_evaluator_ablation_v3",
+  "created_utc": "2026-08-21T03:50:57.076010+00:00",
+  "git_commit": "aacfa4c5d99733908aaa7ede3504c11b8a192ad3",
+  "git_worktree_clean": false,
+  "information_contract": {
+    "common_trigger": "canonical structured notice; fixed across all arms",
+    "common_pricing": "deterministic price-zone policy; fixed across all arms",
+    "agent_evaluator": "raw public message only",
+    "rule_evaluator": "same raw public message through frozen parser",
+    "structured_oracle": "canonical structured priority; labelled oracle only",
+    "removal": "solver and feasibility hard checks; ignores soft priority",
+    "canonical_priority_sent_to_llm": false,
+    "common_physical_truth": true,
+    "causal_settlement": true
+  },
+  "comparison_order": [
+    "optimizer usability",
+    "canonical operator-priority compliance",
+    "projected full-day economics among compliant schedules"
+  ],
+  "inputs": {
+    "protocol": "inputs\\revision\\information_and_evaluator_ablation_protocol_v3.json",
+    "protocol_sha256": "5499fe12f1ddb0e65f5a2cb9453f516a02edd43443c87a322d8738d2592160c8",
+    "notices": "inputs\\revision\\evaluator_priority_notices_v1.json",
+    "notices_sha256": "5a3d531698e53f3b26617f223301324ce6ddcdc078eb6af2f679de7d2b0c3e92",
+    "physical_events": "inputs\\revision\\advance_warning_physical_events_v1.json",
+    "physical_events_sha256": "0bbdc6efec08ae0f0b2440ab05cd39d5cb74606c1e724d0db2118350a617c74a"
+  },
+  "model": "gpt-5.6-luna",
+  "external_llm_authorized": true,
+  "canonical_hidden_truth_sent_to_openai": false,
+  "solver_settings": {
+    "order": "gurobi",
+    "time_limit_seconds": 300.0,
+    "mip_gap": 0.02,
+    "fallback_permitted_in_final_results": false
+  },
+  "specs": [
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "configuration": "agent_evaluator_raw_text",
+      "repetition": 1,
+      "output": "results\\revision\\evaluator_v3\\aw_route6_late_return\\selfish\\agent_evaluator_raw_text_rep_001.xlsx"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "configuration": "agent_evaluator_raw_text",
+      "repetition": 2,
+      "output": "results\\revision\\evaluator_v3\\aw_route6_late_return\\selfish\\agent_evaluator_raw_text_rep_002.xlsx"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "configuration": "agent_evaluator_raw_text",
+      "repetition": 3,
+      "output": "results\\revision\\evaluator_v3\\aw_route6_late_return\\selfish\\agent_evaluator_raw_text_rep_003.xlsx"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "configuration": "agent_evaluator_raw_text",
+      "repetition": 4,
+      "output": "results\\revision\\evaluator_v3\\aw_route6_late_return\\selfish\\agent_evaluator_raw_text_rep_004.xlsx"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "configuration": "agent_evaluator_raw_text",
+      "repetition": 5,
+      "output": "results\\revision\\evaluator_v3\\aw_route6_late_return\\selfish\\agent_evaluator_raw_text_rep_005.xlsx"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "configuration": "rule_text_evaluator",
+      "repetition": 1,
+      "output": "results\\revision\\evaluator_v3\\aw_route6_late_return\\selfish\\rule_text_evaluator_rep_001.xlsx"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "configuration": "structured_evaluator_oracle",
+      "repetition": 1,
+      "output": "results\\revision\\evaluator_v3\\aw_route6_late_return\\selfish\\structured_evaluator_oracle_rep_001.xlsx"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "selfish",
+      "configuration": "evaluator_removal_control",
+      "repetition": 1,
+      "output": "results\\revision\\evaluator_v3\\aw_route6_late_return\\selfish\\evaluator_removal_control_rep_001.xlsx"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "altruistic",
+      "configuration": "agent_evaluator_raw_text",
+      "repetition": 1,
+      "output": "results\\revision\\evaluator_v3\\aw_route6_late_return\\altruistic\\agent_evaluator_raw_text_rep_001.xlsx"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "altruistic",
+      "configuration": "agent_evaluator_raw_text",
+      "repetition": 2,
+      "output": "results\\revision\\evaluator_v3\\aw_route6_late_return\\altruistic\\agent_evaluator_raw_text_rep_002.xlsx"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "altruistic",
+      "configuration": "agent_evaluator_raw_text",
+      "repetition": 3,
+      "output": "results\\revision\\evaluator_v3\\aw_route6_late_return\\altruistic\\agent_evaluator_raw_text_rep_003.xlsx"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "altruistic",
+      "configuration": "agent_evaluator_raw_text",
+      "repetition": 4,
+      "output": "results\\revision\\evaluator_v3\\aw_route6_late_return\\altruistic\\agent_evaluator_raw_text_rep_004.xlsx"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "altruistic",
+      "configuration": "agent_evaluator_raw_text",
+      "repetition": 5,
+      "output": "results\\revision\\evaluator_v3\\aw_route6_late_return\\altruistic\\agent_evaluator_raw_text_rep_005.xlsx"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "altruistic",
+      "configuration": "rule_text_evaluator",
+      "repetition": 1,
+      "output": "results\\revision\\evaluator_v3\\aw_route6_late_return\\altruistic\\rule_text_evaluator_rep_001.xlsx"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "altruistic",
+      "configuration": "structured_evaluator_oracle",
+      "repetition": 1,
+      "output": "results\\revision\\evaluator_v3\\aw_route6_late_return\\altruistic\\structured_evaluator_oracle_rep_001.xlsx"
+    },
+    {
+      "case": "aw_route6_late_return",
+      "mode": "altruistic",
+      "configuration": "evaluator_removal_control",
+      "repetition": 1,
+      "output": "results\\revision\\evaluator_v3\\aw_route6_late_return\\altruistic\\evaluator_removal_control_rep_001.xlsx"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "selfish",
+      "configuration": "agent_evaluator_raw_text",
+      "repetition": 1,
+      "output": "results\\revision\\evaluator_v3\\aw_charger_bank_shutdown\\selfish\\agent_evaluator_raw_text_rep_001.xlsx"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "selfish",
+      "configuration": "agent_evaluator_raw_text",
+      "repetition": 2,
+      "output": "results\\revision\\evaluator_v3\\aw_charger_bank_shutdown\\selfish\\agent_evaluator_raw_text_rep_002.xlsx"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "selfish",
+      "configuration": "agent_evaluator_raw_text",
+      "repetition": 3,
+      "output": "results\\revision\\evaluator_v3\\aw_charger_bank_shutdown\\selfish\\agent_evaluator_raw_text_rep_003.xlsx"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "selfish",
+      "configuration": "agent_evaluator_raw_text",
+      "repetition": 4,
+      "output": "results\\revision\\evaluator_v3\\aw_charger_bank_shutdown\\selfish\\agent_evaluator_raw_text_rep_004.xlsx"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "selfish",
+      "configuration": "agent_evaluator_raw_text",
+      "repetition": 5,
+      "output": "results\\revision\\evaluator_v3\\aw_charger_bank_shutdown\\selfish\\agent_evaluator_raw_text_rep_005.xlsx"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "selfish",
+      "configuration": "rule_text_evaluator",
+      "repetition": 1,
+      "output": "results\\revision\\evaluator_v3\\aw_charger_bank_shutdown\\selfish\\rule_text_evaluator_rep_001.xlsx"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "selfish",
+      "configuration": "structured_evaluator_oracle",
+      "repetition": 1,
+      "output": "results\\revision\\evaluator_v3\\aw_charger_bank_shutdown\\selfish\\structured_evaluator_oracle_rep_001.xlsx"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "selfish",
+      "configuration": "evaluator_removal_control",
+      "repetition": 1,
+      "output": "results\\revision\\evaluator_v3\\aw_charger_bank_shutdown\\selfish\\evaluator_removal_control_rep_001.xlsx"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "altruistic",
+      "configuration": "agent_evaluator_raw_text",
+      "repetition": 1,
+      "output": "results\\revision\\evaluator_v3\\aw_charger_bank_shutdown\\altruistic\\agent_evaluator_raw_text_rep_001.xlsx"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "altruistic",
+      "configuration": "agent_evaluator_raw_text",
+      "repetition": 2,
+      "output": "results\\revision\\evaluator_v3\\aw_charger_bank_shutdown\\altruistic\\agent_evaluator_raw_text_rep_002.xlsx"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "altruistic",
+      "configuration": "agent_evaluator_raw_text",
+      "repetition": 3,
+      "output": "results\\revision\\evaluator_v3\\aw_charger_bank_shutdown\\altruistic\\agent_evaluator_raw_text_rep_003.xlsx"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "altruistic",
+      "configuration": "agent_evaluator_raw_text",
+      "repetition": 4,
+      "output": "results\\revision\\evaluator_v3\\aw_charger_bank_shutdown\\altruistic\\agent_evaluator_raw_text_rep_004.xlsx"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "altruistic",
+      "configuration": "agent_evaluator_raw_text",
+      "repetition": 5,
+      "output": "results\\revision\\evaluator_v3\\aw_charger_bank_shutdown\\altruistic\\agent_evaluator_raw_text_rep_005.xlsx"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "altruistic",
+      "configuration": "rule_text_evaluator",
+      "repetition": 1,
+      "output": "results\\revision\\evaluator_v3\\aw_charger_bank_shutdown\\altruistic\\rule_text_evaluator_rep_001.xlsx"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "altruistic",
+      "configuration": "structured_evaluator_oracle",
+      "repetition": 1,
+      "output": "results\\revision\\evaluator_v3\\aw_charger_bank_shutdown\\altruistic\\structured_evaluator_oracle_rep_001.xlsx"
+    },
+    {
+      "case": "aw_charger_bank_shutdown",
+      "mode": "altruistic",
+      "configuration": "evaluator_removal_control",
+      "repetition": 1,
+      "output": "results\\revision\\evaluator_v3\\aw_charger_bank_shutdown\\altruistic\\evaluator_removal_control_rep_001.xlsx"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "selfish",
+      "configuration": "agent_evaluator_raw_text",
+      "repetition": 1,
+      "output": "results\\revision\\evaluator_v3\\aw_combined_evening\\selfish\\agent_evaluator_raw_text_rep_001.xlsx"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "selfish",
+      "configuration": "agent_evaluator_raw_text",
+      "repetition": 2,
+      "output": "results\\revision\\evaluator_v3\\aw_combined_evening\\selfish\\agent_evaluator_raw_text_rep_002.xlsx"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "selfish",
+      "configuration": "agent_evaluator_raw_text",
+      "repetition": 3,
+      "output": "results\\revision\\evaluator_v3\\aw_combined_evening\\selfish\\agent_evaluator_raw_text_rep_003.xlsx"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "selfish",
+      "configuration": "agent_evaluator_raw_text",
+      "repetition": 4,
+      "output": "results\\revision\\evaluator_v3\\aw_combined_evening\\selfish\\agent_evaluator_raw_text_rep_004.xlsx"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "selfish",
+      "configuration": "agent_evaluator_raw_text",
+      "repetition": 5,
+      "output": "results\\revision\\evaluator_v3\\aw_combined_evening\\selfish\\agent_evaluator_raw_text_rep_005.xlsx"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "selfish",
+      "configuration": "rule_text_evaluator",
+      "repetition": 1,
+      "output": "results\\revision\\evaluator_v3\\aw_combined_evening\\selfish\\rule_text_evaluator_rep_001.xlsx"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "selfish",
+      "configuration": "structured_evaluator_oracle",
+      "repetition": 1,
+      "output": "results\\revision\\evaluator_v3\\aw_combined_evening\\selfish\\structured_evaluator_oracle_rep_001.xlsx"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "selfish",
+      "configuration": "evaluator_removal_control",
+      "repetition": 1,
+      "output": "results\\revision\\evaluator_v3\\aw_combined_evening\\selfish\\evaluator_removal_control_rep_001.xlsx"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "altruistic",
+      "configuration": "agent_evaluator_raw_text",
+      "repetition": 1,
+      "output": "results\\revision\\evaluator_v3\\aw_combined_evening\\altruistic\\agent_evaluator_raw_text_rep_001.xlsx"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "altruistic",
+      "configuration": "agent_evaluator_raw_text",
+      "repetition": 2,
+      "output": "results\\revision\\evaluator_v3\\aw_combined_evening\\altruistic\\agent_evaluator_raw_text_rep_002.xlsx"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "altruistic",
+      "configuration": "agent_evaluator_raw_text",
+      "repetition": 3,
+      "output": "results\\revision\\evaluator_v3\\aw_combined_evening\\altruistic\\agent_evaluator_raw_text_rep_003.xlsx"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "altruistic",
+      "configuration": "agent_evaluator_raw_text",
+      "repetition": 4,
+      "output": "results\\revision\\evaluator_v3\\aw_combined_evening\\altruistic\\agent_evaluator_raw_text_rep_004.xlsx"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "altruistic",
+      "configuration": "agent_evaluator_raw_text",
+      "repetition": 5,
+      "output": "results\\revision\\evaluator_v3\\aw_combined_evening\\altruistic\\agent_evaluator_raw_text_rep_005.xlsx"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "altruistic",
+      "configuration": "rule_text_evaluator",
+      "repetition": 1,
+      "output": "results\\revision\\evaluator_v3\\aw_combined_evening\\altruistic\\rule_text_evaluator_rep_001.xlsx"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "altruistic",
+      "configuration": "structured_evaluator_oracle",
+      "repetition": 1,
+      "output": "results\\revision\\evaluator_v3\\aw_combined_evening\\altruistic\\structured_evaluator_oracle_rep_001.xlsx"
+    },
+    {
+      "case": "aw_combined_evening",
+      "mode": "altruistic",
+      "configuration": "evaluator_removal_control",
+      "repetition": 1,
+      "output": "results\\revision\\evaluator_v3\\aw_combined_evening\\altruistic\\evaluator_removal_control_rep_001.xlsx"
+    }
+  ]
+}

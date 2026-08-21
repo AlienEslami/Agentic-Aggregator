@@ -92,7 +92,16 @@ conservative total upper bound of USD 2.7893.
 
 **Broader disturbances.** The v2 advance-warning dataset adds clustered delays
 and a sustained route-energy shift, and a disturbance workbook adds a
-three-step price escalation. Implemented, not yet executed.
+three-step price escalation. The primary Agent/rule/numerical/oracle comparison
+is now executed at the 300-second limit in `results/revision/extended_disturbances_v3`
+(32 episodes) and `results/revision/price_escalation_v3` (16 episodes). The
+sustained energy-shift case gives the clearest benefit from advance text: the
+Agent is operationally feasible in 5/5 selfish runs versus 0/1 for numerical
+and rule triggers, and in 3/5 altruistic runs versus 0/1 for both. The clustered
+delay case is a boundary stress test: every method incurs realized reserve
+shortfall and it must not be presented as an economic win. Under price
+escalation the Agent is feasible in 5/5 selfish runs versus 0/1 numerical; in
+altruistic mode it is feasible in 4/5 versus 1/1 for each deterministic method.
 
 **Manuscript.** The reproducibility appendix is filled from the published run
 manifests, and two subsections were added. All revision text is inside the
@@ -110,22 +119,32 @@ python scripts/report_study_status.py scaling --output-root results/revision/sca
 The runners index complete workbooks and execute only what is missing, so an
 arm can be added to an existing output root without repeating work.
 
-**Scaling, agentic arm** — the half of R2.6 the deterministic arm cannot
-answer, namely how agent latency and token usage grow with fleet size:
+**Scaling, agentic arm** — completed in `results/revision/scaling_v2`. The
+commands below reproduce the half of R2.6 that measures how Agent latency and
+token usage grow with fleet size:
 
 ```powershell
 python scripts/run_scaling_study.py --output-root results/revision/scaling_v1 --repetitions 3 --allow-external-llm --require-clean-git --max-approximate-api-cost-usd 2.00
 python scripts/analyze_scaling_study.py --runs results/revision/scaling_v1/scaling_runs.csv --output-dir results/revision/scaling_v1/analysis
 ```
 
-**Controlled evaluator ablation** — 48 episodes:
+**Controlled evaluator ablation** — completed: 48 episodes in
+`results/revision/evaluator_v3`. The evaluator changes the outcome in the
+explicit route-priority case by restoring operator-request compliance; it does
+not improve economics in cases where every candidate already satisfies the
+same operational requirements. Reproduction command:
 
 ```powershell
-python scripts/run_evaluator_ablation.py --output-root results/revision/evaluator_ablation_v2 --agent-repetitions 5 --allow-external-llm --require-clean-git
+python scripts/run_evaluator_ablation.py --output-root results/revision/evaluator_v3 --agent-repetitions 5 --allow-external-llm --require-clean-git --solver-time-limit 300
 ```
 
-**Extended disturbance cases** — R1.6, after `build_extended_disturbance_cases.py`:
-see the broader-disturbance block in `REVISION_EXPERIMENTS.md`.
+**Extended disturbance cases** — completed; see the broader-disturbance block
+in `REVISION_EXPERIMENTS.md` and the feasibility-first analyses beside both
+result roots. The remaining strict-protocol question is whether to repeat the
+entire 120-role v8 matrix at 300 seconds. The targeted 10-episode charger rerun
+in `results/revision/v8_targeted_rule_parser_charger` removed every historical
+timeout, so such a full repetition is provenance cleanup rather than evidence
+that the old failed cell needs a new method.
 
 ## Left to decide or write
 

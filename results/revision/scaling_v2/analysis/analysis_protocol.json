@@ -1,0 +1,6 @@
+{
+  "bootstrap_iterations": 10000,
+  "bootstrap_unit": "complete timing repetition",
+  "optimizer_and_llm_metrics_reported_separately": true,
+  "no_pooling_across_depot_fleet_mode_or_method": true
+}

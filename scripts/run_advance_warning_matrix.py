@@ -257,9 +257,19 @@ def read_solver_provenance(workbook: Path) -> dict[str, Any]:
     }
 
 
-def require_gurobi_only(provenance: dict[str, Any], workbook: Path) -> None:
+def require_gurobi_only(
+    provenance: dict[str, Any],
+    workbook: Path,
+    *,
+    optimizer_calls: int | None = None,
+) -> None:
     names = provenance.get("solver_names") or []
     errors = provenance.get("solver_fallback_errors") or []
+    # A legitimate no-trigger episode never invokes an optimizer, so it has no
+    # solver provenance to record.  It is admissible only when the run summary
+    # explicitly records zero calls and there are no fallback errors.
+    if optimizer_calls == 0 and not names and not errors:
+        return
     if names != ["gurobi"] or errors:
         raise ValueError(
             "Final evidence requires Gurobi with no fallback; refusing to index "
@@ -512,7 +522,11 @@ def run_row(
     except ValueError:
         relative_workbook = str(workbook)
     provenance = read_solver_provenance(workbook)
-    require_gurobi_only(provenance, workbook)
+    require_gurobi_only(
+        provenance,
+        workbook,
+        optimizer_calls=int(summary.get("optimizer_calls") or 0),
+    )
     return {
         "run_id": spec.run_id,
         "run_family": spec.run_family,
@@ -648,7 +662,15 @@ def main() -> None:
             "resume-safe repeated Agent and role-ablation trials."
         )
     )
-    parser.add_argument("--case", action="append", choices=PRIMARY_CASES, default=[])
+    parser.add_argument(
+        "--case",
+        action="append",
+        default=[],
+        help=(
+            "Case declared by the selected frozen protocol and present in both "
+            "the notice and physical-event datasets. Repeat to select more than one."
+        ),
+    )
     parser.add_argument("--mode", action="append", choices=PRIMARY_MODES, default=[])
     parser.add_argument("--variant", default="uncertain_chat")
     parser.add_argument("--start", type=int, default=1)
@@ -837,7 +859,32 @@ def main() -> None:
             "protocol value"
         )
 
-    cases = args.case or list(PRIMARY_CASES)
+    cases = args.case or list(protocol["design"]["cases"])
+    undeclared_cases = set(cases) - set(protocol["design"]["cases"])
+    if undeclared_cases:
+        raise SystemExit(
+            "Selected cases are not declared by the frozen protocol: "
+            f"{sorted(undeclared_cases)!r}"
+        )
+    notice_payload = json.loads(args.notices_file.read_text(encoding="utf-8"))
+    physical_payload = json.loads(args.physical_events_file.read_text(encoding="utf-8"))
+    notice_cases = {row["scenario_id"] for row in notice_payload}
+    physical_cases = {
+        row["scenario_id"] for row in physical_payload.get("events", [])
+    }
+    missing_notice_cases = set(cases) - notice_cases
+    missing_physical_cases = set(cases) - physical_cases
+    if missing_notice_cases or missing_physical_cases:
+        raise SystemExit(
+            "Selected cases are missing from the frozen datasets: "
+            + json.dumps(
+                {
+                    "notice": sorted(missing_notice_cases),
+                    "physical_event": sorted(missing_physical_cases),
+                },
+                sort_keys=True,
+            )
+        )
     modes = args.mode or list(protocol["design"]["modes"])
     specs = build_run_specs(
         cases=cases,
