@@ -80,7 +80,10 @@ def main() -> int:
         "artifact": "s1_solver_invariance_v1",
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "git_commit": git("rev-parse", "HEAD"),
-        "git_worktree_clean": not (git("status", "--porcelain") or ""),
+        # -uno: the artifact's own freshly written outputs are untracked at
+        # run time and must not count against provenance; what matters is that
+        # no tracked file differs from the recorded commit.
+        "git_tracked_files_clean": not (git("status", "--porcelain", "-uno") or ""),
         "tie_break": "earliest charging over the benchmark-optimal face, gap 0",
         "inputs": {
             "case_study_sha256": sha256(INPUT),
