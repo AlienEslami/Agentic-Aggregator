@@ -1,6 +1,19 @@
 # A Multi-Agentic Aggregator Design for Electric Bus Fleet Charging and Grid Flexibility Management
 
-This repository contains the code, data templates, benchmark outputs, and n8n workflow exports used for the paper *A Multi-Agentic Aggregator Design for Electric Bus Fleet Charging and Grid Flexibility Management*.
+This repository contains the code, frozen experiment protocols, provenance manifests, and published results for the paper *A Multi-Agentic Aggregator Design for Electric Bus Fleet Charging and Grid Flexibility Management* and its revision (TRC-26-02380).
+
+## Reproducing the revision (start here)
+
+The revision experiments run natively in Python through the `agentic_workflow` package; no orchestration server is involved. The n8n exports under `workflows/` are retained as an archive of the original submission's orchestration and are not part of the reproduction path.
+
+```powershell
+git config core.autocrlf false   # frozen hashes are LF-based
+python -m pip install -r requirements-dev-lock.txt
+python -m pytest -q                              # expect 182 passed
+python scripts/validate_revision_package.py      # expect no failed checks
+```
+
+Per-study commands, frozen protocols and execution ceilings are in `docs/REVISION_EXPERIMENTS.md`; the current state of the revision and its remaining caveats are in `docs/REVISION_HANDOFF.md`. Published result tables and figures live under `paper_outputs/revision/` with a byte-hash manifest, and each study directory under `results/revision/` carries its own provenance manifest. The day-ahead case-study inputs are included under `data/inputs/`; the five real-time operational workbooks are excluded from version control and are available from the corresponding author on reasonable request.
 
 ## Abstract
 
@@ -79,7 +92,7 @@ python scripts/reproduce_paper_results.py
 
 This writes fresh outputs to `results/reproduction/`, including a `manifest.json`, a reproduction summary workbook, baseline JSON files, and regenerated day-ahead benchmark workbooks. The `results/` folder is ignored by git.
 
-The LLM-driven S3/S4 day-ahead cases, real-time disturbances, and prompt-sensitivity experiments are reproduced by importing the n8n workflows in `workflows/` and reconnecting credentials, document IDs, and API URLs. See `docs/REPRODUCIBILITY.md` and `docs/PAPER_RESULTS.md`.
+The revision reproduces the LLM-driven cases natively in Python; see `docs/REVISION_EXPERIMENTS.md`. The original submission's S3/S4 day-ahead cases were produced through the archived n8n workflows in `workflows/`; `docs/REPRODUCIBILITY.md` and `docs/PAPER_RESULTS.md` describe that historical path.
 
 ## Reproducing the Day-Ahead Baseline
 

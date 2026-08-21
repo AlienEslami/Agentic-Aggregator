@@ -1,6 +1,6 @@
 {
   "artifact_set": "revision_manuscript_assets_v1",
-  "created_utc": "2026-08-21T16:22:34.226336+00:00",
+  "created_utc": "2026-08-21T22:50:09.720471+00:00",
   "sources": [
     {
       "path": "results\\revision\\day_ahead_reconciliation_v1\\day_ahead_cost_reconciliation.csv",
@@ -12,15 +12,15 @@
     },
     {
       "path": "results\\revision\\extended_disturbances_v3\\analysis\\method_summary.csv",
-      "sha256": "9eab4b1eee9ee46139aa7907ac3f6951d141edeabc4bdeb1cf1555d34fa88d36"
+      "sha256": "994532cb40a53d9064464cf89c76b23a7b2ce7e38f7d8c6a19283d2281acee6c"
     },
     {
       "path": "results\\revision\\recoverable_cluster_v1\\matrix_runs.csv",
-      "sha256": "dac42142f58d53dee0083fafc748640e841ec8520c13b076fcd74d54a5dc7a58"
+      "sha256": "05c3af81d4fb17ddf1f762e0d41874a80937cce98b2305f03b6fe159e14b5602"
     },
     {
       "path": "results\\revision\\price_escalation_v3\\analysis\\method_summary.csv",
-      "sha256": "7a189a16fc6b6e8255b9b57430f1d35debdcad3a00682eb487f6066478bb82fa"
+      "sha256": "f03e39fe5e5dd36bd163e2348be32fb2e33bb09998b4bd753050fbf083048ce3"
     },
     {
       "path": "results\\revision\\multiday_charger_derating_v1\\multiday_method_summary.csv",
@@ -56,23 +56,23 @@
     },
     {
       "path": "results\\revision\\evaluator_v3\\analysis\\evaluator_ablation_summary.csv",
-      "sha256": "c2696cdf1a9525a256703c5abf5f408a40872e8788eb3fb5f60f908f1dc4133d"
+      "sha256": "b6ea292a2d9aa723d2693198f1f67a3222535c08b77ca42ff2f95014fdc4a9a9"
     },
     {
       "path": "results\\revision\\sensitivity_v2\\analysis\\sensitivity_summary.csv",
-      "sha256": "d7af51b46e722f38708fbeda24d765b5faf7e0d2c9be5c53fcabf9a6d38bd633"
+      "sha256": "9c96d158edc67d510324bf354f76d413c415ffe7bcc7b806b4fac4c17c489828"
     },
     {
       "path": "results\\revision\\stochastic_v4\\agent_vs_stochastic_comparison.csv",
-      "sha256": "7ca87df36383b7d4c9329b41fc002733e70c47f7800ad891319422cd49ab1a63"
+      "sha256": "f134489524ffad430a0104487c5601df3748aa909f67d814a9a274694b726c29"
     },
     {
       "path": "results\\revision\\nonagentic_baseline_v8_confirmatory\\agent_vs_full_no_ai_comparison.csv",
-      "sha256": "bb2fa265e08317165be58311fc5b7c7bd2edd4e3cba013e6c13abbf38e2007cc"
+      "sha256": "4400e5b3f8034d05b6f7e3a108e0860293161422f05518205141fbd52859de38"
     },
     {
       "path": "results\\revision\\scaling_v2\\scaling_runs.csv",
-      "sha256": "f9de10b490cff82607881c1c72857f74ce54877c1131bd53b53893397baa7f10"
+      "sha256": "38b45883ff4039df2f39a459d53bff1dec69fef1c0b56dcc7b40eb560680eec1"
     }
   ],
   "artifacts": [
@@ -142,19 +142,19 @@
     },
     {
       "path": "paper_outputs\\revision\\figures\\trigger_feasibility.png",
-      "sha256": "d617a5ed93a5be7a0f6cad780aec2234d6aab1d429704f079d95dccdb9b0fcad"
+      "sha256": "e6b06cebb01dde0be86f933cefffc3c3f5dc565b9050761bb8a405f3461560f0"
     },
     {
       "path": "paper_outputs\\revision\\figures\\trigger_feasibility.pdf",
-      "sha256": "b07f12836deaf3efdb24de2df2dc06e23574e7c0bfea8921ff4a32ee5ee8a75f"
+      "sha256": "33c626942bc227d5ffa31c5672f8a80b660d369740fb5a14d865fe7b9d51fc03"
     },
     {
       "path": "paper_outputs\\revision\\figures\\scalability_latency.png",
-      "sha256": "e96fb10a35e0799b17fa9669df837177483f069f1a580e7a3e1fad0959dfa0e5"
+      "sha256": "3f8983281ef127c78606d9eae52ca6adae70b3a36b973f2eae56312bb8693e4b"
     },
     {
       "path": "paper_outputs\\revision\\figures\\scalability_latency.pdf",
-      "sha256": "fb2af69c5c2c92f12dc84949f5f5cd981b7b75d6597c832030d65c59bbd34d5a"
+      "sha256": "58c58dfaadf9aa16a4bdd1e60fbfa92c6b929fcfb2f1f47120bafd32eb81d856"
     }
   ],
   "notes": [

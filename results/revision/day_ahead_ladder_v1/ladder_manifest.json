@@ -27,7 +27,7 @@
       "total_kwh_bought": 2400.0,
       "total_kwh_sold": 0.0,
       "result_file": "S1_dumb_charging.json",
-      "result_sha256": "70553966a8cb2c67452daeff7e00f75e870097882ccf0ee35fbc0da79240078a"
+      "result_sha256": "6cdce1483f2534ce3f500186ad78d02b3eef9f2b3266f3e7201d5bad6b6ae521"
     },
     {
       "scenario": "S2_smart_no_v2g",
@@ -37,7 +37,7 @@
       "total_kwh_bought": 1600.0,
       "total_kwh_sold": 0.0,
       "result_file": "S2_smart_no_v2g.json",
-      "result_sha256": "5addf52516e937f2f6be8c1125f403dc25e44f6eb1ffd13aae2c9cf8190124ec"
+      "result_sha256": "89197a525a2ac6ad98bcd67479ccfaaa30475e48bca3fed852abbf575a82d17b"
     },
     {
       "scenario": "S2p5_v2g_fixed_margin",
@@ -60,5 +60,6 @@
       "result_sha256": "264109a163ac1c1def11cb130d02761575007c78d57fad7737116f3bd7000e30"
     }
   ],
-  "optimization_saving_vs_dumb_charging_pct": 40.9575
+  "optimization_saving_vs_dumb_charging_pct": 40.9575,
+  "result_hash_note": "result_sha256 values for S1_dumb_charging.json, S2_smart_no_v2g.json were originally recorded over pre-normalization CRLF bytes and re-taken over the LF bytes the repository stores, per the LF-hash convention in .gitattributes. The file contents are line-ending-equivalent and otherwise unchanged."
 }

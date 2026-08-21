@@ -137,7 +137,7 @@ the LaTeX source when it is supplied.
 Check what a study still needs before spending budget:
 
 ```powershell
-python scripts/report_study_status.py scaling --output-root results/revision/scaling_v1
+python scripts/report_study_status.py scaling --output-root results/revision/scaling_v2
 ```
 
 The runners index complete workbooks and execute only what is missing, so an
@@ -181,6 +181,24 @@ that the old failed cell needs a new method.
   limitations, and reviewer responses after the manuscript source is supplied.
 - **Literature update.** Add and verify the final citations used to defend the
   agentic positioning and tariff-policy discussion.
+
+## Provenance caveats found by the 21/08 audit
+
+- Six study manifests record `git_worktree_clean: false` (`scaling_v2`,
+  `evaluator_v3`, `extended_disturbances_v3`, `price_escalation_v3`,
+  `day_ahead_ladder_v1` at `aacfa4c`; `recoverable_cluster_v1` at `8bf8820`).
+  The recorded commit does not pin the exact code executed. The results were
+  not re-run; treat these as recorded-with-caveat.
+- `multiday_charger_derating_v1` and the stochastic studies record no
+  `git_commit`/clean flag at study level; the stochastic comparison JSON does
+  record a commit and a verified protocol hash.
+- Hashes in `paper_outputs/revision/manifest.json` and two entries of
+  `day_ahead_ladder_v1/ladder_manifest.json` were originally taken over
+  pre-normalization CRLF bytes; both were re-taken over the LF bytes the
+  repository stores on 21/08, with a note in the ladder manifest.
+- The `s1_solver_invariance_v1` artifact backs the manuscript's claim that the
+  corrected S1 baseline is solver-invariant: Gurobi and HiGHS both return
+  218.982692 at a zero gap.
 
 ## Where the response text lives
 

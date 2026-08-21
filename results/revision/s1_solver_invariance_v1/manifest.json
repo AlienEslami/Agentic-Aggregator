@@ -1,0 +1,27 @@
+{
+  "artifact": "s1_solver_invariance_v1",
+  "created_utc": "2026-08-21T22:49:14.933346+00:00",
+  "git_commit": "4a217dee8b3f4ac5c0142ab3742c41ab4758964f",
+  "git_tracked_files_clean": true,
+  "tie_break": "earliest charging over the benchmark-optimal face, gap 0",
+  "inputs": {
+    "case_study_sha256": "05db7642daf50d4062302916978c9ca3a4be92d1d306bf36d24ee5215edfca15",
+    "spot_prices_sha256": "e40a2e467c188fbf6f7eaa3ed65e5de4c9bcb9b9021041737ed2402ae97cb1e6"
+  },
+  "solvers": [
+    {
+      "solver": "gurobi",
+      "pto_daily_cost": 218.98269209809263,
+      "total_kwh_bought": 2400.0,
+      "result_sha256": "70553966a8cb2c67452daeff7e00f75e870097882ccf0ee35fbc0da79240078a"
+    },
+    {
+      "solver": "appsi_highs",
+      "pto_daily_cost": 218.98269209809263,
+      "total_kwh_bought": 2400.0,
+      "result_sha256": "fcb2cf0ea40c408fa11b0fc20f66e3a70ae23c2eff0e24437472f897562f7752"
+    }
+  ],
+  "max_absolute_cost_difference": 0.0,
+  "claim_backed": "With the earliest-charging tie-break, every available solver returns the same S1 baseline cost."
+}
