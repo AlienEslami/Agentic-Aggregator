@@ -29,7 +29,7 @@ The clearest Trigger Agent result occurred in the charger-bank shutdown case. Th
 
 For the feasible pricing and evaluator comparisons, most realized physical flexibility outcomes were identical. The observed PTO-cost improvements therefore primarily represent a different division of the same grid-side value between the aggregator and PTO, constrained by the 50% retention floor. The charger case provides the stronger evidence of an operational benefit from interpreting unstructured advance information.
 
-The evaluator audit found one decision where the evaluator accepted an economically worse rerun. The saved-candidate mechanism correctly retained and selected the better earlier schedule. Across all 100 audited optimization decisions, no selected schedule was worse than the best usable candidate under the workflow's priority and retention ordering.
+The evaluator audit covered 100 optimization decisions. In 27 of them the evaluator accepted a rerun that was worse in raw projected full-day PTO cost than an earlier usable attempt; under the workflow's full ordering, which places operational priority and retention compliance before cost, 1 of those acceptances was worse. In 49 decisions the selected schedule was not the cheapest usable candidate, with a maximum cost regret of USD 6.09 in a single decision; this is the explicit price of ranking retention compliance above cost. In all 100 decisions the selected schedule was the best usable candidate under the workflow's priority and retention ordering, and the saved-candidate mechanism never discarded a better usable schedule. These figures match `analysis_summary.json` in this folder.
 
 ## Files
 

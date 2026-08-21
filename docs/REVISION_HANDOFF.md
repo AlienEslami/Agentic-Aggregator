@@ -168,15 +168,15 @@ that the old failed cell needs a new method.
 
 ## Left to decide or write
 
-- **n8n version.** The only bracketed placeholder left in the reproducibility
-  appendix. The workflow export carries no version metadata, so it has to be
-  read off the instance that produced it.
-- **Altruistic README.** It states that the evaluator audit found one decision
-  where an economically worse rerun was accepted. The `analysis_summary.json`
-  beside it records 27 in raw cost terms, 1 under the full ordering, and 49 of
-  100 decisions where the selected schedule was not the cheapest, with a
-  maximum regret of 6.09 USD. All three should be reported, with the regret
-  framed as the explicit price of the retention floor.
+- ~~n8n version~~ resolved on 21/08 by matching the text to the
+  implementation: the agents are native Python calls to the provider's
+  structured-output endpoint and no orchestration server exists in the
+  reproduction path, so the manuscript no longer references n8n and no
+  placeholder remains.
+- ~~Altruistic README~~ corrected on 21/08: it now reports the 27/1/49
+  figures and the 6.09 USD maximum regret exactly as recorded in
+  `analysis_summary.json`, framing the regret as the price of the retention
+  floor.
 - **LaTeX integration.** Insert the generated tables, figures, results,
   limitations, and reviewer responses after the manuscript source is supplied.
 - **Literature update.** Add and verify the final citations used to defend the
