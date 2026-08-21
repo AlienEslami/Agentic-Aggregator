@@ -819,7 +819,15 @@ class RuleBasedAgentBackend(AgentBackend):
         last_type = history.get("last_reopt_trigger_type")
         last_timestep = history.get("last_reopt_timestep")
 
-        if timestep == 1 or remaining < 4 or last_timestep == timestep:
+        # A new daily rolling-horizon episode can begin with a material handover
+        # notice (for example, an event that persists from the previous day).
+        # Keep the no-deviation t=1 guard, but do not let it suppress that
+        # explicit operational information.
+        if (
+            (timestep == 1 and context.get("notice_interpretation") is None)
+            or remaining < 4
+            or last_timestep == timestep
+        ):
             return TriggerDecision(
                 action="skip",
                 reasoning="No actionable real-time deviation is available at this timestep.",
@@ -1545,15 +1553,23 @@ def normalize_trigger_decision(
     timestep = int(context["timestep"])
     remaining = int(context["remaining_timesteps"])
     last_timestep = context["reoptimization_history"].get("last_reopt_timestep")
-
-    if timestep == 1 or remaining < 4 or last_timestep == timestep:
-        return deterministic
     notice = decision.notice_interpretation
+    actionable_day_start_notice = bool(
+        notice is not None
+        and notice.material
+        and notice.uncertainty_details.recommended_action == "optimize"
+    )
+
+    if (
+        (timestep == 1 and not actionable_day_start_notice)
+        or remaining < 4
+        or last_timestep == timestep
+    ):
+        return deterministic
     if notice is not None:
         recommendation = notice.uncertainty_details.recommended_action
         if decision.action == "optimize" and (
             recommendation in {"wait", "request_confirmation"}
-            or notice.phase in {"warning", "stable"}
             or not notice.material
         ):
             return decision.model_copy(
@@ -1572,7 +1588,6 @@ def normalize_trigger_decision(
             decision.action == "skip"
             and recommendation == "optimize"
             and notice.material
-            and notice.phase in {"onset", "severity_change", "recovery"}
         ):
             trigger_type = (
                 "combined_notice"

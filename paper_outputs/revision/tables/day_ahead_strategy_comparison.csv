@@ -1,0 +1,7 @@
+id,strategy,v2g,ai_layer,pto_cost_eur_per_day,aggregator_revenue_eur_per_day,bought_kwh_per_day,sold_kwh_per_day,reporting_basis
+S1,Dumb charging,off,none,218.98269209809263,0.0,2400.0,0.0,same-interval optimizer settlement
+S2,"Smart charging, no V2G",off,none,129.29286103542233,0.0,1600.0,0.0,same-interval optimizer settlement
+S2.5a,"Smart V2G, fixed 1.05/0.80 tariff multipliers",on,none,131.48184817716128,16.282429193599214,1999.9999961790563,400.0,same-interval optimizer settlement
+S2.5b,"Smart V2G, spot passthrough",on,none,113.66326188731827,0.0,1999.9999999612842,400.0000237846085,same-interval optimizer settlement
+S3,Profit-based agentic aggregator,on,Pricing + Evaluator,138.40712057203365,20.913695503913782,1900.0,300.0,same-interval optimizer settlement
+S4,Operational agentic aggregator,on,Pricing + Evaluator,116.07708022647554,2.413815921298432,2000.0,400.0,same-interval optimizer settlement

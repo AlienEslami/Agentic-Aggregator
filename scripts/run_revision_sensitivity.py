@@ -32,6 +32,17 @@ NOTICE_DATA = ROOT / "inputs" / "revision" / "advance_warning_notices_v1.json"
 PHYSICAL_DATA = (
     ROOT / "inputs" / "revision" / "advance_warning_physical_events_v1.json"
 )
+# Frozen 55-run study: three general Trigger wording arms plus two additional
+# confidence-threshold arms (the baseline/base combination is deduplicated).
+# ``daily_handover`` is a scenario-specific multi-day protocol instruction and
+# must not silently expand the completed prompt-sensitivity experiment.
+SENSITIVITY_TRIGGER_PROMPT_VARIANTS = (
+    "baseline",
+    "action_first",
+    "evidence_first",
+)
+if not set(SENSITIVITY_TRIGGER_PROMPT_VARIANTS).issubset(TRIGGER_PROMPT_VARIANTS):
+    raise RuntimeError("Frozen sensitivity prompt arm is not a supported variant")
 
 
 def sha256(path: Path) -> str:
@@ -89,7 +100,7 @@ def build_specs(repetitions: int = 5) -> list[SensitivitySpec]:
     if repetitions < 1:
         raise ValueError("repetitions must be positive")
     unique: dict[tuple[Any, ...], SensitivitySpec] = {}
-    for prompt_variant in TRIGGER_PROMPT_VARIANTS:
+    for prompt_variant in SENSITIVITY_TRIGGER_PROMPT_VARIANTS:
         for repetition in range(1, repetitions + 1):
             spec = SensitivitySpec(
                 family="trigger",

@@ -1,0 +1,60 @@
+{
+  "version": "followup_disturbance_cases_v1",
+  "frozen_date_utc": "2026-08-21",
+  "notice_file": "inputs/revision/followup_notices_v1.json",
+  "physical_event_file": "inputs/revision/followup_physical_events_v1.json",
+  "recoverable_cluster_protocol": "inputs/revision/advance_warning_recoverable_cluster_protocol_v1.json",
+  "notice_sha256": "9c6ea2fde7f05458cee1042bece11618e07a0aee2bae53b439c7510009950395",
+  "physical_event_sha256": "bab2407adab9ac695f64b4a0025275d81bc997c8ee1b634b130cb2356ba9c4bd",
+  "recoverable_cluster_protocol_sha256": "22e8f1edfa5e525325a7473322064e56b746086a64bd1e93f37a09679cc8cf73",
+  "archived_case_excluded_from_primary_reporting": {
+    "scenario_id": "aw_clustered_late_returns",
+    "files_deleted": false,
+    "reason": "operationally infeasible under the realized trajectory for all compared trigger methods"
+  },
+  "recoverable_cluster": {
+    "scenario_id": "aw_recoverable_clustered_late_returns",
+    "buses": [
+      3,
+      4,
+      7
+    ],
+    "return_delay_minutes_by_bus": {
+      "3": 60,
+      "4": 45,
+      "7": 60
+    },
+    "effective_timestep": 40,
+    "selection_rule": "freeze after exact-information feasibility and physical-effect calibration, before Agent execution"
+  },
+  "multiday": {
+    "design": "three-day chained rolling horizon with realized terminal battery energy carried into the next day",
+    "fleet_size": 8,
+    "disturbance": "temporary western-loop roadwork detour",
+    "affected_buses": [
+      1,
+      4
+    ],
+    "energy_multiplier": 1.25,
+    "day_windows": {
+      "day_1": [
+        31,
+        48
+      ],
+      "day_2": [
+        1,
+        48
+      ],
+      "day_3": [
+        1,
+        30
+      ]
+    },
+    "daily_case_ids": [
+      "md_roadwork_day1",
+      "md_roadwork_day2",
+      "md_roadwork_day3"
+    ],
+    "single_144_step_lookahead": false
+  }
+}

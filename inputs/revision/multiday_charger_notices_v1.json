@@ -1,0 +1,591 @@
+[
+  {
+    "notice_id": "MD-CHARGER-D1-WARN",
+    "scenario_id": "md_charger_derating_day1",
+    "event_id": "MD-CHARGER-COOLING",
+    "source_type": "service_alert",
+    "wording_variant": "uncertain_chat",
+    "report_timestep": 22,
+    "text": "Maintenance chat: the cooling loop shared by Charger 6, Charger 7 and Charger 8 is running hot. We may have to cap their output this afternoon, but the limit is not confirmed. Request confirmation before changing the schedule.",
+    "benchmark_split": "closed_loop_advance_warning",
+    "uncertainty_case": "range_fragmentation_and_coreference",
+    "canonical": {
+      "event_id": "MD-CHARGER-COOLING",
+      "source_type": "service_alert",
+      "event_type": "charger_derating",
+      "phase": "warning",
+      "affected_buses": [],
+      "affected_chargers": [
+        6,
+        7,
+        8
+      ],
+      "effective_timestep": 31,
+      "expected_end_timestep": 48,
+      "uncertainty": false,
+      "uncertainty_details": {
+        "confidence_level": 0.58,
+        "provisional": true,
+        "conflicting_evidence": [],
+        "estimates": [],
+        "recommended_action": "request_confirmation",
+        "rationale": "Wait for operational confirmation."
+      },
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "return_delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "advance_warning_benchmark_v2"
+      ]
+    }
+  },
+  {
+    "notice_id": "MD-CHARGER-D1-CONFIRM",
+    "scenario_id": "md_charger_derating_day1",
+    "event_id": "MD-CHARGER-COOLING",
+    "source_type": "service_alert",
+    "wording_variant": "uncertain_chat",
+    "report_timestep": 24,
+    "text": "Maintenance confirmed the temporary cooling limit. Charger 6, Charger 7 and Charger 8 will each be capped at 100 kW from 15:00 today. The limit will remain through day 2 and should clear at 15:00 on day 3. Optimize before the cap begins.",
+    "benchmark_split": "closed_loop_advance_warning",
+    "uncertainty_case": "range_fragmentation_and_coreference",
+    "canonical": {
+      "event_id": "MD-CHARGER-COOLING",
+      "source_type": "service_alert",
+      "event_type": "charger_derating",
+      "phase": "onset",
+      "affected_buses": [],
+      "affected_chargers": [
+        6,
+        7,
+        8
+      ],
+      "effective_timestep": 31,
+      "expected_end_timestep": 48,
+      "uncertainty": true,
+      "uncertainty_details": {
+        "confidence_level": 0.96,
+        "provisional": false,
+        "conflicting_evidence": [],
+        "estimates": [
+          {
+            "parameter": "charger_power_kw",
+            "asset_id": 6,
+            "lower_bound": 100.0,
+            "upper_bound": 100.0,
+            "selected_value": 100.0,
+            "unit": "kw",
+            "selection_policy": "conservative_lower"
+          },
+          {
+            "parameter": "charger_power_kw",
+            "asset_id": 7,
+            "lower_bound": 100.0,
+            "upper_bound": 100.0,
+            "selected_value": 100.0,
+            "unit": "kw",
+            "selection_policy": "conservative_lower"
+          },
+          {
+            "parameter": "charger_power_kw",
+            "asset_id": 8,
+            "lower_bound": 100.0,
+            "upper_bound": 100.0,
+            "selected_value": 100.0,
+            "unit": "kw",
+            "selection_policy": "conservative_lower"
+          }
+        ],
+        "recommended_action": "optimize",
+        "rationale": "Use the confirmed advance information now."
+      },
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "return_delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "6": 100.0,
+          "7": 100.0,
+          "8": 100.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "advance_warning_benchmark_v2"
+      ]
+    }
+  },
+  {
+    "notice_id": "MD-CHARGER-D1-HOLD",
+    "scenario_id": "md_charger_derating_day1",
+    "event_id": "MD-CHARGER-COOLING",
+    "source_type": "service_alert",
+    "wording_variant": "uncertain_chat",
+    "report_timestep": 40,
+    "text": "Maintenance: the same cooling limit on Charger 6, Charger 7 and Charger 8 remains unchanged at 100 kW each. Keep the plan.",
+    "benchmark_split": "closed_loop_advance_warning",
+    "uncertainty_case": "range_fragmentation_and_coreference",
+    "canonical": {
+      "event_id": "MD-CHARGER-COOLING",
+      "source_type": "service_alert",
+      "event_type": "charger_derating",
+      "phase": "persistence",
+      "affected_buses": [],
+      "affected_chargers": [
+        6,
+        7,
+        8
+      ],
+      "effective_timestep": 31,
+      "expected_end_timestep": 48,
+      "uncertainty": true,
+      "uncertainty_details": {
+        "confidence_level": 0.96,
+        "provisional": false,
+        "conflicting_evidence": [],
+        "estimates": [
+          {
+            "parameter": "charger_power_kw",
+            "asset_id": 6,
+            "lower_bound": 100.0,
+            "upper_bound": 100.0,
+            "selected_value": 100.0,
+            "unit": "kw",
+            "selection_policy": "conservative_lower"
+          },
+          {
+            "parameter": "charger_power_kw",
+            "asset_id": 7,
+            "lower_bound": 100.0,
+            "upper_bound": 100.0,
+            "selected_value": 100.0,
+            "unit": "kw",
+            "selection_policy": "conservative_lower"
+          },
+          {
+            "parameter": "charger_power_kw",
+            "asset_id": 8,
+            "lower_bound": 100.0,
+            "upper_bound": 100.0,
+            "selected_value": 100.0,
+            "unit": "kw",
+            "selection_policy": "conservative_lower"
+          }
+        ],
+        "recommended_action": "wait",
+        "rationale": "The active plan already contains this unchanged information."
+      },
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "return_delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "6": 100.0,
+          "7": 100.0,
+          "8": 100.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "advance_warning_benchmark_v2"
+      ]
+    }
+  },
+  {
+    "notice_id": "MD-CHARGER-D2-STATUS",
+    "scenario_id": "md_charger_derating_day2",
+    "event_id": "MD-CHARGER-COOLING",
+    "source_type": "service_alert",
+    "wording_variant": "uncertain_chat",
+    "report_timestep": 1,
+    "text": "New day-2 scheduling instruction: Charger 6, Charger 7 and Charger 8 are each capped at 100 kW from 00:00 until 24:00. Build and optimize today's schedule using the carried fleet battery state.",
+    "benchmark_split": "closed_loop_advance_warning",
+    "uncertainty_case": "range_fragmentation_and_coreference",
+    "canonical": {
+      "event_id": "MD-CHARGER-COOLING",
+      "source_type": "service_alert",
+      "event_type": "charger_derating",
+      "phase": "onset",
+      "affected_buses": [],
+      "affected_chargers": [
+        6,
+        7,
+        8
+      ],
+      "effective_timestep": 1,
+      "expected_end_timestep": 48,
+      "uncertainty": true,
+      "uncertainty_details": {
+        "confidence_level": 0.99,
+        "provisional": false,
+        "conflicting_evidence": [],
+        "estimates": [
+          {
+            "parameter": "charger_power_kw",
+            "asset_id": 6,
+            "lower_bound": 100.0,
+            "upper_bound": 100.0,
+            "selected_value": 100.0,
+            "unit": "kw",
+            "selection_policy": "conservative_lower"
+          },
+          {
+            "parameter": "charger_power_kw",
+            "asset_id": 7,
+            "lower_bound": 100.0,
+            "upper_bound": 100.0,
+            "selected_value": 100.0,
+            "unit": "kw",
+            "selection_policy": "conservative_lower"
+          },
+          {
+            "parameter": "charger_power_kw",
+            "asset_id": 8,
+            "lower_bound": 100.0,
+            "upper_bound": 100.0,
+            "selected_value": 100.0,
+            "unit": "kw",
+            "selection_policy": "conservative_lower"
+          }
+        ],
+        "recommended_action": "optimize",
+        "rationale": "Use the confirmed advance information now."
+      },
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "return_delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "6": 100.0,
+          "7": 100.0,
+          "8": 100.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "advance_warning_benchmark_v2"
+      ]
+    }
+  },
+  {
+    "notice_id": "MD-CHARGER-D2-HOLD",
+    "scenario_id": "md_charger_derating_day2",
+    "event_id": "MD-CHARGER-COOLING",
+    "source_type": "service_alert",
+    "wording_variant": "uncertain_chat",
+    "report_timestep": 26,
+    "text": "Maintenance: no change. Charger 6, Charger 7 and Charger 8 remain at 100 kW each for the rest of day 2. Keep the plan.",
+    "benchmark_split": "closed_loop_advance_warning",
+    "uncertainty_case": "range_fragmentation_and_coreference",
+    "canonical": {
+      "event_id": "MD-CHARGER-COOLING",
+      "source_type": "service_alert",
+      "event_type": "charger_derating",
+      "phase": "persistence",
+      "affected_buses": [],
+      "affected_chargers": [
+        6,
+        7,
+        8
+      ],
+      "effective_timestep": 1,
+      "expected_end_timestep": 48,
+      "uncertainty": true,
+      "uncertainty_details": {
+        "confidence_level": 0.99,
+        "provisional": false,
+        "conflicting_evidence": [],
+        "estimates": [
+          {
+            "parameter": "charger_power_kw",
+            "asset_id": 6,
+            "lower_bound": 100.0,
+            "upper_bound": 100.0,
+            "selected_value": 100.0,
+            "unit": "kw",
+            "selection_policy": "conservative_lower"
+          },
+          {
+            "parameter": "charger_power_kw",
+            "asset_id": 7,
+            "lower_bound": 100.0,
+            "upper_bound": 100.0,
+            "selected_value": 100.0,
+            "unit": "kw",
+            "selection_policy": "conservative_lower"
+          },
+          {
+            "parameter": "charger_power_kw",
+            "asset_id": 8,
+            "lower_bound": 100.0,
+            "upper_bound": 100.0,
+            "selected_value": 100.0,
+            "unit": "kw",
+            "selection_policy": "conservative_lower"
+          }
+        ],
+        "recommended_action": "wait",
+        "rationale": "The active plan already contains this unchanged information."
+      },
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "return_delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "6": 100.0,
+          "7": 100.0,
+          "8": 100.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "advance_warning_benchmark_v2"
+      ]
+    }
+  },
+  {
+    "notice_id": "MD-CHARGER-D3-STATUS",
+    "scenario_id": "md_charger_derating_day3",
+    "event_id": "MD-CHARGER-COOLING",
+    "source_type": "service_alert",
+    "wording_variant": "uncertain_chat",
+    "report_timestep": 1,
+    "text": "New day-3 scheduling instruction: Charger 6, Charger 7 and Charger 8 are each capped at 100 kW from 00:00 until 15:00. Build and optimize today's schedule using the carried fleet battery state.",
+    "benchmark_split": "closed_loop_advance_warning",
+    "uncertainty_case": "range_fragmentation_and_coreference",
+    "canonical": {
+      "event_id": "MD-CHARGER-COOLING",
+      "source_type": "service_alert",
+      "event_type": "charger_derating",
+      "phase": "onset",
+      "affected_buses": [],
+      "affected_chargers": [
+        6,
+        7,
+        8
+      ],
+      "effective_timestep": 1,
+      "expected_end_timestep": 30,
+      "uncertainty": true,
+      "uncertainty_details": {
+        "confidence_level": 0.99,
+        "provisional": false,
+        "conflicting_evidence": [],
+        "estimates": [
+          {
+            "parameter": "charger_power_kw",
+            "asset_id": 6,
+            "lower_bound": 100.0,
+            "upper_bound": 100.0,
+            "selected_value": 100.0,
+            "unit": "kw",
+            "selection_policy": "conservative_lower"
+          },
+          {
+            "parameter": "charger_power_kw",
+            "asset_id": 7,
+            "lower_bound": 100.0,
+            "upper_bound": 100.0,
+            "selected_value": 100.0,
+            "unit": "kw",
+            "selection_policy": "conservative_lower"
+          },
+          {
+            "parameter": "charger_power_kw",
+            "asset_id": 8,
+            "lower_bound": 100.0,
+            "upper_bound": 100.0,
+            "selected_value": 100.0,
+            "unit": "kw",
+            "selection_policy": "conservative_lower"
+          }
+        ],
+        "recommended_action": "optimize",
+        "rationale": "Use the confirmed advance information now."
+      },
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "return_delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "6": 100.0,
+          "7": 100.0,
+          "8": 100.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "advance_warning_benchmark_v2"
+      ]
+    }
+  },
+  {
+    "notice_id": "MD-CHARGER-D3-RECOVERY",
+    "scenario_id": "md_charger_derating_day3",
+    "event_id": "MD-CHARGER-COOLING",
+    "source_type": "service_alert",
+    "wording_variant": "uncertain_chat",
+    "report_timestep": 31,
+    "text": "Recovery confirmed at 15:00. The cooling work is complete: Charger 6, Charger 7 and Charger 8 are restored to 200 kW each for 15:00 to 24:00. Optimize the restored schedule.",
+    "benchmark_split": "closed_loop_advance_warning",
+    "uncertainty_case": "range_fragmentation_and_coreference",
+    "canonical": {
+      "event_id": "MD-CHARGER-COOLING",
+      "source_type": "service_alert",
+      "event_type": "charger_derating",
+      "phase": "recovery",
+      "affected_buses": [],
+      "affected_chargers": [
+        6,
+        7,
+        8
+      ],
+      "effective_timestep": 31,
+      "expected_end_timestep": 48,
+      "uncertainty": true,
+      "uncertainty_details": {
+        "confidence_level": 1.0,
+        "provisional": false,
+        "conflicting_evidence": [],
+        "estimates": [
+          {
+            "parameter": "charger_power_kw",
+            "asset_id": 6,
+            "lower_bound": 200.0,
+            "upper_bound": 200.0,
+            "selected_value": 200.0,
+            "unit": "kw",
+            "selection_policy": "conservative_lower"
+          },
+          {
+            "parameter": "charger_power_kw",
+            "asset_id": 7,
+            "lower_bound": 200.0,
+            "upper_bound": 200.0,
+            "selected_value": 200.0,
+            "unit": "kw",
+            "selection_policy": "conservative_lower"
+          },
+          {
+            "parameter": "charger_power_kw",
+            "asset_id": 8,
+            "lower_bound": 200.0,
+            "upper_bound": 200.0,
+            "selected_value": 200.0,
+            "unit": "kw",
+            "selection_policy": "conservative_lower"
+          }
+        ],
+        "recommended_action": "optimize",
+        "rationale": "Use the confirmed advance information now."
+      },
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "return_delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {
+          "6": 200.0,
+          "7": 200.0,
+          "8": 200.0
+        },
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "advance_warning_benchmark_v2"
+      ]
+    }
+  },
+  {
+    "notice_id": "MD-NOMINAL-D2-HANDOVER",
+    "scenario_id": "md_nominal_day2",
+    "event_id": "MD-NOMINAL-D2",
+    "source_type": "informational",
+    "wording_variant": "uncertain_chat",
+    "report_timestep": 1,
+    "text": "New day-2 scheduling boundary: no charger, route, or service restriction is active. Build today's nominal schedule using the carried fleet battery state.",
+    "benchmark_split": "closed_loop_advance_warning",
+    "uncertainty_case": "range_fragmentation_and_coreference",
+    "canonical": {
+      "event_id": "MD-NOMINAL-D2",
+      "source_type": "informational",
+      "event_type": "informational",
+      "phase": "onset",
+      "affected_buses": [],
+      "affected_chargers": [],
+      "effective_timestep": 1,
+      "expected_end_timestep": 48,
+      "uncertainty": false,
+      "uncertainty_details": {
+        "confidence_level": 1.0,
+        "provisional": false,
+        "conflicting_evidence": [],
+        "estimates": [],
+        "recommended_action": "optimize",
+        "rationale": "Use the confirmed advance information now."
+      },
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "return_delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "advance_warning_benchmark_v2"
+      ]
+    }
+  },
+  {
+    "notice_id": "MD-NOMINAL-D3-HANDOVER",
+    "scenario_id": "md_nominal_day3",
+    "event_id": "MD-NOMINAL-D3",
+    "source_type": "informational",
+    "wording_variant": "uncertain_chat",
+    "report_timestep": 1,
+    "text": "New day-3 scheduling boundary: no charger, route, or service restriction is active. Build today's nominal schedule using the carried fleet battery state.",
+    "benchmark_split": "closed_loop_advance_warning",
+    "uncertainty_case": "range_fragmentation_and_coreference",
+    "canonical": {
+      "event_id": "MD-NOMINAL-D3",
+      "source_type": "informational",
+      "event_type": "informational",
+      "phase": "onset",
+      "affected_buses": [],
+      "affected_chargers": [],
+      "effective_timestep": 1,
+      "expected_end_timestep": 48,
+      "uncertainty": false,
+      "uncertainty_details": {
+        "confidence_level": 1.0,
+        "provisional": false,
+        "conflicting_evidence": [],
+        "estimates": [],
+        "recommended_action": "optimize",
+        "rationale": "Use the confirmed advance information now."
+      },
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "return_delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "advance_warning_benchmark_v2"
+      ]
+    }
+  }
+]

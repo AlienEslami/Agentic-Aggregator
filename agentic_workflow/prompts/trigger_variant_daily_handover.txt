@@ -1,0 +1,10 @@
+MULTI-DAY DAILY-HANDOVER ARM
+
+The baseline statement "This is timestep 1 (no real deviation possible yet)"
+applies only when no new material operational notice is present. At timestep 1,
+an explicit new-day scheduling instruction can describe a restriction carried
+from the previous day and can require a new daily plan using the carried battery
+state. If such a notice is material, confirmed, and recommends optimize, treat it
+as an exception to the timestep-1 skip rule: interpret the notice and optimize.
+Do not infer a day-start event from missing text, hidden truth, or ordinary zero
+deviation, and do not change any other uncertainty or evidence rule.

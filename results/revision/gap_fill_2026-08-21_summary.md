@@ -11,7 +11,7 @@
   and the OpenAI usage dashboard remain authoritative.
 - All indexed optimizer calls used Gurobi with no fallback. Legitimate
   no-trigger episodes have zero optimizer calls and therefore no solver name.
-- Full regression suite: 167 passed outside the sandbox under the installed
+- Full regression suite: 182 passed outside the sandbox under the installed
   academic Gurobi license.
 
 ## Completed studies
@@ -76,10 +76,22 @@ repetitions with rule-text, numerical and oracle triggers for two new cases.
   for both. The Agent interprets the confirmed text at timestep 17, before the
   physical onset. Oracle is feasible in both modes. This is the clearest new
   evidence that advance unstructured information has operational value.
-- Clustered late returns: every method incurs realized reserve shortfall. This
-  is a useful boundary stress test but not an Agent win. It must be reported as
-  showing that interpretation alone cannot overcome insufficient physical
-  flexibility.
+- The original clustered-late-return calibration produced reserve shortfall for
+  every method and is excluded from the primary/reviewer-facing results. The
+  recoverable replacement (60/45/60-minute delays for Buses 3/4/7) is feasible
+  for every method in both modes with zero reserve shortfall.
+- The chained three-day charger study is feasible in all 18 episodes and all 54
+  daily runs: 16 derating comparisons and two scheduled no-derating daily-
+  replanning controls. Internal battery-energy carryover is exact, the maximum
+  four-decimal first-settlement discrepancy is 0.0000492 kWh, and reserve
+  shortfall is zero. All ten Trigger-Agent repetitions act on the confirmed
+  day-1 warning before physical onset. Trigger methods tie economically, while
+  the nominal control shows accumulating SOC and trading effects across days;
+  this is robustness/carryover evidence rather than an Agent-superiority result.
+  The selfish nominal day-3 economic comparison is approximate because its two
+  feasible Gurobi incumbents reached the 300-second limit at about 5.5% gap. A
+  targeted 900-second-per-attempt rerun retained the identical schedule and
+  economics; the gaps improved only from 5.52%/5.48% to 5.50%/5.42%.
 - The frozen rule parser also reacts to a redundant persistence message in the
   energy case, whereas Agent repetitions do not trigger on that message.
 

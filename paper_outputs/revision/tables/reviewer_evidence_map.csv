@@ -1,0 +1,11 @@
+review_comment,issue,implemented_response,primary_artifact
+R1.1/R2.1,Why agentic AI is needed,"Separate numerical, text-rule, oracle, stochastic, and full-no-AI controls; isolate heterogeneous information value",trigger_feasibility_comparison.csv; stochastic_benchmark.csv; full_no_ai_comparison.csv
+R1.2,Deployment logic,"Deterministic timestep map, causal realized settlement, trigger evidence gate, and frozen protocol",Methods text and protocol manifests
+R1.3/R2.3,Beyond event triggering / if-then logic,Advance-warning text cases and matched rule-text/numerical triggers,trigger_feasibility_comparison.csv; trigger_feasibility figure
+R1.4/R2.4,Component and full-no-AI ablations,"Trigger, Pricing, Evaluator, V2G-only, and full deterministic baselines",evaluator_ablation.csv; full_no_ai_comparison.csv; day_ahead_strategy_comparison.csv
+R1.5/R2.5,Prompt randomness and sensitivity,55-run one-factor study: 25 Trigger repetitions plus 30 Pricing episodes,prompt_sensitivity.csv
+R1.6,Broader disturbances,"Sustained energy, recoverable clustered delays, price escalation, charger, route, combined, and a chained three-day persistent derating with a matched no-derating daily-replanning control",trigger_feasibility_comparison.csv; multiday_charger_derating.csv; multiday_charger_derating_effects.csv; multiday_charger_derating_daily_effects.csv; multiday_solver_audit_summary.csv; multiday_time_limit_sensitivity_solver_audit_summary.csv
+R1.7,Economic interpretation,"Selfish revenue, altruistic full-day PTO cost, 50% baseline revenue-retention floor, and V2G ladder",day_ahead_strategy_comparison.csv; stochastic_benchmark.csv
+R1.8,Reproducibility,"Frozen prompts, hashes, run indexes, attempt-level solver status/gap provenance, time-limit sensitivity, tokens, latency, CPU, and memory",artifact manifest; experiment manifests; multiday_solver_audit.csv; multiday_time_limit_sensitivity_solver_audit.csv
+R1.9/R2.6,Scalability,48 runs across 8/16/32 buses and a second depot; Agent and text-rule controls; three repetitions per mode,scalability.csv; scalability figure
+R2.2,Stochastic benchmark,Two-stage stochastic recourse benchmark in all six primary case-mode cells,stochastic_benchmark.csv

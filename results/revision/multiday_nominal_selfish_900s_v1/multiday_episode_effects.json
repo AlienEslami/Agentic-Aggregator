@@ -1,0 +1,23 @@
+[
+  {
+    "mode":"selfish",
+    "method":"oracle",
+    "n_derating_episodes":1,
+    "n_nominal_episodes":1,
+    "derating_pto_cost_mean":382.1359573089,
+    "nominal_pto_cost_mean":403.7988152064,
+    "pto_cost_delta_derating_minus_nominal":-21.6628578975,
+    "derating_aggregator_revenue_mean":59.9991930517,
+    "nominal_aggregator_revenue_mean":73.1986654863,
+    "aggregator_revenue_delta_derating_minus_nominal":-13.1994724346,
+    "derating_grid_net_cost_mean":322.1367642572,
+    "nominal_grid_net_cost_mean":330.6001497201,
+    "grid_net_cost_delta_derating_minus_nominal":-8.4633854629,
+    "derating_buy_kwh_mean":4800.0,
+    "nominal_buy_kwh_mean":5200.0,
+    "buy_kwh_delta_derating_minus_nominal":-400.0,
+    "derating_sell_kwh_mean":550.0000246278,
+    "nominal_sell_kwh_mean":744.4453845461,
+    "sell_kwh_delta_derating_minus_nominal":-194.4453599183
+  }
+]

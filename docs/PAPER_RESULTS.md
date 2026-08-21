@@ -25,12 +25,21 @@ Authors: Ali Eslami, Jonatas Augusto Manzolli, Luis Miranda-Moreno, Jiangbo Yu
 
 | ID | Strategy | V2G | PTO cost (EUR/day) | Aggregator revenue (EUR/day) | Bought (kWh/day) | Sold (kWh/day) |
 |---|---|---:|---:|---:|---:|---:|
-| S1 | Dumb charging | Off | 218.10 | 0.00 | 2400.0 | 0.0 |
-| S2 | Smart charging, no V2G | Off | 130.47 | 0.00 | 1600.0 | 0.0 |
-| S3 | Profit-based aggregator | On | 140.59 | 20.30 | 1900.0 | 300.0 |
-| S4 | Operational-based aggregator | On | 118.91 | 2.39 | 2000.0 | 400.0 |
+| S1 | Dumb charging | Off | 218.98 | 0.00 | 2400.0 | 0.0 |
+| S2 | Smart charging, no V2G | Off | 129.29 | 0.00 | 1600.0 | 0.0 |
+| S3 | Profit-based aggregator | On | 138.41 | 20.91 | 1900.0 | 300.0 |
+| S4 | Operational-based aggregator | On | 116.08 | 2.41 | 2000.0 | 400.0 |
 
-The deterministic Python scripts reproduce the non-agentic baselines and generate the optimization-ready day-ahead benchmark files. The prompt-driven S3/S4 values are reproduced by importing and running the n8n workflows in `workflows/`, because those cases depend on the Pricing and Evaluator Agent prompts and accepted multiplier vectors.
+These are the corrected optimizer-native values: interval `t` energy is
+settled at interval `t` price and multipliers. The submitted manuscript values
+(218.10, 130.47, 140.59, and 118.91 EUR/day) are exactly reproduced by an
+off-by-one calculation that applies the previous interval tariff to the
+current interval energy. The optimizer was not changed. The S1 value also uses
+the corrected earliest-charging tie-break that makes “dumb charging” mean
+charging as soon as possible. See
+`results/revision/day_ahead_reconciliation_v1/` for the audit.
+
+The deterministic Python scripts reproduce the non-agentic baselines and generate the optimization-ready day-ahead benchmark files. The prompt-driven S3/S4 values use the accepted few-shot-plus-chain-of-thought multiplier vectors stored in the paper workbooks.
 
 The corresponding paper output workbooks are stored in `paper_outputs/day_ahead/table_06/`.
 

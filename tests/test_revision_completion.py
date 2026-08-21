@@ -17,6 +17,8 @@ from agentic_workflow.models import TriggerDecision
 from scripts.build_scaling_inputs import depot_b_prices, depot_b_trips, replicate_rows
 from scripts.run_revision_sensitivity import build_specs as build_sensitivity_specs
 from scripts.run_scaling_study import build_specs as build_scaling_specs
+from scripts.run_scaling_study import run_command as scaling_run_command
+from scripts.reconcile_day_ahead_costs import settle as settle_day_ahead
 from scripts.run_evaluator_ablation import validate_protocol as validate_evaluator_protocol
 from scripts.validate_revision_package import REQUIRED_FILES
 
@@ -124,6 +126,46 @@ def test_sensitivity_and_scaling_factorial_sizes_are_prespecified():
         "rule_text_event_trigger",
         "full_agentic",
     }
+
+
+def test_scaling_full_protocol_commands_include_all_48_specs(tmp_path):
+    specs = build_scaling_specs(3)
+    commands = [
+        scaling_run_command(spec, tmp_path / "inputs", tmp_path / "outputs", "test-model")
+        for spec in specs
+    ]
+    assert len(commands) == 48
+    assert len({spec.run_id for spec in specs}) == 48
+    assert sum("full_agentic" in spec.run_id for spec in specs) == 24
+    assert sum("rule_text_event_trigger" in spec.run_id for spec in specs) == 24
+
+
+def test_published_scaling_manifest_indexes_complete_protocol():
+    root = __import__("pathlib").Path(__file__).resolve().parents[1]
+    manifest = json.loads(
+        (root / "results/revision/scaling_v2/scaling_manifest.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert manifest["manifest_scope"] == "complete_protocol_index"
+    assert manifest["planned_runs"] == 48
+    assert manifest["indexed_runs"] == 48
+    assert len(manifest["specs"]) == 48
+    assert len(manifest["indexed_run_ids"]) == 48
+
+
+def test_day_ahead_settlement_exposes_prior_interval_tariff_shift():
+    plan = pd.DataFrame({"w_buy": [10.0, 20.0], "w_sell": [0.0, 0.0]})
+    native_cost, native_revenue = settle_day_ahead(
+        plan, [1.0, 2.0], [1.0, 1.0], [1.0, 1.0]
+    )
+    prior_cost, prior_revenue = settle_day_ahead(
+        plan, [1.0, 2.0], [1.0, 1.0], [1.0, 1.0], tariff_shift=-1
+    )
+    assert native_cost == pytest.approx(50.0)
+    assert prior_cost == pytest.approx(30.0)
+    assert native_revenue == pytest.approx(0.0)
+    assert prior_revenue == pytest.approx(0.0)
 
 
 def test_depot_b_transform_is_distinct_and_scaling_ids_are_contiguous():

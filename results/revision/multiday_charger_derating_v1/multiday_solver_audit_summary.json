@@ -1,0 +1,12 @@
+[
+  {
+    "daily_workbooks_indexed":54,
+    "optimizer_attempts":120,
+    "gurobi_attempts":120,
+    "configured_gap_met_attempts":118,
+    "time_limited_feasible_incumbent_attempts":2,
+    "fallback_attempts":0,
+    "maximum_solver_relative_gap":0.0551937581,
+    "status_counts":"{\"aborted\/maxtimelimit\/incumbent\": 2, \"ok\/optimal\": 118}"
+  }
+]

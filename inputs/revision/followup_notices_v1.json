@@ -1,0 +1,606 @@
+[
+  {
+    "notice_id": "AW-RECOVERABLE-CLUSTER-WARN",
+    "scenario_id": "aw_recoverable_clustered_late_returns",
+    "event_id": "AW-RECOVERABLE-CLUSTER",
+    "source_type": "driver_chat",
+    "wording_variant": "uncertain_chat",
+    "report_timestep": 34,
+    "text": "Driver 3: traffic control on the depot approach is backing up. Drivers 4 and 7 report the same queue. Returns may be 30 to 60 minutes late in the 20:00-to-end-of-day window, but dispatch has not confirmed the individual times. Request confirmation.",
+    "benchmark_split": "closed_loop_advance_warning",
+    "uncertainty_case": "range_fragmentation_and_coreference",
+    "canonical": {
+      "event_id": "AW-RECOVERABLE-CLUSTER",
+      "source_type": "driver_chat",
+      "event_type": "service_delay",
+      "phase": "warning",
+      "affected_buses": [
+        3,
+        4,
+        7
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 40,
+      "expected_end_timestep": 48,
+      "uncertainty": true,
+      "uncertainty_details": {
+        "confidence_level": 0.58,
+        "provisional": true,
+        "conflicting_evidence": [],
+        "estimates": [
+          {
+            "parameter": "return_delay_minutes",
+            "asset_id": 3,
+            "lower_bound": 30,
+            "upper_bound": 60,
+            "selected_value": null,
+            "unit": "minutes",
+            "selection_policy": "no_update_pending_confirmation"
+          },
+          {
+            "parameter": "return_delay_minutes",
+            "asset_id": 4,
+            "lower_bound": 30,
+            "upper_bound": 45,
+            "selected_value": null,
+            "unit": "minutes",
+            "selection_policy": "no_update_pending_confirmation"
+          },
+          {
+            "parameter": "return_delay_minutes",
+            "asset_id": 7,
+            "lower_bound": 30,
+            "upper_bound": 60,
+            "selected_value": null,
+            "unit": "minutes",
+            "selection_policy": "no_update_pending_confirmation"
+          }
+        ],
+        "recommended_action": "request_confirmation",
+        "rationale": "Wait for operational confirmation."
+      },
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "return_delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "advance_warning_benchmark_v2"
+      ]
+    }
+  },
+  {
+    "notice_id": "AW-RECOVERABLE-CLUSTER-CONFIRM",
+    "scenario_id": "aw_recoverable_clustered_late_returns",
+    "event_id": "AW-RECOVERABLE-CLUSTER",
+    "source_type": "combined",
+    "wording_variant": "uncertain_chat",
+    "report_timestep": 36,
+    "text": "Dispatcher: confirmed clustered late returns. Bus 3 will return 60 minutes late, Bus 4 will return 45 minutes late, and Bus 7 will return 60 minutes late. The control window is 20:00 to 24:00, tomorrow's departures are unchanged, and the schedule should be optimized now.",
+    "benchmark_split": "closed_loop_advance_warning",
+    "uncertainty_case": "range_fragmentation_and_coreference",
+    "canonical": {
+      "event_id": "AW-RECOVERABLE-CLUSTER",
+      "source_type": "combined",
+      "event_type": "service_delay",
+      "phase": "onset",
+      "affected_buses": [
+        3,
+        4,
+        7
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 40,
+      "expected_end_timestep": 48,
+      "uncertainty": true,
+      "uncertainty_details": {
+        "confidence_level": 0.94,
+        "provisional": false,
+        "conflicting_evidence": [],
+        "estimates": [
+          {
+            "parameter": "return_delay_minutes",
+            "asset_id": 3,
+            "lower_bound": 30,
+            "upper_bound": 60,
+            "selected_value": 60,
+            "unit": "minutes",
+            "selection_policy": "conservative_upper"
+          },
+          {
+            "parameter": "return_delay_minutes",
+            "asset_id": 4,
+            "lower_bound": 30,
+            "upper_bound": 45,
+            "selected_value": 45,
+            "unit": "minutes",
+            "selection_policy": "conservative_upper"
+          },
+          {
+            "parameter": "return_delay_minutes",
+            "asset_id": 7,
+            "lower_bound": 30,
+            "upper_bound": 60,
+            "selected_value": 60,
+            "unit": "minutes",
+            "selection_policy": "conservative_upper"
+          }
+        ],
+        "recommended_action": "optimize",
+        "rationale": "Use the confirmed advance information now."
+      },
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "return_delay_minutes_by_bus": {
+          "3": 60,
+          "4": 45,
+          "7": 60
+        },
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "advance_warning_benchmark_v2"
+      ]
+    }
+  },
+  {
+    "notice_id": "AW-RECOVERABLE-CLUSTER-HOLD",
+    "scenario_id": "aw_recoverable_clustered_late_returns",
+    "event_id": "AW-RECOVERABLE-CLUSTER",
+    "source_type": "driver_chat",
+    "wording_variant": "uncertain_chat",
+    "report_timestep": 42,
+    "text": "Dispatch: the same Bus 3, Bus 4 and Bus 7 late-return event is unchanged. Keep the current plan; no replan.",
+    "benchmark_split": "closed_loop_advance_warning",
+    "uncertainty_case": "range_fragmentation_and_coreference",
+    "canonical": {
+      "event_id": "AW-RECOVERABLE-CLUSTER",
+      "source_type": "driver_chat",
+      "event_type": "service_delay",
+      "phase": "persistence",
+      "affected_buses": [
+        3,
+        4,
+        7
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 40,
+      "expected_end_timestep": 48,
+      "uncertainty": true,
+      "uncertainty_details": {
+        "confidence_level": 0.94,
+        "provisional": false,
+        "conflicting_evidence": [],
+        "estimates": [
+          {
+            "parameter": "return_delay_minutes",
+            "asset_id": 3,
+            "lower_bound": 30,
+            "upper_bound": 60,
+            "selected_value": 60,
+            "unit": "minutes",
+            "selection_policy": "conservative_upper"
+          },
+          {
+            "parameter": "return_delay_minutes",
+            "asset_id": 4,
+            "lower_bound": 30,
+            "upper_bound": 45,
+            "selected_value": 45,
+            "unit": "minutes",
+            "selection_policy": "conservative_upper"
+          },
+          {
+            "parameter": "return_delay_minutes",
+            "asset_id": 7,
+            "lower_bound": 30,
+            "upper_bound": 60,
+            "selected_value": 60,
+            "unit": "minutes",
+            "selection_policy": "conservative_upper"
+          }
+        ],
+        "recommended_action": "wait",
+        "rationale": "The active plan already contains this unchanged information."
+      },
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "return_delay_minutes_by_bus": {
+          "3": 60,
+          "4": 45,
+          "7": 60
+        },
+        "energy_multiplier_by_bus": {},
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "advance_warning_benchmark_v2"
+      ]
+    }
+  },
+  {
+    "notice_id": "MD-ROADWORK-D1-CONFIRM",
+    "scenario_id": "md_roadwork_day1",
+    "event_id": "MD-ROADWORK-DETOUR",
+    "source_type": "service_alert",
+    "wording_variant": "uncertain_chat",
+    "report_timestep": 24,
+    "text": "Road supervisor: confirmed emergency roadwork on the western loop. Buses 1 and 4 will consume 25 percent more traction energy from 15:00 until 24:00 today. The detour will remain through tomorrow and is expected to reopen at 15:00 on day 3. Optimize today's remaining schedule now.",
+    "benchmark_split": "closed_loop_advance_warning",
+    "uncertainty_case": "range_fragmentation_and_coreference",
+    "canonical": {
+      "event_id": "MD-ROADWORK-DETOUR",
+      "source_type": "service_alert",
+      "event_type": "route_energy_change",
+      "phase": "onset",
+      "affected_buses": [
+        1,
+        4
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 31,
+      "expected_end_timestep": 48,
+      "uncertainty": true,
+      "uncertainty_details": {
+        "confidence_level": 0.95,
+        "provisional": false,
+        "conflicting_evidence": [],
+        "estimates": [
+          {
+            "parameter": "energy_multiplier",
+            "asset_id": 1,
+            "lower_bound": 1.25,
+            "upper_bound": 1.25,
+            "selected_value": 1.25,
+            "unit": "multiplier",
+            "selection_policy": "conservative_upper"
+          },
+          {
+            "parameter": "energy_multiplier",
+            "asset_id": 4,
+            "lower_bound": 1.25,
+            "upper_bound": 1.25,
+            "selected_value": 1.25,
+            "unit": "multiplier",
+            "selection_policy": "conservative_upper"
+          }
+        ],
+        "recommended_action": "optimize",
+        "rationale": "Use the confirmed advance information now."
+      },
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "return_delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {
+          "1": 1.25,
+          "4": 1.25
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "advance_warning_benchmark_v2"
+      ]
+    }
+  },
+  {
+    "notice_id": "MD-ROADWORK-D1-HOLD",
+    "scenario_id": "md_roadwork_day1",
+    "event_id": "MD-ROADWORK-DETOUR",
+    "source_type": "service_alert",
+    "wording_variant": "uncertain_chat",
+    "report_timestep": 40,
+    "text": "Road supervisor: the same western-loop restriction for Buses 1 and 4 remains unchanged. Consumption is still 25 percent higher; keep the current plan.",
+    "benchmark_split": "closed_loop_advance_warning",
+    "uncertainty_case": "range_fragmentation_and_coreference",
+    "canonical": {
+      "event_id": "MD-ROADWORK-DETOUR",
+      "source_type": "service_alert",
+      "event_type": "route_energy_change",
+      "phase": "persistence",
+      "affected_buses": [
+        1,
+        4
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 31,
+      "expected_end_timestep": 48,
+      "uncertainty": true,
+      "uncertainty_details": {
+        "confidence_level": 0.95,
+        "provisional": false,
+        "conflicting_evidence": [],
+        "estimates": [
+          {
+            "parameter": "energy_multiplier",
+            "asset_id": 1,
+            "lower_bound": 1.25,
+            "upper_bound": 1.25,
+            "selected_value": 1.25,
+            "unit": "multiplier",
+            "selection_policy": "conservative_upper"
+          },
+          {
+            "parameter": "energy_multiplier",
+            "asset_id": 4,
+            "lower_bound": 1.25,
+            "upper_bound": 1.25,
+            "selected_value": 1.25,
+            "unit": "multiplier",
+            "selection_policy": "conservative_upper"
+          }
+        ],
+        "recommended_action": "wait",
+        "rationale": "The active plan already contains this unchanged information."
+      },
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "return_delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {
+          "1": 1.25,
+          "4": 1.25
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "advance_warning_benchmark_v2"
+      ]
+    }
+  },
+  {
+    "notice_id": "MD-ROADWORK-D2-STATUS",
+    "scenario_id": "md_roadwork_day2",
+    "event_id": "MD-ROADWORK-DETOUR",
+    "source_type": "service_alert",
+    "wording_variant": "uncertain_chat",
+    "report_timestep": 1,
+    "text": "Day 2 operations update: the western-loop roadwork remains active for the full day. Buses 1 and 4 will consume 25 percent more traction energy from 00:00 until 24:00. Optimize the new daily schedule using the carried battery state.",
+    "benchmark_split": "closed_loop_advance_warning",
+    "uncertainty_case": "range_fragmentation_and_coreference",
+    "canonical": {
+      "event_id": "MD-ROADWORK-DETOUR",
+      "source_type": "service_alert",
+      "event_type": "route_energy_change",
+      "phase": "onset",
+      "affected_buses": [
+        1,
+        4
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 1,
+      "expected_end_timestep": 48,
+      "uncertainty": true,
+      "uncertainty_details": {
+        "confidence_level": 0.98,
+        "provisional": false,
+        "conflicting_evidence": [],
+        "estimates": [
+          {
+            "parameter": "energy_multiplier",
+            "asset_id": 1,
+            "lower_bound": 1.25,
+            "upper_bound": 1.25,
+            "selected_value": 1.25,
+            "unit": "multiplier",
+            "selection_policy": "conservative_upper"
+          },
+          {
+            "parameter": "energy_multiplier",
+            "asset_id": 4,
+            "lower_bound": 1.25,
+            "upper_bound": 1.25,
+            "selected_value": 1.25,
+            "unit": "multiplier",
+            "selection_policy": "conservative_upper"
+          }
+        ],
+        "recommended_action": "optimize",
+        "rationale": "Use the confirmed advance information now."
+      },
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "return_delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {
+          "1": 1.25,
+          "4": 1.25
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "advance_warning_benchmark_v2"
+      ]
+    }
+  },
+  {
+    "notice_id": "MD-ROADWORK-D2-HOLD",
+    "scenario_id": "md_roadwork_day2",
+    "event_id": "MD-ROADWORK-DETOUR",
+    "source_type": "service_alert",
+    "wording_variant": "uncertain_chat",
+    "report_timestep": 26,
+    "text": "Road supervisor: no change for Buses 1 and 4; consumption is still 25 percent higher for the rest of day 2. Keep the plan.",
+    "benchmark_split": "closed_loop_advance_warning",
+    "uncertainty_case": "range_fragmentation_and_coreference",
+    "canonical": {
+      "event_id": "MD-ROADWORK-DETOUR",
+      "source_type": "service_alert",
+      "event_type": "route_energy_change",
+      "phase": "persistence",
+      "affected_buses": [
+        1,
+        4
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 1,
+      "expected_end_timestep": 48,
+      "uncertainty": true,
+      "uncertainty_details": {
+        "confidence_level": 0.98,
+        "provisional": false,
+        "conflicting_evidence": [],
+        "estimates": [
+          {
+            "parameter": "energy_multiplier",
+            "asset_id": 1,
+            "lower_bound": 1.25,
+            "upper_bound": 1.25,
+            "selected_value": 1.25,
+            "unit": "multiplier",
+            "selection_policy": "conservative_upper"
+          },
+          {
+            "parameter": "energy_multiplier",
+            "asset_id": 4,
+            "lower_bound": 1.25,
+            "upper_bound": 1.25,
+            "selected_value": 1.25,
+            "unit": "multiplier",
+            "selection_policy": "conservative_upper"
+          }
+        ],
+        "recommended_action": "wait",
+        "rationale": "The active plan already contains this unchanged information."
+      },
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "return_delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {
+          "1": 1.25,
+          "4": 1.25
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "advance_warning_benchmark_v2"
+      ]
+    }
+  },
+  {
+    "notice_id": "MD-ROADWORK-D3-STATUS",
+    "scenario_id": "md_roadwork_day3",
+    "event_id": "MD-ROADWORK-DETOUR",
+    "source_type": "service_alert",
+    "wording_variant": "uncertain_chat",
+    "report_timestep": 1,
+    "text": "Day 3 operations update: the western-loop roadwork remains active until 15:00. Buses 1 and 4 will consume 25 percent more traction energy from 00:00 through 15:00. Optimize the new daily schedule using the carried battery state.",
+    "benchmark_split": "closed_loop_advance_warning",
+    "uncertainty_case": "range_fragmentation_and_coreference",
+    "canonical": {
+      "event_id": "MD-ROADWORK-DETOUR",
+      "source_type": "service_alert",
+      "event_type": "route_energy_change",
+      "phase": "onset",
+      "affected_buses": [
+        1,
+        4
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 1,
+      "expected_end_timestep": 30,
+      "uncertainty": true,
+      "uncertainty_details": {
+        "confidence_level": 0.98,
+        "provisional": false,
+        "conflicting_evidence": [],
+        "estimates": [
+          {
+            "parameter": "energy_multiplier",
+            "asset_id": 1,
+            "lower_bound": 1.25,
+            "upper_bound": 1.25,
+            "selected_value": 1.25,
+            "unit": "multiplier",
+            "selection_policy": "conservative_upper"
+          },
+          {
+            "parameter": "energy_multiplier",
+            "asset_id": 4,
+            "lower_bound": 1.25,
+            "upper_bound": 1.25,
+            "selected_value": 1.25,
+            "unit": "multiplier",
+            "selection_policy": "conservative_upper"
+          }
+        ],
+        "recommended_action": "optimize",
+        "rationale": "Use the confirmed advance information now."
+      },
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "return_delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {
+          "1": 1.25,
+          "4": 1.25
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "advance_warning_benchmark_v2"
+      ]
+    }
+  },
+  {
+    "notice_id": "MD-ROADWORK-D3-RECOVERY",
+    "scenario_id": "md_roadwork_day3",
+    "event_id": "MD-ROADWORK-DETOUR",
+    "source_type": "service_alert",
+    "wording_variant": "uncertain_chat",
+    "report_timestep": 31,
+    "text": "Recovery confirmed at 15:00: the western loop has reopened. Buses 1 and 4 return to normal consumption at 1.0 x traction energy for 15:00 to 24:00. Optimize the restored schedule.",
+    "benchmark_split": "closed_loop_advance_warning",
+    "uncertainty_case": "range_fragmentation_and_coreference",
+    "canonical": {
+      "event_id": "MD-ROADWORK-DETOUR",
+      "source_type": "service_alert",
+      "event_type": "route_energy_change",
+      "phase": "recovery",
+      "affected_buses": [
+        1,
+        4
+      ],
+      "affected_chargers": [],
+      "effective_timestep": 31,
+      "expected_end_timestep": 48,
+      "uncertainty": false,
+      "uncertainty_details": {
+        "confidence_level": 1.0,
+        "provisional": false,
+        "conflicting_evidence": [],
+        "estimates": [],
+        "recommended_action": "optimize",
+        "rationale": "Use the confirmed advance information now."
+      },
+      "material": true,
+      "updates": {
+        "delay_minutes_by_bus": {},
+        "return_delay_minutes_by_bus": {},
+        "energy_multiplier_by_bus": {
+          "1": 1.0,
+          "4": 1.0
+        },
+        "charger_power_kw": {},
+        "unavailable_chargers": []
+      },
+      "evidence": [
+        "advance_warning_benchmark_v2"
+      ]
+    }
+  }
+]

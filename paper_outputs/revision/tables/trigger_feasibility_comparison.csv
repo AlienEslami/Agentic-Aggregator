@@ -1,0 +1,25 @@
+case,case_label,mode,method,n_runs,n_feasible,feasibility_rate,realized_pto_cost_mean,realized_aggregator_revenue_mean,maximum_reserve_shortfall_kwh_mean
+aw_recoverable_clustered_late_returns,Recoverable clustered late returns,altruistic,agent,5,5,1.0,133.9775670439768,11.66290407035581,0.0
+aw_recoverable_clustered_late_returns,Recoverable clustered late returns,altruistic,numerical,1,1,1.0,134.5276516858802,11.63998387694317,0.0
+aw_recoverable_clustered_late_returns,Recoverable clustered late returns,altruistic,oracle,1,1,1.0,134.5346987956974,11.63969024736746,0.0
+aw_recoverable_clustered_late_returns,Recoverable clustered late returns,altruistic,rule_text,1,1,1.0,131.2780056506392,14.95793738347877,0.0
+aw_recoverable_clustered_late_returns,Recoverable clustered late returns,selfish,agent,5,5,1.0,148.0365036662856,25.14888345160643,0.0
+aw_recoverable_clustered_late_returns,Recoverable clustered late returns,selfish,numerical,1,1,1.0,148.0365036662849,25.1488834516067,0.0
+aw_recoverable_clustered_late_returns,Recoverable clustered late returns,selfish,oracle,1,1,1.0,147.623940184858,25.30932480549495,0.0
+aw_recoverable_clustered_late_returns,Recoverable clustered late returns,selfish,rule_text,1,1,1.0,146.1250530402664,29.80496203209205,0.0
+aw_route6_late_return,Route warning + price escalation,altruistic,agent,5,4,0.8,91.42912965146198,10.927803738863924,0.2658199999999994
+aw_route6_late_return,Route warning + price escalation,altruistic,numerical,1,1,1.0,75.81068806785962,24.21279469703503,0.0
+aw_route6_late_return,Route warning + price escalation,altruistic,oracle,1,1,1.0,89.17780772775626,10.90551342278763,0.0
+aw_route6_late_return,Route warning + price escalation,altruistic,rule_text,1,1,1.0,89.17780772775626,10.90551342278763,0.0
+aw_route6_late_return,Route warning + price escalation,selfish,agent,5,5,1.0,128.1868824859493,23.89665834446837,0.0
+aw_route6_late_return,Route warning + price escalation,selfish,numerical,1,0,0.0,105.6715900793218,54.07374430275506,1.763999999999996
+aw_route6_late_return,Route warning + price escalation,selfish,oracle,1,1,1.0,128.1868824859493,23.89665834446837,0.0
+aw_route6_late_return,Route warning + price escalation,selfish,rule_text,1,1,1.0,128.1868824859493,23.89665834446837,0.0
+aw_extended_energy_shift,Sustained route-energy shift,altruistic,agent,5,3,0.6,131.33701111911665,12.26345431154833,0.4083199999999976
+aw_extended_energy_shift,Sustained route-energy shift,altruistic,numerical,1,0,0.0,110.4777396124921,18.42851330718449,92.2464
+aw_extended_energy_shift,Sustained route-energy shift,altruistic,oracle,1,1,1.0,131.3369914675911,12.26345513036189,0.0
+aw_extended_energy_shift,Sustained route-energy shift,altruistic,rule_text,1,0,0.0,121.8247480072694,12.16927153022021,32.8669
+aw_extended_energy_shift,Sustained route-energy shift,selfish,agent,5,5,1.0,147.30244071483898,25.43435237716901,0.0
+aw_extended_energy_shift,Sustained route-energy shift,selfish,numerical,1,0,0.0,130.9550044299122,38.90575538359066,90.8619
+aw_extended_energy_shift,Sustained route-energy shift,selfish,oracle,1,1,1.0,147.3024406757493,25.43435239237056,0.0
+aw_extended_energy_shift,Sustained route-energy shift,selfish,rule_text,1,0,0.0,147.3024406757423,25.43435239237372,24.5599

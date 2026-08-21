@@ -187,6 +187,42 @@ def test_realized_energy_accumulates_unmodelled_consumption() -> None:
     assert observation[0]["current_energy_kwh"] == 76.0
 
 
+def test_carried_energy_accepts_null_first_interval_delta() -> None:
+    plan = pd.DataFrame(
+        {
+            "timestep": [0, 1],
+            "w_buy": [0.0, 0.0],
+            "w_sell": [0.0, 0.0],
+            "bus_1_kwh": [73.0, 73.0],
+        }
+    )
+    base = DisturbanceApplication(
+        scenarios=[],
+        base_prices=pd.DataFrame(),
+        prices=pd.DataFrame(),
+        trips=pd.DataFrame(),
+        energy_consumption=pd.DataFrame(),
+        energy_multipliers={},
+        disturbed_delta={"bus_1_kwh": None},
+        undisturbed_delta={"bus_1_kwh": None},
+        delay_info={},
+        delay_removal_active=False,
+        optimizer_disturbances=[],
+    )
+    carried = {1: 91.5}
+
+    advance_realized_energy(
+        timestep=1,
+        realtime_plan=plan,
+        disturbance=base,
+        chargers=pd.DataFrame({"charger_id": [1], "charger_kw": [200.0]}),
+        physical_truth=None,
+        realized_energy_by_bus=carried,
+    )
+
+    assert carried == {1: 91.5}
+
+
 def test_realized_energy_reflects_curtailed_charging() -> None:
     plan = pd.DataFrame(
         {

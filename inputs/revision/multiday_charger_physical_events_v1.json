@@ -1,0 +1,46 @@
+{
+  "events": [
+    {
+      "scenario_id": "md_charger_derating_day1",
+      "event_id": "MD-CHARGER-COOLING",
+      "effective_timestep": 31,
+      "end_timestep": 48,
+      "sensor_detection_timestep": 31,
+      "updates": {
+        "charger_power_kw": {
+          "6": 100.0,
+          "7": 100.0,
+          "8": 100.0
+        }
+      }
+    },
+    {
+      "scenario_id": "md_charger_derating_day2",
+      "event_id": "MD-CHARGER-COOLING",
+      "effective_timestep": 1,
+      "end_timestep": 48,
+      "sensor_detection_timestep": 1,
+      "updates": {
+        "charger_power_kw": {
+          "6": 100.0,
+          "7": 100.0,
+          "8": 100.0
+        }
+      }
+    },
+    {
+      "scenario_id": "md_charger_derating_day3",
+      "event_id": "MD-CHARGER-COOLING",
+      "effective_timestep": 1,
+      "end_timestep": 30,
+      "sensor_detection_timestep": 1,
+      "updates": {
+        "charger_power_kw": {
+          "6": 100.0,
+          "7": 100.0,
+          "8": 100.0
+        }
+      }
+    }
+  ]
+}

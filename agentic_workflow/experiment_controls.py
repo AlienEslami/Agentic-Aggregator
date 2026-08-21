@@ -3,13 +3,19 @@ from __future__ import annotations
 from typing import Literal
 
 
-TriggerPromptVariant = Literal["baseline", "action_first", "evidence_first"]
+TriggerPromptVariant = Literal[
+    "baseline",
+    "action_first",
+    "evidence_first",
+    "daily_handover",
+]
 PricingGuidanceVariant = Literal["narrow", "base", "wide"]
 
 TRIGGER_PROMPT_VARIANTS: tuple[str, ...] = (
     "baseline",
     "action_first",
     "evidence_first",
+    "daily_handover",
 )
 PRICING_GUIDANCE_VARIANTS: tuple[str, ...] = ("narrow", "base", "wide")
 

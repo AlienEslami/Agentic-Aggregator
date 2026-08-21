@@ -1,0 +1,165 @@
+{
+  "artifact_set": "revision_manuscript_assets_v1",
+  "created_utc": "2026-08-21T16:22:34.226336+00:00",
+  "sources": [
+    {
+      "path": "results\\revision\\day_ahead_reconciliation_v1\\day_ahead_cost_reconciliation.csv",
+      "sha256": "be87fe044fddd6abf40d24e6d1db37baf7b27b5af7ace73b35c615339fc6e320"
+    },
+    {
+      "path": "results\\revision\\day_ahead_ladder_v1\\ladder_manifest.json",
+      "sha256": "6918febc109cd5fd576c132303ca196d35b9222cac4e9e117fbf5f4b9b440b67"
+    },
+    {
+      "path": "results\\revision\\extended_disturbances_v3\\analysis\\method_summary.csv",
+      "sha256": "9eab4b1eee9ee46139aa7907ac3f6951d141edeabc4bdeb1cf1555d34fa88d36"
+    },
+    {
+      "path": "results\\revision\\recoverable_cluster_v1\\matrix_runs.csv",
+      "sha256": "dac42142f58d53dee0083fafc748640e841ec8520c13b076fcd74d54a5dc7a58"
+    },
+    {
+      "path": "results\\revision\\price_escalation_v3\\analysis\\method_summary.csv",
+      "sha256": "7a189a16fc6b6e8255b9b57430f1d35debdcad3a00682eb487f6066478bb82fa"
+    },
+    {
+      "path": "results\\revision\\multiday_charger_derating_v1\\multiday_method_summary.csv",
+      "sha256": "031b0f269df056a05702f295701a79d9edef177e00e1df645acaae3e2e000393"
+    },
+    {
+      "path": "results\\revision\\multiday_charger_derating_v1\\multiday_episode_effects.csv",
+      "sha256": "9ac0fa43dadc422241fe97d113c10bd13e8036bef39e2b468ac24123fad31cf1"
+    },
+    {
+      "path": "results\\revision\\multiday_charger_derating_v1\\multiday_daily_effects.csv",
+      "sha256": "310acb2c2786c0592018ad2d22ec7f060bbc6a603a425f34c87b63dfd1354176"
+    },
+    {
+      "path": "results\\revision\\multiday_charger_derating_v1\\multiday_solver_audit.csv",
+      "sha256": "5a1945d477dc80b487ce7d92144a7dd6ac52448df50316e49ec445b2ac6b531c"
+    },
+    {
+      "path": "results\\revision\\multiday_charger_derating_v1\\multiday_solver_audit_summary.csv",
+      "sha256": "23cf5add63e16a9b6e37e5cb9910cc02e557ae7e7326f91fdbffc35e95aa19ef"
+    },
+    {
+      "path": "results\\revision\\multiday_nominal_selfish_900s_v1\\multiday_episodes.csv",
+      "sha256": "de33928fc85e9ca59a3015b2271a9bae9b21a69b96cff1938f21525daa8ce7fe"
+    },
+    {
+      "path": "results\\revision\\multiday_nominal_selfish_900s_v1\\multiday_solver_audit.csv",
+      "sha256": "54e90c115e82d1cf9b2456b65503e454be0a8957df0c09d13b0283e0d2b04d45"
+    },
+    {
+      "path": "results\\revision\\multiday_nominal_selfish_900s_v1\\multiday_solver_audit_summary.csv",
+      "sha256": "c7664591b797b9d90f4d2295d6d2e804ed199835b7257ce4adf8b8e32b9adca4"
+    },
+    {
+      "path": "results\\revision\\evaluator_v3\\analysis\\evaluator_ablation_summary.csv",
+      "sha256": "c2696cdf1a9525a256703c5abf5f408a40872e8788eb3fb5f60f908f1dc4133d"
+    },
+    {
+      "path": "results\\revision\\sensitivity_v2\\analysis\\sensitivity_summary.csv",
+      "sha256": "d7af51b46e722f38708fbeda24d765b5faf7e0d2c9be5c53fcabf9a6d38bd633"
+    },
+    {
+      "path": "results\\revision\\stochastic_v4\\agent_vs_stochastic_comparison.csv",
+      "sha256": "7ca87df36383b7d4c9329b41fc002733e70c47f7800ad891319422cd49ab1a63"
+    },
+    {
+      "path": "results\\revision\\nonagentic_baseline_v8_confirmatory\\agent_vs_full_no_ai_comparison.csv",
+      "sha256": "bb2fa265e08317165be58311fc5b7c7bd2edd4e3cba013e6c13abbf38e2007cc"
+    },
+    {
+      "path": "results\\revision\\scaling_v2\\scaling_runs.csv",
+      "sha256": "f9de10b490cff82607881c1c72857f74ce54877c1131bd53b53893397baa7f10"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "paper_outputs\\revision\\tables\\day_ahead_strategy_comparison.csv",
+      "sha256": "2652da469d3a8d411d13894b74280ebc7f2f6b7ba78e8c2a743666cfc082f420"
+    },
+    {
+      "path": "paper_outputs\\revision\\tables\\trigger_feasibility_comparison.csv",
+      "sha256": "881c1b0929d149345e1e57c2432a13c24a0e9d39c3f16f9e59b426f570ac0301"
+    },
+    {
+      "path": "paper_outputs\\revision\\tables\\prompt_sensitivity.csv",
+      "sha256": "77be936ab1e7f1367e355dd20f94d2e8a404172f547e4cacbc32b1a1f8e363c3"
+    },
+    {
+      "path": "paper_outputs\\revision\\tables\\scalability.csv",
+      "sha256": "237af90a4419fa8df24d2035449f7abae37854d27ceb5f6ddd4b664cd97d58bc"
+    },
+    {
+      "path": "paper_outputs\\revision\\tables\\multiday_charger_derating.csv",
+      "sha256": "078635f2134177f9614573261989392e14a4815caf8f7ee22cc209243f762e49"
+    },
+    {
+      "path": "paper_outputs\\revision\\tables\\multiday_charger_derating_effects.csv",
+      "sha256": "29ef4ca7a4f2bb61b7fd7e33af19ae8e356cbe99fce3d595749a39ceb0bbe06e"
+    },
+    {
+      "path": "paper_outputs\\revision\\tables\\multiday_charger_derating_daily_effects.csv",
+      "sha256": "2a38cc663bedcc03043f7158ff45353ee872984f0e03a207a95b749645b30574"
+    },
+    {
+      "path": "paper_outputs\\revision\\tables\\multiday_solver_audit.csv",
+      "sha256": "5a1945d477dc80b487ce7d92144a7dd6ac52448df50316e49ec445b2ac6b531c"
+    },
+    {
+      "path": "paper_outputs\\revision\\tables\\multiday_solver_audit_summary.csv",
+      "sha256": "23cf5add63e16a9b6e37e5cb9910cc02e557ae7e7326f91fdbffc35e95aa19ef"
+    },
+    {
+      "path": "paper_outputs\\revision\\tables\\multiday_time_limit_sensitivity_episodes.csv",
+      "sha256": "52b78218a80424da6f52b0ce30975b87b58853c3844aa05376275bab25e185a4"
+    },
+    {
+      "path": "paper_outputs\\revision\\tables\\multiday_time_limit_sensitivity_solver_audit.csv",
+      "sha256": "54e90c115e82d1cf9b2456b65503e454be0a8957df0c09d13b0283e0d2b04d45"
+    },
+    {
+      "path": "paper_outputs\\revision\\tables\\multiday_time_limit_sensitivity_solver_audit_summary.csv",
+      "sha256": "c7664591b797b9d90f4d2295d6d2e804ed199835b7257ce4adf8b8e32b9adca4"
+    },
+    {
+      "path": "paper_outputs\\revision\\tables\\evaluator_ablation.csv",
+      "sha256": "b0827511ec20134b498216fc50018d783667586c29c38f44498c37833f31b05a"
+    },
+    {
+      "path": "paper_outputs\\revision\\tables\\stochastic_benchmark.csv",
+      "sha256": "4187a5f47bb1d2bc73e827e43dbea5750027173f31ae75ee722ddba1e1c91d04"
+    },
+    {
+      "path": "paper_outputs\\revision\\tables\\full_no_ai_comparison.csv",
+      "sha256": "5f51c6b8b6250aa920999549d25779259e6e99dcfc629b2bfd8785cb6d2177c6"
+    },
+    {
+      "path": "paper_outputs\\revision\\tables\\reviewer_evidence_map.csv",
+      "sha256": "97e30cf719eb8814482c0d138d161ad3e7a2da8b11d580926e30b530cc015450"
+    },
+    {
+      "path": "paper_outputs\\revision\\figures\\trigger_feasibility.png",
+      "sha256": "d617a5ed93a5be7a0f6cad780aec2234d6aab1d429704f079d95dccdb9b0fcad"
+    },
+    {
+      "path": "paper_outputs\\revision\\figures\\trigger_feasibility.pdf",
+      "sha256": "b07f12836deaf3efdb24de2df2dc06e23574e7c0bfea8921ff4a32ee5ee8a75f"
+    },
+    {
+      "path": "paper_outputs\\revision\\figures\\scalability_latency.png",
+      "sha256": "e96fb10a35e0799b17fa9669df837177483f069f1a580e7a3e1fad0959dfa0e5"
+    },
+    {
+      "path": "paper_outputs\\revision\\figures\\scalability_latency.pdf",
+      "sha256": "fb2af69c5c2c92f12dc84949f5f5cd981b7b75d6597c832030d65c59bbd34d5a"
+    }
+  ],
+  "notes": [
+    "Rates report the actual repetition counts shown in the tables.",
+    "Agent arms generally have n=5; deterministic comparators generally have n=1.",
+    "No inferential claim is made from n=1 deterministic comparator cells."
+  ]
+}

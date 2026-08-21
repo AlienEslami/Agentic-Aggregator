@@ -1,0 +1,57 @@
+{
+  "events": [
+    {
+      "scenario_id": "aw_recoverable_clustered_late_returns",
+      "event_id": "AW-RECOVERABLE-CLUSTER",
+      "effective_timestep": 40,
+      "end_timestep": 48,
+      "sensor_detection_timestep": 40,
+      "updates": {
+        "return_delay_minutes_by_bus": {
+          "3": 60,
+          "4": 45,
+          "7": 60
+        }
+      }
+    },
+    {
+      "scenario_id": "md_roadwork_day1",
+      "event_id": "MD-ROADWORK-DETOUR",
+      "effective_timestep": 31,
+      "end_timestep": 48,
+      "sensor_detection_timestep": 31,
+      "updates": {
+        "energy_multiplier_by_bus": {
+          "1": 1.25,
+          "4": 1.25
+        }
+      }
+    },
+    {
+      "scenario_id": "md_roadwork_day2",
+      "event_id": "MD-ROADWORK-DETOUR",
+      "effective_timestep": 1,
+      "end_timestep": 48,
+      "sensor_detection_timestep": 1,
+      "updates": {
+        "energy_multiplier_by_bus": {
+          "1": 1.25,
+          "4": 1.25
+        }
+      }
+    },
+    {
+      "scenario_id": "md_roadwork_day3",
+      "event_id": "MD-ROADWORK-DETOUR",
+      "effective_timestep": 1,
+      "end_timestep": 30,
+      "sensor_detection_timestep": 1,
+      "updates": {
+        "energy_multiplier_by_bus": {
+          "1": 1.25,
+          "4": 1.25
+        }
+      }
+    }
+  ]
+}

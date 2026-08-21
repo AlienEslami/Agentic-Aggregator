@@ -1,0 +1,11 @@
+condition,mode,configuration,method,n_episodes,n_operationally_feasible,operational_feasibility_rate,total_realized_pto_cost_mean,total_realized_pto_cost_std,total_realized_aggregator_revenue_mean,total_realized_aggregator_revenue_std,total_realized_buy_kwh_mean,total_realized_sell_kwh_mean,minimum_observed_soc_fraction_min,maximum_reserve_shortfall_kwh_max,maximum_carryover_error_kwh,maximum_first_settlement_carryover_error_kwh,economic_comparison_eligibility_rate,llm_successful_requests_total,llm_total_tokens,llm_approximate_cost_usd
+derating,altruistic,agent_trigger_only,agent,5,5,1.0,334.3485215026571,0.0,35.598691457284296,0.0,6450.000559314518,1950.0000000001344,0.2,0.0,0.0,3.333344147904427e-05,1.0,40.0,478073.0,0.07472318
+derating,altruistic,numerical_event_trigger,numerical,1,1,1.0,334.3485215026571,,35.598691457284296,,6450.000559314518,1950.0000000001344,0.2,0.0,0.0,3.3333373266941635e-05,1.0,0.0,0.0,0.0
+derating,altruistic,oracle_event_trigger,oracle,1,1,1.0,334.3485215026571,,35.5986914572843,,6450.000559314518,1950.0000000001344,0.2,0.0,0.0,3.333342533551331e-05,1.0,0.0,0.0,0.0
+derating,altruistic,rule_text_event_trigger,rule_text,1,1,1.0,334.3485215026571,,35.598691457284296,,6450.000559314518,1950.0000000001344,0.2,0.0,0.0,3.333344147904427e-05,1.0,0.0,0.0,0.0
+derating,selfish,agent_trigger_only,agent,5,5,1.0,382.1359573089459,0.0,59.99919305172871,0.0,4800.0,550.0000246278246,0.2,0.0,0.0,4.444426154748271e-05,1.0,40.0,478166.0,0.07612295
+derating,selfish,numerical_event_trigger,numerical,1,1,1.0,382.1359573089459,,59.99919305172872,,4800.0,550.0000246278246,0.2,0.0,0.0,4.444432657635389e-05,1.0,0.0,0.0,0.0
+derating,selfish,oracle_event_trigger,oracle,1,1,1.0,382.1359573089459,,59.99919305172872,,4800.0,550.0000246278246,0.2,0.0,0.0,4.444424904193056e-05,1.0,0.0,0.0,0.0
+derating,selfish,rule_text_event_trigger,rule_text,1,1,1.0,382.1359573089459,,59.99919305172871,,4800.0,550.0000246278246,0.2,0.0,0.0,4.444426154748271e-05,1.0,0.0,0.0,0.0
+nominal,altruistic,oracle_event_trigger,scheduled_daily_replan,1,1,1.0,338.7182337637862,,41.343294027696274,,6500.0004874227525,1944.4451372498625,0.2,0.0,0.0,4.9198499752378666e-05,1.0,0.0,0.0,0.0
+nominal,selfish,oracle_event_trigger,scheduled_daily_replan,1,1,1.0,403.7988152064335,,73.19866548633883,,5200.0,744.4453845461267,0.2,0.0,0.0,2.222223363901321e-05,1.0,0.0,0.0,0.0

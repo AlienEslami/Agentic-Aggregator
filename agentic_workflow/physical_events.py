@@ -336,7 +336,17 @@ def advance_realized_energy(
         planned_delta = float(current.get(key) or 0.0) - float(
             previous_plan.get(key) or 0.0
         )
-        physical_delta = float(disturbance.disturbed_delta.get(key, planned_delta))
+        # A carried multi-day physical state is already populated at t=1, so
+        # unlike a fresh single-day run this branch executes for the first plan
+        # row.  The workbook's first-row interval delta is intentionally null:
+        # it represents an initial state, not an energy movement.  Preserve the
+        # planned zero delta instead of trying to cast that null sentinel.
+        disturbed_delta = disturbance.disturbed_delta.get(key)
+        physical_delta = (
+            planned_delta
+            if disturbed_delta is None
+            else float(disturbed_delta)
+        )
         if bus_id in extended_trip_buses:
             physical_delta = -(
                 consumption_by_bus.get(bus_id, 0.0)

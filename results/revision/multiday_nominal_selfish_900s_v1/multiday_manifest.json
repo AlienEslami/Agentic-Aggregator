@@ -1,0 +1,102 @@
+{
+  "experiment": "three_day_chained_charger_derating_v1",
+  "generated_utc": "2026-08-21T16:19:35.214282+00:00",
+  "design": {
+    "fleet_size": 8,
+    "days": 3,
+    "timesteps_per_day": 48,
+    "planning_design": "daily rolling horizon with exact realized terminal battery energy carried to the next day",
+    "single_144_step_perfect_foresight_solve": false,
+    "disturbance": "temporary charger cooling derating",
+    "affected_chargers": [
+      6,
+      7,
+      8
+    ],
+    "nominal_power_kw": 200.0,
+    "derated_power_kw": 100.0,
+    "day_windows": {
+      "day_1": [
+        31,
+        48
+      ],
+      "day_2": [
+        1,
+        48
+      ],
+      "day_3": [
+        1,
+        30
+      ]
+    },
+    "daily_case_ids": [
+      "md_charger_derating_day1",
+      "md_charger_derating_day2",
+      "md_charger_derating_day3"
+    ],
+    "nominal_control_daily_case_ids": [
+      "md_nominal_day1",
+      "md_nominal_day2",
+      "md_nominal_day3"
+    ],
+    "conditions": [
+      "derating",
+      "nominal"
+    ],
+    "configurations": [
+      "oracle_event_trigger"
+    ],
+    "modes": [
+      "selfish"
+    ],
+    "agent_repetitions": 5,
+    "planned_three_day_episodes": 2,
+    "planned_daily_runs": 6,
+    "nominal_control": "scheduled daily replanning with no physical derating"
+  },
+  "controls": {
+    "common_hidden_physical_truth": true,
+    "hidden_truth_sent_to_llm": false,
+    "causal_settlement": true,
+    "physical_soc_carryover": true,
+    "altruistic_baseline_revenue_retention_fraction_per_day": 0.5,
+    "solver_order": "gurobi",
+    "solver_time_limit_seconds": 900.0,
+    "solver_mip_gap": 0.02,
+    "model": "gpt-5.6-luna",
+    "trigger_prompt_variant": "daily_handover",
+    "maximum_approximate_api_cost_usd": null
+  },
+  "inputs": {
+    "case_manifest": "inputs/revision/multiday_charger_manifest_v1.json",
+    "case_manifest_sha256": "55a2c6d931d716f2ec1074bff9c8b82941142a8a2d061589ca45664c07824fef",
+    "notices": "inputs/revision/multiday_charger_notices_v1.json",
+    "notices_sha256": "9ba6789589299aa969346a47e1c562560e2315eb50711c918d9e509cf99461cb",
+    "physical_events": "inputs/revision/multiday_charger_physical_events_v1.json",
+    "physical_events_sha256": "5d7619074111316104c2f63624e6d6e6c81c2c550beab1e49175eddf10351fb7",
+    "prompt_sha256": {
+      "evaluator_system.txt": "fe1a30f2bcd29b4bc836edb383490088c4503b71e0e5df4dbd91309fc1fcbf59",
+      "pricing_altruistic_system.txt": "934b806ef1481b0d0650c21faca65184412830078bb3254c1b49a6ae5fde8537",
+      "pricing_selfish_system.txt": "cd36c75d95e425dea89c76ae1e71d3bd636908b3edf98bfa16050402659fcfe1",
+      "trigger_system.txt": "ab19e952cb147b0693a7bee9ea23403cbefd3a1ca28a006cb069facce1e0dbba",
+      "trigger_variant_action_first.txt": "56b2a1cc932d4a640d95e6abd6f9695e7e4536ec0eed209f4850408eecb84e54",
+      "trigger_variant_daily_handover.txt": "f1406a33281b8364bd8de2cbf0cd1be5ab1318e6febefeda2acd38d66505daa0",
+      "trigger_variant_evidence_first.txt": "1c13bcfaeeee926e631b6429a3fddb163d8c8a8c312886c5fd045f2eb651fa96"
+    }
+  },
+  "execution": {
+    "episodes_indexed": 2,
+    "daily_runs_indexed": 6,
+    "operationally_feasible_episodes": 2,
+    "total_llm_successful_requests": 0.0,
+    "total_llm_tokens": 0.0,
+    "total_approximate_api_cost_usd": 0.0,
+    "maximum_carryover_error_kwh": 0.0,
+    "maximum_first_settlement_carryover_error_kwh": 4.444424904193056e-05
+  },
+  "reuse_validation": {
+    "signature_version": 1,
+    "requires_matching_inputs_prompts_code_model_and_solver_controls": true,
+    "unsigned_legacy_workbooks_are_recomputed": true
+  }
+}

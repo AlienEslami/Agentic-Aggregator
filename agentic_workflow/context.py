@@ -126,12 +126,11 @@ def build_context(
     context_history: list[dict[str, Any]],
 ) -> dict[str, Any]:
     planned = planned_row_for_observation(realtime_plan, timestep)
-    forecast_by_timestep = {
-        int(row["timestep"]): row for row in dataframe_records(forecast_energy)
-    }
-    forecast_state_index = timestep - 1
-    forecast_current = forecast_by_timestep.get(forecast_state_index, {})
-    forecast_previous = forecast_by_timestep.get(forecast_state_index - 1, {})
+    planned_previous = (
+        planned_row_for_observation(realtime_plan, timestep - 1)
+        if timestep > 1
+        else None
+    )
 
     deviations: list[dict[str, Any]] = []
     for bus in observation:
@@ -144,8 +143,15 @@ def build_context(
             100 * energy_deviation / planned_kwh if planned_kwh not in {None, 0} else 0.0
         )
         actual_delta = disturbance.disturbed_delta.get(key)
-        forecast_current_kwh = _float(forecast_current.get(key))
-        forecast_previous_kwh = _float(forecast_previous.get(key))
+        # Compare observed interval movement with the plan that was actually in
+        # force for that interval.  The separate Forecasted Energy workbook can
+        # use a different state clock/granularity and previously produced large
+        # false deviations even when realized energy exactly followed the
+        # active plan.
+        forecast_current_kwh = planned_kwh
+        forecast_previous_kwh = (
+            _float(planned_previous.get(key)) if planned_previous else None
+        )
         forecast_delta = (
             forecast_current_kwh - forecast_previous_kwh
             if forecast_current_kwh is not None and forecast_previous_kwh is not None
@@ -171,6 +177,7 @@ def build_context(
                 "energy_deviation_pct": round(energy_deviation_pct, 2),
                 "actual_interval_delta_kwh": actual_delta,
                 "forecast_interval_delta_kwh": forecast_delta,
+                "interval_delta_reference": "active_realtime_plan",
                 "energy_delta_deviation_kwh": round(delta_deviation, 2) if delta_deviation is not None else None,
                 "energy_delta_deviation_pct": round(delta_deviation_pct, 2) if delta_deviation_pct is not None else None,
                 "delay_minutes": delay_minutes,

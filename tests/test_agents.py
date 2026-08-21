@@ -161,6 +161,43 @@ def test_agent_only_guard_does_not_substitute_numerical_baseline() -> None:
     assert guarded.action == "skip"
 
 
+def test_confirmed_material_notice_is_not_suppressed_by_warning_phase_label() -> None:
+    context = _context()
+    decision = TriggerDecision(
+        action="optimize",
+        reasoning="Confirmed cap requires advance optimization.",
+        confidence=0.98,
+        trigger_type="charger_event",
+        flagged_buses=[],
+        notice_interpretation=NoticeInterpretation(
+            event_id="confirmed-cap",
+            source_type="service_alert",
+            event_type="charger_derating",
+            phase="warning",
+            affected_chargers=[6, 7, 8],
+            effective_timestep=31,
+            material=True,
+            uncertainty=False,
+            uncertainty_details=NoticeUncertaintyAssessment(
+                confidence_level=0.98,
+                provisional=False,
+                recommended_action="optimize",
+                rationale="The cap is confirmed.",
+            ),
+            evidence=["Maintenance confirmed the 100 kW cap."],
+        ),
+    )
+
+    guarded = normalize_trigger_decision(
+        decision,
+        context,
+        allow_numerical_fallback=False,
+    )
+
+    assert guarded.action == "optimize"
+    assert guarded.trigger_type == "charger_event"
+
+
 class _CountingBackend(AgentBackend):
     def __init__(self) -> None:
         self.trigger_calls = 0
@@ -563,6 +600,62 @@ def test_trigger_comparison_channels_are_isolated() -> None:
     ).model_dump()
     assert NoticeOnlyAgentBackend().trigger(context).action == "optimize"
     assert NumericalOnlyAgentBackend().trigger(context).action == "skip"
+
+
+def test_material_day_start_notice_can_trigger_daily_replanning() -> None:
+    context = _context()
+    context["timestep"] = 1
+    context["remaining_timesteps"] = 47
+    context["trigger_flags"]["price_deviation_significant"] = False
+    context["notice_interpretation"] = NoticeInterpretation(
+        event_id="DAY-HANDOVER",
+        source_type="service_alert",
+        event_type="charger_derating",
+        phase="onset",
+        affected_chargers=[6, 7, 8],
+        effective_timestep=1,
+        uncertainty_details=NoticeUncertaintyAssessment(
+            confidence_level=1.0,
+            recommended_action="optimize",
+        ),
+    ).model_dump()
+
+    decision = NoticeOnlyAgentBackend().trigger(context)
+
+    assert decision.action == "optimize"
+    assert decision.trigger_type == "charger_event"
+
+
+def test_trigger_guard_preserves_llm_day_start_handover_exception() -> None:
+    context = _context()
+    context["timestep"] = 1
+    context["remaining_timesteps"] = 47
+    context["trigger_flags"]["price_deviation_significant"] = False
+    notice = NoticeInterpretation(
+        event_id="DAY-HANDOVER",
+        source_type="service_alert",
+        event_type="charger_derating",
+        phase="onset",
+        affected_chargers=[6, 7, 8],
+        effective_timestep=1,
+        uncertainty_details=NoticeUncertaintyAssessment(
+            confidence_level=1.0,
+            recommended_action="optimize",
+        ),
+    )
+    raw = TriggerDecision(
+        action="optimize",
+        reasoning="A confirmed new-day restriction requires a new daily plan.",
+        confidence=1.0,
+        trigger_type="charger_event",
+        flagged_buses=[],
+        notice_interpretation=notice,
+    )
+
+    guarded = normalize_trigger_decision(raw, context)
+
+    assert guarded.action == "optimize"
+    assert guarded.notice_interpretation == notice
 
 
 def test_trigger_guard_normalizes_non_actionable_skip():

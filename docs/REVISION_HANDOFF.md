@@ -19,7 +19,7 @@ start.
 Verify the package the way a reviewer would before trusting any run:
 
 ```powershell
-python -m pytest -q                              # expect 165 passed
+python -m pytest -q                              # expect 182 passed
 python scripts/validate_revision_package.py      # expect no failed checks
 ```
 
@@ -41,7 +41,7 @@ solve these models. Install a full licence and point `GRB_LICENSE_FILE` at it.
 
 ## Done
 
-**Reproducibility.** The package verifies from a clean clone: 165 tests,
+**Reproducibility.** The package verifies from a clean clone: 182 tests,
 `MANIFEST.sha256` 151/151 and package validator 45/45. The dataset builders now
 write LF explicitly; regenerating them changed no content, only the recorded
 hash lines, which confirms the datasets themselves never drifted.
@@ -54,27 +54,29 @@ Gurobi and HiGHS both return 218.9827. The reported saving of optimized
 charging over dumb charging rises from 40.2 to 40.96 percent on the summary
 basis.
 
+The day-ahead reporting basis is also reconciled. The submitted S1--S4 values
+are exactly reproduced by applying the previous interval tariff to the current
+interval energy. That off-by-one reporting error is corrected to the optimizer-
+native same-interval settlement in
+`results/revision/day_ahead_reconciliation_v1/`; the optimizer is unchanged.
+
 **Matched non-agentic baseline.** `full_deterministic` — rule trigger,
-deterministic pricing, hard-check evaluator — is declared in ablation protocol
-v7 and has been executed: six deterministic episodes, no API cost. It is
-infeasible in every run of the charger-bank case, because the frozen parser
-cannot represent a charger outage announced in chat text; it then replans
-against chargers that are not there, re-optimizes at 37 of 48 timesteps and
-ends 533 kWh short on reserve. Where the disturbance is fully numerical it
-reproduces the full workflow exactly. Written up in the manuscript as the
-ablation subsection.
+deterministic pricing, hard-check evaluator — has been executed in six
+confirmatory episodes with no API cost. The final comparison is in
+`results/revision/nonagentic_baseline_v8_confirmatory`: the Agent mean wins four
+cells, ties the altruistic route cell, and loses the selfish charger cell. The
+confirmatory baseline is operationally feasible in all six indexed cells.
 
 **Day-ahead V2G benchmark.** Smart charging with V2G and without agents, under
 a fixed regulated band and under spot passthrough, frozen by
 `scripts/build_day_ahead_ladder.py` with a manifest.
 
-**Scaling, optimizer side.** The deterministic arm of the scaling benchmark is
-complete under the v8 protocol, in `results/revision/scaling_v2`: 24 episodes
-over 8, 16 and 32 buses plus the second depot, at the 300-second stage limit,
-no API cost. The model is quadratic in fleet size and solver time follows it at
-an exponent near 2.15, while the number of supervisory decisions is invariant
-at two per episode. The longest single solve was 13.4 s, so no run was
-truncated by the limit. Written up as the scalability subsection. An earlier
+**Scaling.** Both arms of the scaling benchmark are complete in
+`results/revision/scaling_v2`: 48 episodes over 8, 16 and 32 buses plus the
+second depot, at the 300-second stage limit. The corrected manifest indexes all
+24 Agent and 24 text-rule runs. Every run is feasible, and the maximum recorded
+solve is 8.09 s. The Agent arm uses 3,651,756 tokens and an indexed approximate
+API cost of USD 0.7656. An earlier
 `scaling_v1` was executed at the superseded 60-second limit; its numbers are
 close but its provenance is a different protocol generation, so it should not
 be reported.
@@ -90,23 +92,45 @@ percent baseline-revenue-retention floor. The indexed API estimate is USD
 2.5393; discarded infrastructure attempts are documented separately with a
 conservative total upper bound of USD 2.7893.
 
-**Broader disturbances.** The v2 advance-warning dataset adds clustered delays
-and a sustained route-energy shift, and a disturbance workbook adds a
-three-step price escalation. The primary Agent/rule/numerical/oracle comparison
-is now executed at the 300-second limit in `results/revision/extended_disturbances_v3`
-(32 episodes) and `results/revision/price_escalation_v3` (16 episodes). The
+**Broader disturbances.** The reviewer-facing set now includes recoverable
+clustered delays, a sustained route-energy shift, a three-step price escalation,
+and a chained three-day charger-cooling derating. The primary
+Agent/rule/numerical/oracle comparison is executed at the 300-second limit in
+`results/revision/recoverable_cluster_v1` (16 episodes),
+`results/revision/extended_disturbances_v3` (with the physically unattainable
+cluster calibration excluded), `results/revision/price_escalation_v3` (16
+episodes), and `results/revision/multiday_charger_derating_v1` (18 three-day
+episodes/54 daily runs: 16 derating comparisons plus two scheduled
+no-derating daily-replanning controls). The
 sustained energy-shift case gives the clearest benefit from advance text: the
 Agent is operationally feasible in 5/5 selfish runs versus 0/1 for numerical
-and rule triggers, and in 3/5 altruistic runs versus 0/1 for both. The clustered
-delay case is a boundary stress test: every method incurs realized reserve
-shortfall and it must not be presented as an economic win. Under price
+and rule triggers, and in 3/5 altruistic runs versus 0/1 for both. Every method
+is feasible in the recoverable clustered-delay case. Under price
 escalation the Agent is feasible in 5/5 selfish runs versus 0/1 numerical; in
 altruistic mode it is feasible in 4/5 versus 1/1 for each deterministic method.
+All 18 three-day episodes are feasible, have zero reserve shortfall and exact
+internal SOC carryover. The first recorded settlement differs from the carried
+state by at most 0.0000492 kWh because observations are rounded to four decimal
+places. All ten Trigger-Agent repetitions act on the confirmed day-1 warning
+before the cap begins, and the trigger methods produce equal derating
+economics; this is robustness/carryover evidence rather than an Agent-
+superiority result. The matched nominal control shows day-by-day SOC and
+trading effects from the derating. Its selfish day-3 economic result is a
+feasible 300-second incumbent at about 5.5% MIP gap and must be labeled
+approximate. The isolated 900-second sensitivity in
+`results/revision/multiday_nominal_selfish_900s_v1` reproduces the identical
+schedule and economics while improving the two gaps only to 5.50% and 5.42%.
+It supports incumbent stability, not 2%-gap optimality.
 
-**Manuscript.** The reproducibility appendix is filled from the published run
-manifests, and two subsections were added. All revision text is inside the
-`\rev` / `\revon` markup, so it prints in red until `\revisionmarkupfalse` is
-set. The response document tracks each comment's status.
+Attempt-level solver status, gap, workbook hash, and run signature are retained
+in `multiday_solver_audit.csv`, with a one-row compact summary beside it.
+
+**Manuscript assets.** Manuscript-ready results, limitations, an insertion map,
+and a complete point-by-point response are in
+`docs/REVISION_MANUSCRIPT_INSERTS.md` and
+`docs/REVIEWER_RESPONSE_DRAFT.md`. CSV tables, PDF/PNG figures, and a hash
+manifest are in `paper_outputs/revision/`. They still need to be merged into
+the LaTeX source when it is supplied.
 
 ## Left to run
 
@@ -119,14 +143,10 @@ python scripts/report_study_status.py scaling --output-root results/revision/sca
 The runners index complete workbooks and execute only what is missing, so an
 arm can be added to an existing output root without repeating work.
 
-**Scaling, agentic arm** — completed in `results/revision/scaling_v2`. The
-commands below reproduce the half of R2.6 that measures how Agent latency and
-token usage grow with fleet size:
-
-```powershell
-python scripts/run_scaling_study.py --output-root results/revision/scaling_v1 --repetitions 3 --allow-external-llm --require-clean-git --max-approximate-api-cost-usd 2.00
-python scripts/analyze_scaling_study.py --runs results/revision/scaling_v1/scaling_runs.csv --output-dir results/revision/scaling_v1/analysis
-```
+**No planned evidentiary experiment remains incomplete.** Re-run a study only
+if a protocol or manuscript question changes; the current Agent, deterministic,
+stochastic, sensitivity, evaluator, broader-disturbance, and scaling evidence
+is complete.
 
 **Controlled evaluator ablation** — completed: 48 episodes in
 `results/revision/evaluator_v3`. The evaluator changes the outcome in the
@@ -148,13 +168,6 @@ that the old failed cell needs a new method.
 
 ## Left to decide or write
 
-- **SOC recomputation.** The manuscript's day-ahead numbers are SOC-derived, not
-  the workbook summary values, and the script that produces them has absolute
-  paths from one machine hardcoded. Until it is ported into this repository,
-  the new day-ahead rows cannot enter Table 6: the two bases differ by 2 to 4
-  units, the same order as the effects being reported. Reproduce these four
-  values to validate any port: dumb charging 218.101387, smart charging without
-  V2G 130.470605, selfish FS+CoT 140.586078, altruistic FS+CoT 118.908348.
 - **n8n version.** The only bracketed placeholder left in the reproducibility
   appendix. The workflow export carries no version metadata, so it has to be
   read off the instance that produced it.
@@ -164,8 +177,10 @@ that the old failed cell needs a new method.
   100 decisions where the selected schedule was not the cheapest, with a
   maximum regret of 6.09 USD. All three should be reported, with the regret
   framed as the explicit price of the retention floor.
-- **Team decisions D1 and D2** — how many of the suggested fuel-cell references
-  to cite, and whether a stochastic-programming or RL benchmark is in scope.
+- **LaTeX integration.** Insert the generated tables, figures, results,
+  limitations, and reviewer responses after the manuscript source is supplied.
+- **Literature update.** Add and verify the final citations used to defend the
+  agentic positioning and tariff-policy discussion.
 
 ## Verification notes
 

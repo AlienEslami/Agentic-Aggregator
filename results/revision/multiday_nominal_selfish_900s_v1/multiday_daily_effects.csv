@@ -1,0 +1,4 @@
+mode,method,day,n_derating_runs,n_nominal_runs,pto_cost_delta_derating_minus_nominal,aggregator_revenue_delta_derating_minus_nominal,grid_net_cost_delta_derating_minus_nominal,buy_kwh_delta_derating_minus_nominal,sell_kwh_delta_derating_minus_nominal,terminal_minimum_soc_fraction_delta_derating_minus_nominal
+selfish,oracle,1,1,1,-1.2387932909476262,-6.632313726914916,5.3935204359672895,0.0,-44.44444444444446,0.0035013698630136925
+selfish,oracle,2,1,1,-8.45272885558586,-2.6586798092643065,-5.794049046321533,-150.0,-50.0,0.007002739726027385
+selfish,oracle,3,1,1,-11.971335750954069,-3.9084788984308876,-8.062856852523169,-250.0,-100.00091547385748,0.01873287671232879

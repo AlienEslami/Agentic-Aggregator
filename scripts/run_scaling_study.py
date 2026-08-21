@@ -255,13 +255,18 @@ def main(argv: list[str] | None = None) -> int:
     selected_configs = set(args.configuration or CONFIGURATIONS)
     selected_instances = set(args.instance or [f"{d}_{n}" for d, n in INSTANCES])
     selected_modes = set(args.mode or MODES)
+    all_specs = build_specs(args.repetitions)
     specs = [
         spec
-        for spec in build_specs(args.repetitions)
+        for spec in all_specs
         if spec.configuration in selected_configs
         and spec.instance in selected_instances
         and spec.mode in selected_modes
     ]
+    manifest_path = output_root / "scaling_manifest.json"
+    prior_manifest: dict[str, Any] = {}
+    if manifest_path.exists():
+        prior_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     if args.require_clean_git and not git_clean():
         raise SystemExit("Refusing execution because the Git worktree is not clean")
     if not args.dry_run and any(spec.uses_external_llm for spec in specs):
@@ -298,10 +303,11 @@ def main(argv: list[str] | None = None) -> int:
                 )
 
     rows: list[dict[str, Any]] = []
-    commands: list[list[str]] = []
+    invocation_commands: list[list[str]] = []
+    executed_run_ids: list[str] = []
     for index, spec in enumerate(specs, start=1):
         command = run_command(spec, generated_root, output_root, args.model)
-        commands.append(command)
+        invocation_commands.append(command)
         if args.dry_run:
             print(subprocess.list2cmdline(command))
             continue
@@ -326,15 +332,34 @@ def main(argv: list[str] | None = None) -> int:
                 }
             )
             subprocess.run(command, cwd=ROOT, check=True, env=environment)
+            executed_run_ids.append(spec.run_id)
         rows.append(read_row(spec, output_root, generated_root, args.model))
         write_index(output_root, rows)
         print(f"[{index}/{len(specs)}] indexed {spec.run_id}", flush=True)
 
+    expected_ids = {spec.run_id for spec in all_specs}
+    index_path = output_root / "scaling_runs.csv"
+    indexed_ids: list[str] = []
+    if index_path.exists():
+        index_frame = pd.read_csv(index_path)
+        indexed_ids = sorted(
+            expected_ids.intersection(index_frame["run_id"].dropna().astype(str))
+        )
+    all_commands = [
+        run_command(spec, generated_root, output_root, args.model)
+        for spec in all_specs
+    ]
+    provenance_is_new = bool(executed_run_ids) or not prior_manifest
     manifest = {
         "protocol_version": protocol["protocol_version"],
         "created_utc": datetime.now(timezone.utc).isoformat(),
-        "git_commit": git_revision(),
-        "git_worktree_clean": git_clean(),
+        "manifest_scope": "complete_protocol_index",
+        "git_commit": (
+            git_revision() if provenance_is_new else prior_manifest.get("git_commit")
+        ),
+        "git_worktree_clean": (
+            git_clean() if provenance_is_new else prior_manifest.get("git_worktree_clean")
+        ),
         "protocol_file": str(PROTOCOL.relative_to(ROOT)),
         "protocol_sha256": sha256(PROTOCOL),
         "notice_sha256": sha256(NOTICE_FILE),
@@ -345,15 +370,30 @@ def main(argv: list[str] | None = None) -> int:
             "time_limit_seconds": args.solver_time_limit,
             "mip_gap": args.solver_mip_gap,
         },
-        "external_llm_authorized": bool(args.allow_external_llm),
+        "external_llm_authorized": bool(
+            args.allow_external_llm
+            or prior_manifest.get("external_llm_authorized", False)
+        ),
         "canonical_hidden_truth_sent_to_openai": False,
-        "planned_runs": len(specs),
-        "indexed_runs": len(rows),
-        "specs": [asdict(spec) | {"run_id": spec.run_id} for spec in specs],
-        "commands": [subprocess.list2cmdline(command) for command in commands],
+        "planned_runs": len(all_specs),
+        "indexed_runs": len(indexed_ids),
+        "indexed_run_ids": indexed_ids,
+        "specs": [asdict(spec) | {"run_id": spec.run_id} for spec in all_specs],
+        "commands": [subprocess.list2cmdline(command) for command in all_commands],
+        "last_invocation": {
+            "selected_configurations": sorted(selected_configs),
+            "selected_instances": sorted(selected_instances),
+            "selected_modes": sorted(selected_modes),
+            "requested_runs": len(specs),
+            "executed_runs": len(executed_run_ids),
+            "executed_run_ids": executed_run_ids,
+            "commands": [
+                subprocess.list2cmdline(command) for command in invocation_commands
+            ],
+        },
     }
     output_root.mkdir(parents=True, exist_ok=True)
-    (output_root / "scaling_manifest.json").write_text(
+    manifest_path.write_text(
         json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
     )
     return 0

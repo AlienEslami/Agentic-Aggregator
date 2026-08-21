@@ -1,0 +1,12 @@
+family,arm,mode,n,buy_arithmetic_mean_gap,effective_action_correct,effective_false_optimization_rate,effective_missed_optimization_rate,llm_approximate_cost_usd,llm_total_tokens,mode_aligned_economic_score,operationally_feasible,sell_arithmetic_mean_gap
+pricing,guidance_base,altruistic,5,-0.022875816993464,,,,0.002463072,16009.0,-121.37941960942926,1.0,0.0350588235294116
+pricing,guidance_base,selfish,5,-0.003,,,,0.0027993339999999,17005.8,28.7325158320542,1.0,0.0
+pricing,guidance_narrow,altruistic,5,-0.0228759084967321,,,,0.002540478,16021.8,-122.02553897418753,1.0,0.008764885620915
+pricing,guidance_narrow,selfish,5,-0.0121894607843136,,,,0.00303748,17115.4,29.737590399455808,1.0,-0.001411794117647
+pricing,guidance_wide,altruistic,5,-0.022875725490196,,,,0.002480154,16096.0,-121.59479273101536,1.0,0.0262939379084966
+pricing,guidance_wide,selfish,5,0.001758088235294,,,,0.002621746,17071.0,27.6556502241239,1.0,0.0011764999999999
+trigger,prompt_action_first,selfish,5,,0.93125,0.0,0.0687499999999999,0.096602186,712289.6,,,
+trigger,prompt_baseline,selfish,5,,0.9375,0.0,0.0624999999999999,0.09822472,704947.2,,,
+trigger,prompt_evidence_first,selfish,5,,0.9375,0.0,0.0624999999999999,0.09987605,713564.0,,,
+trigger,threshold_high,selfish,5,,0.8625,0.0020833333333333,0.1354166666666666,0.09918819,704529.0,,,
+trigger,threshold_low,selfish,5,,0.9291666666666668,0.0,0.0708333333333332,0.098026676,704842.8,,,

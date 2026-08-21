@@ -5,11 +5,10 @@ conflated: the value of optimization, the value of V2G, and the value of
 agentic coordination. It runs the three non-agentic day-ahead scenarios under
 fixed solver settings and records their provenance.
 
-Basis note: the values collected here are the workbook `summary` values. The
-manuscript reports SOC-derived recomputations, which differ by 2 to 4 currency
-units, the same order as the effects under discussion. Any row published
-alongside the existing table must pass through the same SOC recomputation
-first; this script deliberately does not claim to produce that basis.
+Basis note: values are settled on the optimizer-native basis: interval ``t``
+energy is paired with interval ``t`` tariffs.  The legacy manuscript's
+SOC-derived values used the previous interval tariff because of an off-by-one
+reporting error; ``scripts/reconcile_day_ahead_costs.py`` documents it.
 """
 
 from __future__ import annotations
@@ -139,10 +138,9 @@ def main() -> int:
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "git_commit": git("rev-parse", "HEAD"),
         "git_worktree_clean": not (git("status", "--porcelain") or ""),
-        "basis": "workbook summary values, not the SOC-derived recomputation",
-        "basis_warning": (
-            "The manuscript reports SOC-derived values. Do not mix bases in one "
-            "table: the gap between them is 2 to 4 currency units."
+        "basis": "optimizer-native same-interval settlement",
+        "basis_definition": (
+            "Timestep t energy is settled at timestep t price and multipliers."
         ),
         "solver": {
             "order": args.solver_order,

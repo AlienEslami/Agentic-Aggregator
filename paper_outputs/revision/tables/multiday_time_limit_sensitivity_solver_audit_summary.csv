@@ -1,0 +1,2 @@
+daily_workbooks_indexed,optimizer_attempts,gurobi_attempts,configured_gap_met_attempts,time_limited_feasible_incumbent_attempts,fallback_attempts,maximum_solver_relative_gap,status_counts
+6,11,11,9,2,0,0.054962526509,"{""aborted/maxtimelimit/incumbent"": 2, ""ok/optimal"": 9}"
