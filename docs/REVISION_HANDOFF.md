@@ -19,7 +19,7 @@ start.
 Verify the package the way a reviewer would before trusting any run:
 
 ```powershell
-python -m pytest -q                              # expect 142 passed
+python -m pytest -q                              # expect 165 passed
 python scripts/validate_revision_package.py      # expect no failed checks
 ```
 
@@ -41,8 +41,8 @@ solve these models. Install a full licence and point `GRB_LICENSE_FILE` at it.
 
 ## Done
 
-**Reproducibility.** The package verifies from a clean clone: 142 tests,
-`MANIFEST.sha256` 131/131, package validator 22/22. The dataset builders now
+**Reproducibility.** The package verifies from a clean clone: 165 tests,
+`MANIFEST.sha256` 151/151 and package validator 45/45. The dataset builders now
 write LF explicitly; regenerating them changed no content, only the recorded
 hash lines, which confirms the datasets themselves never drifted.
 
@@ -79,6 +79,17 @@ truncated by the limit. Written up as the scalability subsection. An earlier
 close but its provenance is a different protocol generation, so it should not
 be reported.
 
+**One-factor sensitivity.** The complete v2 study is published in
+`results/revision/sensitivity_v2`: 25 Trigger repetitions (2,400 structured
+decisions) and 30 Pricing episodes. The three prompt variants were stable at
+93.13--93.75 percent effective action accuracy with no false optimizations. A
+0.9 confidence threshold was too conservative, reducing accuracy to 86.25
+percent through missed optimizations. All Pricing episodes were Gurobi-optimal
+and operationally feasible, and all altruistic episodes satisfied the 50
+percent baseline-revenue-retention floor. The indexed API estimate is USD
+2.5393; discarded infrastructure attempts are documented separately with a
+conservative total upper bound of USD 2.7893.
+
 **Broader disturbances.** The v2 advance-warning dataset adds clustered delays
 and a sustained route-energy shift, and a disturbance workbook adds a
 three-step price escalation. Implemented, not yet executed.
@@ -105,13 +116,6 @@ answer, namely how agent latency and token usage grow with fleet size:
 ```powershell
 python scripts/run_scaling_study.py --output-root results/revision/scaling_v1 --repetitions 3 --allow-external-llm --require-clean-git --max-approximate-api-cost-usd 2.00
 python scripts/analyze_scaling_study.py --runs results/revision/scaling_v1/scaling_runs.csv --output-dir results/revision/scaling_v1/analysis
-```
-
-**One-factor sensitivity** — R1.5, over the confidence threshold, the tariff
-bounds and the paraphrased prompt variants:
-
-```powershell
-python scripts/run_revision_sensitivity.py --output-root results/revision/sensitivity_v1 --repetitions 5 --allow-external-llm --require-clean-git --max-approximate-api-cost-usd 4.00
 ```
 
 **Controlled evaluator ablation** — 48 episodes:

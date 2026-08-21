@@ -1,0 +1,31 @@
+{
+  "study": "revision_sensitivity_v2",
+  "scheduled_runs_completed": 55,
+  "scheduled_runs_indexed": 55,
+  "indexed_llm_requests": 2460,
+  "indexed_llm_failed_attempts": 0,
+  "indexed_llm_approximate_cost_usd": 2.53930043,
+  "unindexed_attempt_cost_upper_bound_usd": 0.25,
+  "conservative_total_cost_upper_bound_usd": 2.78930043,
+  "original_authorized_cost_cap_usd": 4.0,
+  "incidents": [
+    {
+      "date": "2026-08-20",
+      "stage": "trigger_prompt_action_first_repetition_1",
+      "type": "windows_path_length_during_artifact_save",
+      "effect": "The structured API requests completed, but the result artifact could not be saved under the original long output path.",
+      "included_in_analysis": false,
+      "resolution": "The complete scheduled run was repeated successfully under a shorter output root and only that successful artifact is indexed."
+    },
+    {
+      "date": "2026-08-20",
+      "stage": "trigger_threshold_high_repetition_2",
+      "type": "temporary_dns_resolution_failure",
+      "effect": "The attempt stopped before producing a complete result artifact.",
+      "included_in_analysis": false,
+      "resolution": "The complete scheduled run was repeated successfully after network recovery and only that successful artifact is indexed."
+    }
+  ],
+  "cost_accounting_note": "The two incomplete attempts were not written to the runner index, so their exact provider usage is unavailable. A conservative combined upper bound of USD 0.25 is added to the indexed estimate. This keeps the total well below the authorized USD 4.00 cap.",
+  "analysis_note": "Neither incomplete attempt contributes observations to the sensitivity analysis. Every indexed Trigger repetition contains 96 successful structured decisions, and every indexed Pricing repetition is a complete 48-timestep episode."
+}

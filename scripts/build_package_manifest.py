@@ -20,7 +20,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "MANIFEST.sha256"
 PACKAGE_NAME = "Agentic-Aggregator-Python-Workflow"
-EXCLUDED_PARTS = {".git", ".pytest_cache", "__pycache__", "results"}
+EXCLUDED_PARTS = {".git", ".pytest_cache", ".tmp", "__pycache__", "results"}
 EXCLUDED_SUFFIXES = {".pyc", ".pyo", ".xls", ".xlsx", ".xlsb", ".xlsm"}
 
 

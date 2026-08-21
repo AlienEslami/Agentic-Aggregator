@@ -1,0 +1,59 @@
+{
+  "study": "revision_sensitivity_v2",
+  "frozen_git_commit": "438b271d3dff4b1aa4130339a5ad561f5701f3e2",
+  "preflight": {
+    "protocol_package_validation": "passed",
+    "pytest": {
+      "passed": 159,
+      "failed": 0
+    },
+    "gurobi_license_check": "passed_outside_sandbox"
+  },
+  "index": {
+    "planned_runs": 55,
+    "indexed_runs": 55,
+    "unique_run_ids": 55,
+    "missing_artifacts": 0,
+    "artifact_sha256_mismatches": 0
+  },
+  "trigger_api_records": {
+    "files": 25,
+    "records": 2400,
+    "schema_valid_records": 2400,
+    "refusals": 0,
+    "failed_attempts": 0,
+    "records_requiring_more_than_one_attempt": 0,
+    "secret_string_hits": 0,
+    "canonical_or_hidden_truth_request_key_hits": 0
+  },
+  "pricing_workbooks": {
+    "files": 30,
+    "complete_48_timestep_episodes": 30,
+    "operationally_feasible_episodes": 30,
+    "solver": "gurobi",
+    "solver_fallbacks": 0,
+    "solver_status": "ok/optimal",
+    "formula_errors": 0,
+    "minimum_observed_soc_fraction": 0.2,
+    "minimum_terminal_soc_fraction": 0.207627397260274,
+    "maximum_reserve_shortfall_kwh": 0.0,
+    "reserve_violation_timesteps": 0,
+    "altruistic_episodes": 15,
+    "altruistic_revenue_retention_compliant_episodes": 15
+  },
+  "indexed_provider_usage": {
+    "requests": 2460,
+    "successful_requests": 2460,
+    "failed_attempts": 0,
+    "input_tokens": 16913419,
+    "cached_input_tokens": 14041444,
+    "output_tokens": 1284039,
+    "reasoning_tokens": 247572,
+    "total_tokens": 18197458,
+    "approximate_cost_usd": 2.53930043
+  },
+  "notes": [
+    "The manifest confirms that canonical hidden truth was not sent to OpenAI.",
+    "Discarded infrastructure attempts and conservative cost treatment are documented in execution_incidents.json."
+  ]
+}
