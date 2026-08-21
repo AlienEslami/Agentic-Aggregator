@@ -182,6 +182,21 @@ that the old failed cell needs a new method.
 - **Literature update.** Add and verify the final citations used to defend the
   agentic positioning and tariff-policy discussion.
 
+## Where the response text lives
+
+Three artifacts now carry response material and they must not drift apart:
+
+- `docs/REVIEWER_RESPONSE_DRAFT.md` is the point-by-point prose destined for
+  the journal template.
+- `docs/REVISION_MANUSCRIPT_INSERTS.md` is the manuscript-ready text and its
+  insertion map.
+- `TRC-26-02380_reviewer_comments_working.docx`, in the paper folder, is the
+  status tracker: which comment is answered, where the change lives, and what
+  is left. Its chips describe the manuscript, not the repository.
+
+Treat the first two as the source and the third as the record. As of 21/08 the
+tracker reports eight comments done, ten partially done and none untouched.
+
 ## Verification notes
 
 **Exact ties between methods are price ties, not identical behaviour.** In the
