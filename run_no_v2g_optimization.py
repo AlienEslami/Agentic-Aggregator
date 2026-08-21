@@ -107,7 +107,7 @@ def main() -> None:
     result = summarize_solution(sc, model)
     output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(json.dumps(result, indent=2) + '\n')
+    output_path.write_text(json.dumps(result, indent=2) + '\n', encoding='utf-8', newline='\n')
 
     summary_row = build_day_ahead_summary_row(
         sc,

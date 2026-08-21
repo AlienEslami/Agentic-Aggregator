@@ -13,13 +13,13 @@
       "solver": "gurobi",
       "pto_daily_cost": 218.98269209809263,
       "total_kwh_bought": 2400.0,
-      "result_sha256": "70553966a8cb2c67452daeff7e00f75e870097882ccf0ee35fbc0da79240078a"
+      "result_sha256": "6cdce1483f2534ce3f500186ad78d02b3eef9f2b3266f3e7201d5bad6b6ae521"
     },
     {
       "solver": "appsi_highs",
       "pto_daily_cost": 218.98269209809263,
       "total_kwh_bought": 2400.0,
-      "result_sha256": "fcb2cf0ea40c408fa11b0fc20f66e3a70ae23c2eff0e24437472f897562f7752"
+      "result_sha256": "10aa9eca582ce0ef7b50fe83dfa6c047e2b4bc739749276255db85320596ead1"
     }
   ],
   "max_absolute_cost_difference": 0.0,
