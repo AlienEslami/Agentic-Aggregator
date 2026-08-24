@@ -107,7 +107,11 @@ full-day PTO cost. The altruistic mode uses a transparent 50% baseline-revenue-
 retention floor; it is labeled a design choice rather than a market estimate.
 We add fixed-margin and zero-margin V2G benchmarks to show the cost of retaining
 aggregator revenue. We also report the exact cost of honoring an operator
-priority in the Evaluator ablation.
+priority in the Evaluator ablation. In a separate 100-decision audit, the final
+selection was not the cheapest usable candidate in 49 decisions, with maximum
+cost regret of USD 6.09, because operational-priority and retention compliance
+are ranked before cost; the saved-candidate mechanism nevertheless selected
+the best usable candidate under that full ordering in every decision.
 
 **Revision location.** Revised Methods and Results; Tables
 `day_ahead_strategy_comparison.csv` and `evaluator_ablation.csv`.
@@ -215,4 +219,7 @@ S1–S4 costs use the previous interval tariff for the current interval energy.
 The submitted numbers are exactly reproducible under that shift. We corrected
 the table to the same-interval convention used by the optimizer and real-time
 settlement; no optimizer formulation was changed. The complete reconciliation
-is in `results/revision/day_ahead_reconciliation_v1/`.
+is in `results/revision/day_ahead_reconciliation_v1/`. We also added a
+solver-invariance artifact for the corrected S1 uncontrolled-charging
+baseline: with the earliest-charging tie-break and zero reported gap, Gurobi
+and HiGHS both return EUR 218.982692/day and 2,400 kWh purchased.

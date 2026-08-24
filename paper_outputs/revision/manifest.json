@@ -11,6 +11,10 @@
       "sha256": "9d20ee352ba4055a85a192dd5be98c47532561e3edcea2c8664f44dfcbcf530e"
     },
     {
+      "path": "results\\revision\\s1_solver_invariance_v1\\manifest.json",
+      "sha256": "5f8bb1826a91321adad33f77c7a6a7ebac0de1bc44acba8b50b327d98b2b6203"
+    },
+    {
       "path": "results\\revision\\extended_disturbances_v3\\analysis\\method_summary.csv",
       "sha256": "994532cb40a53d9064464cf89c76b23a7b2ce7e38f7d8c6a19283d2281acee6c"
     },

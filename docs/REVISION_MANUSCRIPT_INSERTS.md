@@ -79,8 +79,14 @@ and yields EUR 2.41/day. The passthrough result is an important counterexample:
 V2G and optimization alone can obtain the lowest PTO cost when aggregator
 revenue is deliberately ignored.
 
+The S1 uncontrolled-charging formulation has a degenerate optimal face, so an
+earliest-charging tie-break is used to define the intended physical behavior.
+At zero reported gap, Gurobi and HiGHS both return EUR 218.982692/day and
+2,400 kWh purchased, with zero difference between their reported costs.
+
 Evidence: `paper_outputs/revision/tables/day_ahead_strategy_comparison.csv` and
-`results/revision/day_ahead_reconciliation_v1/`.
+`results/revision/day_ahead_reconciliation_v1/`; solver-invariance evidence in
+`results/revision/s1_solver_invariance_v1/manifest.json`.
 
 ## Results insert: value and boundary of advance text
 
@@ -166,7 +172,20 @@ The evaluator is therefore useful when a valid operator priority is not already
 satisfied by the economically optimal schedule, but it is not expected to
 improve every case.
 
-Evidence: `paper_outputs/revision/tables/evaluator_ablation.csv`.
+A separate decision-level audit of 100 altruistic-matrix optimization
+decisions found that the Evaluator accepted a rerun with higher raw projected
+full-day PTO cost than an earlier usable attempt in 27 decisions. Only one of
+those acceptances was worse under the workflow's full ordering, which ranks
+operational-priority and revenue-retention compliance before cost. The final
+selected schedule was not the cheapest usable candidate in 49 decisions, with
+a maximum single-decision cost regret of USD 6.09; this is the explicit cost of
+that ordering rather than an optimizer failure. The saved-candidate mechanism
+selected the best usable candidate under the full ordering in all 100
+decisions, including when an accepted rerun was inferior to an earlier saved
+candidate.
+
+Evidence: `paper_outputs/revision/tables/evaluator_ablation.csv` and
+`results/revision/altruistic_50pct_retention_5rep/analysis_summary.json`.
 
 ## Results insert: prompt sensitivity and repeatability
 
