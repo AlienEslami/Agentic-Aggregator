@@ -42,7 +42,7 @@ solve these models. Install a full licence and point `GRB_LICENSE_FILE` at it.
 ## Done
 
 **Reproducibility.** The package verifies from a clean clone: 182 tests,
-`MANIFEST.sha256` 151/151 and package validator 45/45. The dataset builders now
+`MANIFEST.sha256` 193/193 and package validator 45/45. The dataset builders now
 write LF explicitly; regenerating them changed no content, only the recorded
 hash lines, which confirms the datasets themselves never drifted.
 
