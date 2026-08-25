@@ -178,7 +178,7 @@ full-day PTO cost than an earlier usable attempt in 27 decisions. Only one of
 those acceptances was worse under the workflow's full ordering, which ranks
 operational-priority and revenue-retention compliance before cost. The final
 selected schedule was not the cheapest usable candidate in 49 decisions, with
-a maximum single-decision cost regret of USD 6.09; this is the explicit cost of
+a maximum single-decision cost regret of EUR 6.09; this is the explicit cost of
 that ordering rather than an optimizer failure. The saved-candidate mechanism
 selected the best usable candidate under the full ordering in all 100
 decisions, including when an accepted rerun was inferior to an earlier saved

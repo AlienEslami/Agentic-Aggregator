@@ -61,7 +61,7 @@ limit all 10 finish with zero solver cutoff and zero reserve violation.
 
 - Selfish: 5/5 physically feasible.
 - Altruistic: 5/5 physically feasible; 4/5 meet the realized full-day 50%
-  baseline-revenue-retention floor. One realized outcome falls USD 4.047322
+  baseline-revenue-retention floor. One realized outcome falls EUR 4.047322
   below the floor even though its candidate optimizations completed; this must
   be reported, not pooled as a compliant economic observation.
 - The retained-better-candidate mechanism was exercised once.

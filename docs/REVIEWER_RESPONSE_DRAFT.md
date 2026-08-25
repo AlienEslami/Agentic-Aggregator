@@ -109,7 +109,7 @@ We add fixed-margin and zero-margin V2G benchmarks to show the cost of retaining
 aggregator revenue. We also report the exact cost of honoring an operator
 priority in the Evaluator ablation. In a separate 100-decision audit, the final
 selection was not the cheapest usable candidate in 49 decisions, with maximum
-cost regret of USD 6.09, because operational-priority and retention compliance
+cost regret of EUR 6.09, because operational-priority and retention compliance
 are ranked before cost; the saved-candidate mechanism nevertheless selected
 the best usable candidate under that full ordering in every decision.
 

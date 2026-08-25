@@ -28,7 +28,7 @@ The feasibility-first paired outcomes were:
 | Deterministic pricing substitution | 0 | 10 | 3 | 2 |
 | Evaluator removal | 0 | 11 | 2 | 2 |
 
-The economic columns include only pairs where both runs were operationally feasible. A difference smaller than USD 0.001 is counted as a tie.
+The economic columns include only pairs where both runs were operationally feasible. A difference smaller than EUR 0.001 is counted as a tie.
 
 Mean full-workflow revenue gains by case were:
 
@@ -38,7 +38,7 @@ Mean full-workflow revenue gains by case were:
 | Pricing Agent versus deterministic pricing | +5.532 | +0.674 | +3.624 |
 | Evaluator versus evaluator removal | +11.880 | +1.453 | +3.701 |
 
-All values are USD of realized full-day aggregator revenue, with positive values favoring the full workflow. The charger Trigger contrast includes four economically comparable rule-parser repetitions because the fifth rule-parser run was infeasible.
+All values are EUR of realized full-day aggregator revenue, with positive values favoring the full workflow. The charger Trigger contrast includes four economically comparable rule-parser repetitions because the fifth rule-parser run was infeasible.
 
 The 95% bootstrap interval was entirely above zero for the charger Trigger comparison, late-return and combined Pricing comparisons, and late-return and combined Evaluator comparisons. The other case-level intervals included zero, so those mean differences should not be presented as conclusive on their own.
 

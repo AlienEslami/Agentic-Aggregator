@@ -174,7 +174,7 @@ that the old failed cell needs a new method.
   reproduction path, so the manuscript no longer references n8n and no
   placeholder remains.
 - ~~Altruistic README~~ corrected on 21/08: it now reports the 27/1/49
-  figures and the 6.09 USD maximum regret exactly as recorded in
+  figures and the EUR 6.09 maximum regret exactly as recorded in
   `analysis_summary.json`, framing the regret as the price of the retention
   floor.
 - **LaTeX integration.** Insert the generated tables, figures, results,
