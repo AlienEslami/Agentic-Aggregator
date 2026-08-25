@@ -214,4 +214,6 @@ where `S_buy` is the tariff paid by the public transport operator, `S_sell` is t
 
 ## Citation and License
 
-Add the final paper citation and license before public release. If you want others to reuse the code, choose an explicit license such as MIT, Apache-2.0, or BSD-3-Clause.
+This repository, including the published result tables and manifests, is
+released under the MIT License; see [LICENSE](LICENSE). Add the final paper
+citation here once the revised manuscript is accepted.
