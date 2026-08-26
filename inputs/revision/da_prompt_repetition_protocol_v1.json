@@ -1,0 +1,46 @@
+{
+  "protocol_version": "da_prompt_repetition_v1",
+  "status": "design_frozen_pending_runner_implementation",
+  "purpose": "Convert the exploratory single-run day-ahead prompt-paradigm table into an inferential comparison by repeating every paradigm/mode cell with a sampled model and reporting dispersion.",
+  "design": {
+    "paradigms": [
+      "zero_shot",
+      "few_shot",
+      "cot",
+      "few_shot_cot"
+    ],
+    "modes": [
+      "selfish",
+      "altruistic"
+    ],
+    "repetitions_per_cell": 20,
+    "episodes_total": 160,
+    "episode": "one day-ahead planning episode: the Pricing Agent proposes 48 buy and 48 sell multipliers under the paradigm prompt, the shared optimizer solves the day-ahead schedule, and the day-ahead Evaluator accepts or requests a bounded rerun, up to the same rerun cap as the original experiment",
+    "inputs": "the published canonical inputs (inputs/State.xlsx, inputs/Forecasted.xlsx, inputs/SpotPrices.xlsx), identical across all cells and repetitions",
+    "reporting": [
+      "median, interquartile range and full range of the mode objective per cell",
+      "fraction of repetitions achieving the mode objective ordering",
+      "feasibility and, in altruistic mode, retention compliance per repetition",
+      "no ranking claim for any pair of cells whose ranges overlap"
+    ],
+    "equivalence_convention": "identical to the manuscript: differences below the day-ahead solver tolerance (4% MIP gap) are reported as equivalent"
+  },
+  "budget": {
+    "max_approximate_api_cost_usd": 5.0,
+    "abort_on_budget_exceeded": true
+  },
+  "model_contract": {
+    "model": "gpt-5.6-luna",
+    "endpoint": "chat-completions with strict structured outputs",
+    "sampling": "provider defaults, reasoning effort low"
+  },
+  "frozen_prompt_sha256": {
+    "pricing_zs.txt": "b7bc13a36ec0ac8b17179491adfa228abe53591aa6ebddf60f98bb500bbfa9ee",
+    "pricing_fs.txt": "922b6931dc63245c6a651476d808d5c6198c2ca2dba93f1e42a8ac3025c815fc",
+    "pricing_cot.txt": "603d3da16f19b010fd2f12cc7d5f910f4b69d6a021da06763d893b1f20c222d5",
+    "pricing_fscot.txt": "bab73d178f6529ff81b5ec4f90ec59506dd4a0593e0083ae0220678fdfb8a386",
+    "evaluator_system.txt": "808356c24dcea7b597de2d823b5483ee4c17b6870fc57c71aa15eb109f30bf6b",
+    "evaluator_user.txt": "85a919947b66f9627d315ad0aff4146f1263ba84f7b939b264bea5f835a15b47"
+  },
+  "implementation_note": "The original experiment ran in the archived orchestration environment. The runner must be ported per docs/E3_DA_PROMPT_REPETITION_PLAN.md before execution, and the port must be validated by reproducing the accepted FS+CoT plans structurally (same optimizer request shape) before any budgeted run."
+}

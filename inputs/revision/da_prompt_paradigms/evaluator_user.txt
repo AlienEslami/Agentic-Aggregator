@@ -1,0 +1,54 @@
+
+═══════════════════════════════════════
+OPTIMIZATION RESULT
+═══════════════════════════════════════
+PTO daily cost (€):           {{ $('Update Best State').first().json.pto_daily_cost }}
+Aggregator total revenue (€): {{ $('Update Best State').first().json.aggregator_revenue }}
+  - Charging margin (€):      {{ $('Update Best State').first().json.aggregator_buy_margin }}
+  - V2G margin (€):           {{ $('Update Best State').first().json.aggregator_sell_margin }}
+Total kWh bought by PTO:      {{ $('Update Best State').first().json.total_kwh_bought }}
+Total kWh sold via V2G:       {{ $('Update Best State').first().json.total_kwh_sold }}
+Is mock (infeasible):         {{ $('Update Best State').first().json.is_mock }}
+Is new best result:           {{ $('Update Best State').first().json.is_new_best }}
+
+═══════════════════════════════════════
+PRICE SETTINGS USED THIS RUN
+═══════════════════════════════════════
+Mode:                  {{ $('Update Best State').first().json.mode }}
+Buy multipliers:       {{ JSON.stringify($('Update Best State').first().json.buy_multipliers) }}
+Sell multipliers:      {{ JSON.stringify($('Update Best State').first().json.sell_multipliers) }}
+Avg buy price (€/kWh): {{ $('Update Best State').first().json.avg_buy_price }}
+Avg sell price (€/kWh):{{ $('Update Best State').first().json.avg_sell_price }}
+Avg grid price (€/kWh):{{ $('Update Best State').first().json.avg_grid_price }}
+Per-timestep grid prices: {{ JSON.stringify($('Build LLM Context').first().json.context.spot_prices) }}
+Rerun count:           {{ $('Update Best State').first().json.rerun_count ?? 0 }}
+Max reruns allowed:    3
+
+═══════════════════════════════════════
+BEST KNOWN SOLUTIONS
+═══════════════════════════════════════
+Best selfish revenue (€):     {{ $('Update Best State').first().json.best_selfish_revenue ?? 'null' }}
+Best altruistic PTO cost (€): {{ $('Update Best State').first().json.best_altruistic_cost ?? 'null' }}
+Best buy multipliers:         {{ JSON.stringify($('Update Best State').first().json.best_buy_multipliers) ?? 'null' }}
+Best sell multipliers:        {{ JSON.stringify($('Update Best State').first().json.best_sell_multipliers) ?? 'null' }}
+
+═══════════════════════════════════════
+RESPONSE FORMAT
+═══════════════════════════════════════
+JSON only, no text outside the JSON:
+{
+  "outcome": "accept" or "rerun",
+  "reasoning": "one sentence: mode, which rule applied (Rule X), current rerun_count, what changed vs best, which multipliers returned and why",
+  "adjusted_guidance": {
+    "buy_multipliers":  [48 numbers],
+    "sell_multipliers": [48 numbers],
+    "mode": "{{ $('Update Best State').first().json.mode }}"
+  },
+  "rerun_count": {{ $('Update Best State').first().json.rerun_count ?? 0 }},
+  "best_selfish_revenue":  {{ $('Update Best State').first().json.best_selfish_revenue ?? 'null' }},
+  "best_altruistic_cost":  {{ $('Update Best State').first().json.best_altruistic_cost ?? 'null' }},
+  "best_buy_multipliers":  {{ JSON.stringify($('Update Best State').first().json.best_buy_multipliers) ?? 'null' }},
+  "best_sell_multipliers": {{ JSON.stringify($('Update Best State').first().json.best_sell_multipliers) ?? 'null' }},
+  "best_mode":             "{{ $('Update Best State').first().json.best_mode ?? 'null' }}"
+}
+Always populate adjusted_guidance even when accepting.
