@@ -1,0 +1,6 @@
+{
+  "purpose": "diagnostic re-solve of the deterministic stochastic cells at a 0.1% MIP gap, supporting the equivalence labels of the manuscript comparison tables",
+  "reference_results": "results/revision/stochastic_v4",
+  "git_commit": "662a3f4b4a618647858d5d9efb79f2267aa1bf79",
+  "generated_utc": "2026-08-26T03:08:58.014176+00:00"
+}

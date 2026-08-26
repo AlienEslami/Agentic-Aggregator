@@ -1,0 +1,650 @@
+[
+  {
+    "case_id": "aw_route6_late_return",
+    "selection_criterion": "maximum projected_full_day_aggregator_revenue of the first accepted optimization decision (expected value over the frozen scenario set plus the settled prefix; no realized information)",
+    "candidates": [
+      {
+        "buy_shift": 0.0,
+        "sell_shift": 0.0,
+        "tag": "buyp000_sellp000",
+        "decision_timestep": 6,
+        "projected_full_day_aggregator_revenue": 12.929286,
+        "projected_full_day_pto_cost": 142.222143,
+        "realized_aggregator_revenue": 12.9292857650693,
+        "workbook": "results/revision/stochastic_v5/selection/aw_route6_late_return/buyp000_sellp000/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.0,
+        "sell_shift": -0.08,
+        "tag": "buyp000_sellm008",
+        "decision_timestep": 6,
+        "projected_full_day_aggregator_revenue": 12.929286,
+        "projected_full_day_pto_cost": 142.222147,
+        "realized_aggregator_revenue": 12.92928610354224,
+        "workbook": "results/revision/stochastic_v5/selection/aw_route6_late_return/buyp000_sellm008/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.0,
+        "sell_shift": -0.16,
+        "tag": "buyp000_sellm016",
+        "decision_timestep": 6,
+        "projected_full_day_aggregator_revenue": 12.929286,
+        "projected_full_day_pto_cost": 142.222145,
+        "realized_aggregator_revenue": 12.92928593950136,
+        "workbook": "results/revision/stochastic_v5/selection/aw_route6_late_return/buyp000_sellm016/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.0,
+        "sell_shift": -0.24,
+        "tag": "buyp000_sellm024",
+        "decision_timestep": 6,
+        "projected_full_day_aggregator_revenue": 12.929286,
+        "projected_full_day_pto_cost": 142.222147,
+        "realized_aggregator_revenue": 12.92928610354224,
+        "workbook": "results/revision/stochastic_v5/selection/aw_route6_late_return/buyp000_sellm024/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.08,
+        "sell_shift": 0.0,
+        "tag": "buyp008_sellp000",
+        "decision_timestep": 6,
+        "projected_full_day_aggregator_revenue": 12.929286,
+        "projected_full_day_pto_cost": 142.222144,
+        "realized_aggregator_revenue": 12.92928583398005,
+        "workbook": "results/revision/stochastic_v5/selection/aw_route6_late_return/buyp008_sellp000/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.08,
+        "sell_shift": -0.08,
+        "tag": "buyp008_sellm008",
+        "decision_timestep": 6,
+        "projected_full_day_aggregator_revenue": 12.929286,
+        "projected_full_day_pto_cost": 142.222147,
+        "realized_aggregator_revenue": 12.92928610354224,
+        "workbook": "results/revision/stochastic_v5/selection/aw_route6_late_return/buyp008_sellm008/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.08,
+        "sell_shift": -0.16,
+        "tag": "buyp008_sellm016",
+        "decision_timestep": 6,
+        "projected_full_day_aggregator_revenue": 12.929286,
+        "projected_full_day_pto_cost": 142.222147,
+        "realized_aggregator_revenue": 12.92928610354224,
+        "workbook": "results/revision/stochastic_v5/selection/aw_route6_late_return/buyp008_sellm016/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.08,
+        "sell_shift": -0.24,
+        "tag": "buyp008_sellm024",
+        "decision_timestep": 6,
+        "projected_full_day_aggregator_revenue": 12.929286,
+        "projected_full_day_pto_cost": 142.222147,
+        "realized_aggregator_revenue": 12.92928610354224,
+        "workbook": "results/revision/stochastic_v5/selection/aw_route6_late_return/buyp008_sellm024/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.16,
+        "sell_shift": 0.0,
+        "tag": "buyp016_sellp000",
+        "decision_timestep": 6,
+        "projected_full_day_aggregator_revenue": 12.929286,
+        "projected_full_day_pto_cost": 142.222147,
+        "realized_aggregator_revenue": 12.92928610354224,
+        "workbook": "results/revision/stochastic_v5/selection/aw_route6_late_return/buyp016_sellp000/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.16,
+        "sell_shift": -0.08,
+        "tag": "buyp016_sellm008",
+        "decision_timestep": 6,
+        "projected_full_day_aggregator_revenue": 12.929286,
+        "projected_full_day_pto_cost": 142.222147,
+        "realized_aggregator_revenue": 12.92928610354094,
+        "workbook": "results/revision/stochastic_v5/selection/aw_route6_late_return/buyp016_sellm008/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.16,
+        "sell_shift": -0.16,
+        "tag": "buyp016_sellm016",
+        "decision_timestep": 6,
+        "projected_full_day_aggregator_revenue": 12.929286,
+        "projected_full_day_pto_cost": 142.222144,
+        "realized_aggregator_revenue": 12.92928585866936,
+        "workbook": "results/revision/stochastic_v5/selection/aw_route6_late_return/buyp016_sellm016/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.16,
+        "sell_shift": -0.24,
+        "tag": "buyp016_sellm024",
+        "decision_timestep": 6,
+        "projected_full_day_aggregator_revenue": 12.929286,
+        "projected_full_day_pto_cost": 142.222147,
+        "realized_aggregator_revenue": 12.92928610354224,
+        "workbook": "results/revision/stochastic_v5/selection/aw_route6_late_return/buyp016_sellm024/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.24,
+        "sell_shift": 0.0,
+        "tag": "buyp024_sellp000",
+        "decision_timestep": 6,
+        "projected_full_day_aggregator_revenue": 12.929287,
+        "projected_full_day_pto_cost": 142.222145,
+        "realized_aggregator_revenue": 12.92928610354224,
+        "workbook": "results/revision/stochastic_v5/selection/aw_route6_late_return/buyp024_sellp000/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.24,
+        "sell_shift": -0.08,
+        "tag": "buyp024_sellm008",
+        "decision_timestep": 6,
+        "projected_full_day_aggregator_revenue": 12.929286,
+        "projected_full_day_pto_cost": 142.222147,
+        "realized_aggregator_revenue": 12.92928610354224,
+        "workbook": "results/revision/stochastic_v5/selection/aw_route6_late_return/buyp024_sellm008/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.24,
+        "sell_shift": -0.16,
+        "tag": "buyp024_sellm016",
+        "decision_timestep": 6,
+        "projected_full_day_aggregator_revenue": 12.929287,
+        "projected_full_day_pto_cost": 142.222146,
+        "realized_aggregator_revenue": 12.92928610354224,
+        "workbook": "results/revision/stochastic_v5/selection/aw_route6_late_return/buyp024_sellm016/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.24,
+        "sell_shift": -0.24,
+        "tag": "buyp024_sellm024",
+        "decision_timestep": 6,
+        "projected_full_day_aggregator_revenue": 12.929286,
+        "projected_full_day_pto_cost": 142.222147,
+        "realized_aggregator_revenue": 12.92928610354224,
+        "workbook": "results/revision/stochastic_v5/selection/aw_route6_late_return/buyp024_sellm024/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.32,
+        "sell_shift": 0.0,
+        "tag": "buyp032_sellp000",
+        "decision_timestep": 6,
+        "projected_full_day_aggregator_revenue": 12.929286,
+        "projected_full_day_pto_cost": 142.222146,
+        "realized_aggregator_revenue": 12.92928610354224,
+        "workbook": "results/revision/stochastic_v5/selection/aw_route6_late_return/buyp032_sellp000/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.32,
+        "sell_shift": -0.08,
+        "tag": "buyp032_sellm008",
+        "decision_timestep": 6,
+        "projected_full_day_aggregator_revenue": 12.929286,
+        "projected_full_day_pto_cost": 142.222147,
+        "realized_aggregator_revenue": 12.92928610354224,
+        "workbook": "results/revision/stochastic_v5/selection/aw_route6_late_return/buyp032_sellm008/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.32,
+        "sell_shift": -0.16,
+        "tag": "buyp032_sellm016",
+        "decision_timestep": 6,
+        "projected_full_day_aggregator_revenue": 12.929286,
+        "projected_full_day_pto_cost": 142.222147,
+        "realized_aggregator_revenue": 12.92928610354224,
+        "workbook": "results/revision/stochastic_v5/selection/aw_route6_late_return/buyp032_sellm016/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.32,
+        "sell_shift": -0.24,
+        "tag": "buyp032_sellm024",
+        "decision_timestep": 6,
+        "projected_full_day_aggregator_revenue": 12.929286,
+        "projected_full_day_pto_cost": 142.222147,
+        "realized_aggregator_revenue": 12.92928610354224,
+        "workbook": "results/revision/stochastic_v5/selection/aw_route6_late_return/buyp032_sellm024/stochastic_programming.xlsx"
+      }
+    ],
+    "selected": {
+      "buy_shift": 0.24,
+      "sell_shift": 0.0,
+      "tag": "buyp024_sellp000",
+      "decision_timestep": 6,
+      "projected_full_day_aggregator_revenue": 12.929287,
+      "projected_full_day_pto_cost": 142.222145,
+      "realized_aggregator_revenue": 12.92928610354224,
+      "workbook": "results/revision/stochastic_v5/selection/aw_route6_late_return/buyp024_sellp000/stochastic_programming.xlsx"
+    }
+  },
+  {
+    "case_id": "aw_charger_bank_shutdown",
+    "selection_criterion": "maximum projected_full_day_aggregator_revenue of the first accepted optimization decision (expected value over the frozen scenario set plus the settled prefix; no realized information)",
+    "candidates": [
+      {
+        "buy_shift": 0.0,
+        "sell_shift": 0.0,
+        "tag": "buyp000_sellp000",
+        "decision_timestep": 5,
+        "projected_full_day_aggregator_revenue": 13.017617,
+        "projected_full_day_pto_cost": 143.193786,
+        "realized_aggregator_revenue": 13.01761689373298,
+        "workbook": "results/revision/stochastic_v5/selection/aw_charger_bank_shutdown/buyp000_sellp000/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.0,
+        "sell_shift": -0.08,
+        "tag": "buyp000_sellm008",
+        "decision_timestep": 5,
+        "projected_full_day_aggregator_revenue": 13.017618,
+        "projected_full_day_pto_cost": 143.193784,
+        "realized_aggregator_revenue": 13.01761803078396,
+        "workbook": "results/revision/stochastic_v5/selection/aw_charger_bank_shutdown/buyp000_sellm008/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.0,
+        "sell_shift": -0.16,
+        "tag": "buyp000_sellm016",
+        "decision_timestep": 5,
+        "projected_full_day_aggregator_revenue": 13.017616,
+        "projected_full_day_pto_cost": 143.193781,
+        "realized_aggregator_revenue": 13.01761648968034,
+        "workbook": "results/revision/stochastic_v5/selection/aw_charger_bank_shutdown/buyp000_sellm016/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.0,
+        "sell_shift": -0.24,
+        "tag": "buyp000_sellm024",
+        "decision_timestep": 5,
+        "projected_full_day_aggregator_revenue": 13.017617,
+        "projected_full_day_pto_cost": 143.193784,
+        "realized_aggregator_revenue": 13.01761668830833,
+        "workbook": "results/revision/stochastic_v5/selection/aw_charger_bank_shutdown/buyp000_sellm024/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.08,
+        "sell_shift": 0.0,
+        "tag": "buyp008_sellp000",
+        "decision_timestep": 5,
+        "projected_full_day_aggregator_revenue": 13.017617,
+        "projected_full_day_pto_cost": 143.193786,
+        "realized_aggregator_revenue": 13.01761689373298,
+        "workbook": "results/revision/stochastic_v5/selection/aw_charger_bank_shutdown/buyp008_sellp000/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.08,
+        "sell_shift": -0.08,
+        "tag": "buyp008_sellm008",
+        "decision_timestep": 5,
+        "projected_full_day_aggregator_revenue": 13.017617,
+        "projected_full_day_pto_cost": 143.193785,
+        "realized_aggregator_revenue": 13.01761680557302,
+        "workbook": "results/revision/stochastic_v5/selection/aw_charger_bank_shutdown/buyp008_sellm008/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.08,
+        "sell_shift": -0.16,
+        "tag": "buyp008_sellm016",
+        "decision_timestep": 5,
+        "projected_full_day_aggregator_revenue": 13.017616,
+        "projected_full_day_pto_cost": 143.193781,
+        "realized_aggregator_revenue": 13.01761646506796,
+        "workbook": "results/revision/stochastic_v5/selection/aw_charger_bank_shutdown/buyp008_sellm016/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.08,
+        "sell_shift": -0.24,
+        "tag": "buyp008_sellm024",
+        "decision_timestep": 5,
+        "projected_full_day_aggregator_revenue": 13.017617,
+        "projected_full_day_pto_cost": 143.193782,
+        "realized_aggregator_revenue": 13.01761654768494,
+        "workbook": "results/revision/stochastic_v5/selection/aw_charger_bank_shutdown/buyp008_sellm024/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.16,
+        "sell_shift": 0.0,
+        "tag": "buyp016_sellp000",
+        "decision_timestep": 5,
+        "projected_full_day_aggregator_revenue": 13.017622,
+        "projected_full_day_pto_cost": 143.193776,
+        "realized_aggregator_revenue": 13.01762205934381,
+        "workbook": "results/revision/stochastic_v5/selection/aw_charger_bank_shutdown/buyp016_sellp000/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.16,
+        "sell_shift": -0.08,
+        "tag": "buyp016_sellm008",
+        "decision_timestep": 5,
+        "projected_full_day_aggregator_revenue": 13.017617,
+        "projected_full_day_pto_cost": 143.193782,
+        "realized_aggregator_revenue": 13.01761652898418,
+        "workbook": "results/revision/stochastic_v5/selection/aw_charger_bank_shutdown/buyp016_sellm008/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.16,
+        "sell_shift": -0.16,
+        "tag": "buyp016_sellm016",
+        "decision_timestep": 5,
+        "projected_full_day_aggregator_revenue": 13.017617,
+        "projected_full_day_pto_cost": 143.193786,
+        "realized_aggregator_revenue": 13.01761689373298,
+        "workbook": "results/revision/stochastic_v5/selection/aw_charger_bank_shutdown/buyp016_sellm016/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.16,
+        "sell_shift": -0.24,
+        "tag": "buyp016_sellm024",
+        "decision_timestep": 5,
+        "projected_full_day_aggregator_revenue": 13.017617,
+        "projected_full_day_pto_cost": 143.193785,
+        "realized_aggregator_revenue": 13.01761737045974,
+        "workbook": "results/revision/stochastic_v5/selection/aw_charger_bank_shutdown/buyp016_sellm024/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.24,
+        "sell_shift": 0.0,
+        "tag": "buyp024_sellp000",
+        "decision_timestep": 5,
+        "projected_full_day_aggregator_revenue": 13.017618,
+        "projected_full_day_pto_cost": 143.193784,
+        "realized_aggregator_revenue": 13.01761792512084,
+        "workbook": "results/revision/stochastic_v5/selection/aw_charger_bank_shutdown/buyp024_sellp000/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.24,
+        "sell_shift": -0.08,
+        "tag": "buyp024_sellm008",
+        "decision_timestep": 5,
+        "projected_full_day_aggregator_revenue": 13.017616,
+        "projected_full_day_pto_cost": 143.19378,
+        "realized_aggregator_revenue": 13.01761638651138,
+        "workbook": "results/revision/stochastic_v5/selection/aw_charger_bank_shutdown/buyp024_sellm008/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.24,
+        "sell_shift": -0.16,
+        "tag": "buyp024_sellm016",
+        "decision_timestep": 5,
+        "projected_full_day_aggregator_revenue": 13.017617,
+        "projected_full_day_pto_cost": 143.193784,
+        "realized_aggregator_revenue": 13.01761671093077,
+        "workbook": "results/revision/stochastic_v5/selection/aw_charger_bank_shutdown/buyp024_sellm016/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.24,
+        "sell_shift": -0.24,
+        "tag": "buyp024_sellm024",
+        "decision_timestep": 5,
+        "projected_full_day_aggregator_revenue": 13.017617,
+        "projected_full_day_pto_cost": 143.193786,
+        "realized_aggregator_revenue": 13.01761689373298,
+        "workbook": "results/revision/stochastic_v5/selection/aw_charger_bank_shutdown/buyp024_sellm024/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.32,
+        "sell_shift": 0.0,
+        "tag": "buyp032_sellp000",
+        "decision_timestep": 5,
+        "projected_full_day_aggregator_revenue": 13.017617,
+        "projected_full_day_pto_cost": 143.193786,
+        "realized_aggregator_revenue": 13.01761689373298,
+        "workbook": "results/revision/stochastic_v5/selection/aw_charger_bank_shutdown/buyp032_sellp000/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.32,
+        "sell_shift": -0.08,
+        "tag": "buyp032_sellm008",
+        "decision_timestep": 5,
+        "projected_full_day_aggregator_revenue": 13.017617,
+        "projected_full_day_pto_cost": 143.193786,
+        "realized_aggregator_revenue": 13.01761689373298,
+        "workbook": "results/revision/stochastic_v5/selection/aw_charger_bank_shutdown/buyp032_sellm008/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.32,
+        "sell_shift": -0.16,
+        "tag": "buyp032_sellm016",
+        "decision_timestep": 5,
+        "projected_full_day_aggregator_revenue": 13.017617,
+        "projected_full_day_pto_cost": 143.193786,
+        "realized_aggregator_revenue": 13.01761689373298,
+        "workbook": "results/revision/stochastic_v5/selection/aw_charger_bank_shutdown/buyp032_sellm016/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.32,
+        "sell_shift": -0.24,
+        "tag": "buyp032_sellm024",
+        "decision_timestep": 5,
+        "projected_full_day_aggregator_revenue": 13.017617,
+        "projected_full_day_pto_cost": 143.193785,
+        "realized_aggregator_revenue": 13.01761679943592,
+        "workbook": "results/revision/stochastic_v5/selection/aw_charger_bank_shutdown/buyp032_sellm024/stochastic_programming.xlsx"
+      }
+    ],
+    "selected": {
+      "buy_shift": 0.16,
+      "sell_shift": 0.0,
+      "tag": "buyp016_sellp000",
+      "decision_timestep": 5,
+      "projected_full_day_aggregator_revenue": 13.017622,
+      "projected_full_day_pto_cost": 143.193776,
+      "realized_aggregator_revenue": 13.01762205934381,
+      "workbook": "results/revision/stochastic_v5/selection/aw_charger_bank_shutdown/buyp016_sellp000/stochastic_programming.xlsx"
+    }
+  },
+  {
+    "case_id": "aw_combined_evening",
+    "selection_criterion": "maximum projected_full_day_aggregator_revenue of the first accepted optimization decision (expected value over the frozen scenario set plus the settled prefix; no realized information)",
+    "candidates": [
+      {
+        "buy_shift": 0.0,
+        "sell_shift": 0.0,
+        "tag": "buyp000_sellp000",
+        "decision_timestep": 30,
+        "projected_full_day_aggregator_revenue": 28.89715,
+        "projected_full_day_pto_cost": 138.398103,
+        "realized_aggregator_revenue": 28.73251583205427,
+        "workbook": "results/revision/stochastic_v5/selection/aw_combined_evening/buyp000_sellp000/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.0,
+        "sell_shift": -0.08,
+        "tag": "buyp000_sellm008",
+        "decision_timestep": 30,
+        "projected_full_day_aggregator_revenue": 31.81583,
+        "projected_full_day_pto_cost": 141.316783,
+        "realized_aggregator_revenue": 31.60415745320173,
+        "workbook": "results/revision/stochastic_v5/selection/aw_combined_evening/buyp000_sellm008/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.0,
+        "sell_shift": -0.16,
+        "tag": "buyp000_sellm016",
+        "decision_timestep": 30,
+        "projected_full_day_aggregator_revenue": 34.734511,
+        "projected_full_day_pto_cost": 144.235463,
+        "realized_aggregator_revenue": 34.4757990743492,
+        "workbook": "results/revision/stochastic_v5/selection/aw_combined_evening/buyp000_sellm016/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.0,
+        "sell_shift": -0.24,
+        "tag": "buyp000_sellm024",
+        "decision_timestep": 30,
+        "projected_full_day_aggregator_revenue": 37.653191,
+        "projected_full_day_pto_cost": 147.154143,
+        "realized_aggregator_revenue": 37.34744069549667,
+        "workbook": "results/revision/stochastic_v5/selection/aw_combined_evening/buyp000_sellm024/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.08,
+        "sell_shift": 0.0,
+        "tag": "buyp008_sellp000",
+        "decision_timestep": 30,
+        "projected_full_day_aggregator_revenue": 28.89715,
+        "projected_full_day_pto_cost": 138.398103,
+        "realized_aggregator_revenue": 28.73251583205427,
+        "workbook": "results/revision/stochastic_v5/selection/aw_combined_evening/buyp008_sellp000/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.08,
+        "sell_shift": -0.08,
+        "tag": "buyp008_sellm008",
+        "decision_timestep": 30,
+        "projected_full_day_aggregator_revenue": 31.81583,
+        "projected_full_day_pto_cost": 141.316783,
+        "realized_aggregator_revenue": 31.60415745320173,
+        "workbook": "results/revision/stochastic_v5/selection/aw_combined_evening/buyp008_sellm008/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.08,
+        "sell_shift": -0.16,
+        "tag": "buyp008_sellm016",
+        "decision_timestep": 30,
+        "projected_full_day_aggregator_revenue": 34.734511,
+        "projected_full_day_pto_cost": 144.235463,
+        "realized_aggregator_revenue": 34.4757990743492,
+        "workbook": "results/revision/stochastic_v5/selection/aw_combined_evening/buyp008_sellm016/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.08,
+        "sell_shift": -0.24,
+        "tag": "buyp008_sellm024",
+        "decision_timestep": 30,
+        "projected_full_day_aggregator_revenue": 37.653191,
+        "projected_full_day_pto_cost": 147.154143,
+        "realized_aggregator_revenue": 37.34744069549667,
+        "workbook": "results/revision/stochastic_v5/selection/aw_combined_evening/buyp008_sellm024/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.16,
+        "sell_shift": 0.0,
+        "tag": "buyp016_sellp000",
+        "decision_timestep": 30,
+        "projected_full_day_aggregator_revenue": 28.89715,
+        "projected_full_day_pto_cost": 138.398103,
+        "realized_aggregator_revenue": 28.73251583205427,
+        "workbook": "results/revision/stochastic_v5/selection/aw_combined_evening/buyp016_sellp000/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.16,
+        "sell_shift": -0.08,
+        "tag": "buyp016_sellm008",
+        "decision_timestep": 30,
+        "projected_full_day_aggregator_revenue": 31.81583,
+        "projected_full_day_pto_cost": 141.316783,
+        "realized_aggregator_revenue": 31.60415745320173,
+        "workbook": "results/revision/stochastic_v5/selection/aw_combined_evening/buyp016_sellm008/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.16,
+        "sell_shift": -0.16,
+        "tag": "buyp016_sellm016",
+        "decision_timestep": 30,
+        "projected_full_day_aggregator_revenue": 34.734511,
+        "projected_full_day_pto_cost": 144.235463,
+        "realized_aggregator_revenue": 34.4757990743492,
+        "workbook": "results/revision/stochastic_v5/selection/aw_combined_evening/buyp016_sellm016/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.16,
+        "sell_shift": -0.24,
+        "tag": "buyp016_sellm024",
+        "decision_timestep": 30,
+        "projected_full_day_aggregator_revenue": 37.653191,
+        "projected_full_day_pto_cost": 147.154143,
+        "realized_aggregator_revenue": 37.34744069549667,
+        "workbook": "results/revision/stochastic_v5/selection/aw_combined_evening/buyp016_sellm024/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.24,
+        "sell_shift": 0.0,
+        "tag": "buyp024_sellp000",
+        "decision_timestep": 30,
+        "projected_full_day_aggregator_revenue": 28.89715,
+        "projected_full_day_pto_cost": 138.398103,
+        "realized_aggregator_revenue": 28.73251583205427,
+        "workbook": "results/revision/stochastic_v5/selection/aw_combined_evening/buyp024_sellp000/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.24,
+        "sell_shift": -0.08,
+        "tag": "buyp024_sellm008",
+        "decision_timestep": 30,
+        "projected_full_day_aggregator_revenue": 31.81583,
+        "projected_full_day_pto_cost": 141.316783,
+        "realized_aggregator_revenue": 31.60415745320173,
+        "workbook": "results/revision/stochastic_v5/selection/aw_combined_evening/buyp024_sellm008/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.24,
+        "sell_shift": -0.16,
+        "tag": "buyp024_sellm016",
+        "decision_timestep": 30,
+        "projected_full_day_aggregator_revenue": 34.734511,
+        "projected_full_day_pto_cost": 144.235463,
+        "realized_aggregator_revenue": 34.4757990743492,
+        "workbook": "results/revision/stochastic_v5/selection/aw_combined_evening/buyp024_sellm016/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.24,
+        "sell_shift": -0.24,
+        "tag": "buyp024_sellm024",
+        "decision_timestep": 30,
+        "projected_full_day_aggregator_revenue": 37.653191,
+        "projected_full_day_pto_cost": 147.154143,
+        "realized_aggregator_revenue": 37.34744069549667,
+        "workbook": "results/revision/stochastic_v5/selection/aw_combined_evening/buyp024_sellm024/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.32,
+        "sell_shift": 0.0,
+        "tag": "buyp032_sellp000",
+        "decision_timestep": 30,
+        "projected_full_day_aggregator_revenue": 28.89715,
+        "projected_full_day_pto_cost": 138.398103,
+        "realized_aggregator_revenue": 28.73251583205427,
+        "workbook": "results/revision/stochastic_v5/selection/aw_combined_evening/buyp032_sellp000/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.32,
+        "sell_shift": -0.08,
+        "tag": "buyp032_sellm008",
+        "decision_timestep": 30,
+        "projected_full_day_aggregator_revenue": 31.81583,
+        "projected_full_day_pto_cost": 141.316783,
+        "realized_aggregator_revenue": 31.60415745320173,
+        "workbook": "results/revision/stochastic_v5/selection/aw_combined_evening/buyp032_sellm008/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.32,
+        "sell_shift": -0.16,
+        "tag": "buyp032_sellm016",
+        "decision_timestep": 30,
+        "projected_full_day_aggregator_revenue": 34.734511,
+        "projected_full_day_pto_cost": 144.235463,
+        "realized_aggregator_revenue": 34.4757990743492,
+        "workbook": "results/revision/stochastic_v5/selection/aw_combined_evening/buyp032_sellm016/stochastic_programming.xlsx"
+      },
+      {
+        "buy_shift": 0.32,
+        "sell_shift": -0.24,
+        "tag": "buyp032_sellm024",
+        "decision_timestep": 30,
+        "projected_full_day_aggregator_revenue": 37.653191,
+        "projected_full_day_pto_cost": 147.154143,
+        "realized_aggregator_revenue": 37.34744069549667,
+        "workbook": "results/revision/stochastic_v5/selection/aw_combined_evening/buyp032_sellm024/stochastic_programming.xlsx"
+      }
+    ],
+    "selected": {
+      "buy_shift": 0.0,
+      "sell_shift": -0.24,
+      "tag": "buyp000_sellm024",
+      "decision_timestep": 30,
+      "projected_full_day_aggregator_revenue": 37.653191,
+      "projected_full_day_pto_cost": 147.154143,
+      "realized_aggregator_revenue": 37.34744069549667,
+      "workbook": "results/revision/stochastic_v5/selection/aw_combined_evening/buyp000_sellm024/stochastic_programming.xlsx"
+    }
+  }
+]

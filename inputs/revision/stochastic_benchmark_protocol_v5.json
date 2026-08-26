@@ -1,0 +1,24 @@
+{
+  "protocol_version": "event_receding_two_stage_stochastic_v5_revenue_matched",
+  "status": "implemented_and_frozen_pending_confirmatory_full_day_execution",
+  "base_protocol_file": "stochastic_benchmark_protocol_v4.json",
+  "supersedes_for_future_runs": "inputs/revision/stochastic_benchmark_protocol_v4.json (selfish mode only)",
+  "historical_result_policy": "V4 remains the published objective-mismatched benchmark: its selfish cells price through the unshifted deterministic zone table and are reported as descriptive. V5 replaces the selfish cells with an objective-matched leader decision and must be reported separately. V4 altruistic cells are already objective-matched and remain the citable altruistic results.",
+  "change_reason": [
+    "the v4 program minimizes expected PTO cost in both coordination modes, so its profit-based cells compare configurations pursuing different objectives",
+    "match the benchmark to the leader--follower structure of the workflow: the tariff posture is the leader decision and is chosen to maximize projected full-day aggregator revenue, while the scheduling follower continues to minimize expected PTO cost given the tariffs",
+    "leave the shared deterministic optimizer, scenario sets, probabilities, prices, disturbance truth, asset identity bindings, Agent results and solver settings unchanged"
+  ],
+  "method": {
+    "applies_to_modes": ["selfish"],
+    "leader_decision": "tariff posture, selected ex ante at the first public information update and held for the operating day, matching the single-table structure of the deterministic pricing policy",
+    "revenue_matched_posture_grid": {
+      "structure": "uniform shifts applied to the deterministic selfish zone reference, then normalized by the same bounds that constrain the Pricing Agent (buy in [1.01, 1.50], buy <= 1.10 on the first six remaining timesteps, sell in [0.40, 0.99], sell <= buy - 0.01)",
+      "buy_shifts": [0.0, 0.08, 0.16, 0.24, 0.32],
+      "sell_shifts": [0.0, -0.08, -0.16, -0.24]
+    },
+    "selection_criterion": "maximum projected_full_day_aggregator_revenue of the first accepted optimization decision; this projection is the expected value over the frozen scenario set plus the already-settled prefix and uses no realized information",
+    "tie_break": "smallest buy shift, then smallest absolute sell shift",
+    "shared_deterministic_optimizer_modified": false
+  }
+}

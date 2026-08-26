@@ -1,0 +1,22 @@
+{
+  "protocol_version": "event_receding_two_stage_stochastic_v5_revenue_matched",
+  "protocol_file": "inputs/revision/stochastic_benchmark_protocol_v5.json",
+  "protocol_dependency_sha256": {
+    "inputs/revision/stochastic_benchmark_protocol_v5.json": "3ab2af9218ceaeef143c0ae63de08888ffa756adafda31295328bd7fa6d37fd3",
+    "inputs/revision/stochastic_benchmark_protocol_v4.json": "b22ad636c6bf03bbe8375489f62c570aa6309aa682942771a0a19f54906ef8d6",
+    "inputs/revision/stochastic_benchmark_protocol_v3.json": "14f2d2039512ff2edea744bb4c5a02467d6ade6091d6aa9cdc559383df56eb35",
+    "inputs/revision/stochastic_benchmark_protocol_v2.json": "327a6e367297c571e2feba9263ce8a9c761898297a9b248dd6c6f31e95a58cb6"
+  },
+  "git_commit": "662a3f4b4a618647858d5d9efb79f2267aa1bf79",
+  "generated_utc": "2026-08-26T03:08:49.519188+00:00",
+  "candidate_grid_size": 20,
+  "cases": [
+    "aw_route6_late_return",
+    "aw_charger_bank_shutdown",
+    "aw_combined_evening"
+  ],
+  "modes": [
+    "selfish"
+  ],
+  "altruistic_results_policy": "inherited from results/revision/stochastic_v4, whose objective is already matched to the altruistic mode"
+}

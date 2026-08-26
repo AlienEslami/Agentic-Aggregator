@@ -122,3 +122,7 @@ results/revision/multiday_nominal_selfish_900s_v1/*
 
 # Legacy generated-data folder from earlier versions of the repository
 Files/
+!results/revision/stochastic_v5/
+!results/revision/stochastic_v5/**
+!results/revision/tolerance_check_v1/
+!results/revision/tolerance_check_v1/**

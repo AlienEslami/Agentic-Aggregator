@@ -1,0 +1,4 @@
+case,mode,published_gap,check_gap,published_realized_pto_cost,check_realized_pto_cost,pto_cost_delta,published_realized_aggregator_revenue,check_realized_aggregator_revenue
+aw_route6_late_return,altruistic,0.02,0.001,124.0194473092161,123.7170744406548,-0.3023728685613065,9.47432078539597,9.473642739722946
+aw_charger_bank_shutdown,altruistic,0.02,0.001,124.0429768527793,124.0429670250759,-9.827703408404886e-06,9.496404645694806,9.496404197856418
+aw_combined_evening,altruistic,0.02,0.001,122.2409120957734,122.2409120957734,0.0,12.15193135986429,12.15193135986429
