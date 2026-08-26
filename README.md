@@ -1,5 +1,7 @@
 # A Multi-Agentic Aggregator Design for Electric Bus Fleet Charging and Grid Flexibility Management
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22105316.svg)](https://doi.org/10.5281/zenodo.22105316)
+
 This repository contains the code, frozen experiment protocols, provenance manifests, and published results for the paper *A Multi-Agentic Aggregator Design for Electric Bus Fleet Charging and Grid Flexibility Management* and its revision (TRC-26-02380).
 
 ## Reproducing the revision (start here)
@@ -217,3 +219,9 @@ where `S_buy` is the tariff paid by the public transport operator, `S_sell` is t
 This repository, including the published result tables and manifests, is
 released under the MIT License; see [LICENSE](LICENSE). Add the final paper
 citation here once the revised manuscript is accepted.
+
+## Archived version
+
+A permanent snapshot of this repository (version 2.0.0, commit `1eb9d9f`),
+including every experiment input and published result matrix, is archived on
+Zenodo: [10.5281/zenodo.22105316](https://doi.org/10.5281/zenodo.22105316).
