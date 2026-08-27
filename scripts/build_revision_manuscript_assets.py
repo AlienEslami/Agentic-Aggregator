@@ -307,30 +307,165 @@ def make_trigger_figure(frame: pd.DataFrame) -> list[Path]:
     return paths
 
 
+def _scaling_terms(frame, configuration, sizes):
+    """Split mean episode wall time into the three terms it conflates."""
+    subset = frame.loc[frame.configuration == configuration].set_index("fleet_size")
+    solver = np.array([subset.loc[s, "solver_wall_seconds_mean"] for s in sizes])
+    agent = np.array([subset.loc[s, "llm_latency_seconds_mean"] for s in sizes])
+    total = np.array([subset.loc[s, "workflow_wall_seconds_mean"] for s in sizes])
+    return solver, agent, total - solver - agent, total
+
+
+DECISION_INTERVAL_S = 30 * 60
+SCALING_SIZES = [8, 16, 32]
+SCALING_ARMS = ["rule_text_event_trigger", "full_agentic"]
+SCALING_LABELS = {
+    "full_agentic": "Full agentic",
+    "rule_text_event_trigger": "Text-rule baseline",
+}
+SCALING_SHORT = {"full_agentic": "agentic", "rule_text_event_trigger": "rule"}
+COL_OVERHEAD = "#D9D9D9"
+COL_SOLVER = "#E08214"
+COL_AGENT = "#2166AC"
+COL_RULE = "#8C8C8C"
+
+
+def _draw_decomposition(ax, depot) -> None:
+    width, offset = 0.34, 0.185
+    centers, minor_labels = [], []
+    for slot, arm in enumerate(SCALING_ARMS):
+        solver, agent, overhead, total = _scaling_terms(depot, arm, SCALING_SIZES)
+        x = np.arange(len(SCALING_SIZES)) + (offset if slot else -offset)
+        first = slot == 0
+        ax.bar(x, overhead, width, color=COL_OVERHEAD,
+               label="Data handling (both arms)" if first else None)
+        ax.bar(x, solver, width, bottom=overhead, color=COL_SOLVER,
+               label="Optimizer" if first else None)
+        ax.bar(x, agent, width, bottom=overhead + solver, color=COL_AGENT,
+               label="Agent latency" if first else None)
+        for xi, ti in zip(x, total):
+            ax.text(xi, ti + 1.6, f"{ti:.0f}", ha="center", va="bottom", fontsize=8)
+        centers.extend(x)
+        minor_labels.extend([SCALING_SHORT[arm]] * len(SCALING_SIZES))
+
+    ax.set_xticks(np.arange(len(SCALING_SIZES)))
+    ax.set_xticklabels(SCALING_SIZES)
+    ax.tick_params(axis="x", which="major", length=0, pad=18)
+    ax.set_xticks(centers, minor=True)
+    ax.set_xticklabels(minor_labels, minor=True, fontsize=7.5, color="#4D4D4D")
+    ax.tick_params(axis="x", which="minor", length=0)
+    ax.set_ylabel("Mean episode wall time (s)")
+    ax.set_xlabel("Fleet size (buses), Depot A")
+    ax.set_ylim(0, 95)
+    ax.legend(frameon=False, fontsize=8, loc="upper left")
+
+
+GROWTH_TERMS = [
+    ("Optimizer\ntime", "solver_wall_seconds_mean", COL_SOLVER),
+    ("Model size\n(variables)", "model_variables_max", "#9E9E9E"),
+    ("Tokens", "llm_tokens_total", "#7FB3D5"),
+    ("Agent\nlatency", "llm_latency_seconds_mean", COL_AGENT),
+]
+
+
+def _draw_growth(ax, depot) -> None:
+    """Percent growth of each term relative to the eight-bus instance."""
+    agentic = depot.loc[depot.configuration == "full_agentic"].set_index("fleet_size")
+    width, offset = 0.34, 0.185
+    x = np.arange(len(GROWTH_TERMS))
+
+    for slot, size in enumerate([16, 32]):
+        heights, mults = [], []
+        for _, column, _ in GROWTH_TERMS:
+            base = float(agentic.loc[8, column])
+            ratio = float(agentic.loc[size, column]) / base
+            heights.append(100 * (ratio - 1.0))
+            mults.append(ratio)
+        pos = x + (offset if slot else -offset)
+        colors = [c for _, _, c in GROWTH_TERMS]
+        ax.bar(pos, heights, width, color=colors,
+               alpha=1.0 if slot else 0.45,
+               label=f"{size} buses" if False else None)
+        for xi, hi, mi in zip(pos, heights, mults):
+            ax.text(xi, hi + 55, f"\u00d7{mi:.2f}" if mi < 3 else f"\u00d7{mi:.1f}",
+                    ha="center", va="bottom", fontsize=7.5,
+                    fontweight="bold" if slot else "normal",
+                    color="#333333" if slot else "#777777")
+
+    ax.axhline(0, color="#9E9E9E", linewidth=1)
+    ax.set_xticks(x)
+    ax.set_xticklabels([label for label, _, _ in GROWTH_TERMS], fontsize=8)
+    ax.set_ylabel("Growth over the 8-bus instance (%)")
+    ax.set_xlabel("Relative to Depot A at 8 buses")
+    ax.set_ylim(-60, 2450)
+    from matplotlib.patches import Patch
+    ax.legend(handles=[Patch(facecolor="#8C8C8C", alpha=0.45, label="16 buses"),
+                       Patch(facecolor="#8C8C8C", label="32 buses")],
+              frameon=False, fontsize=8, loc="upper right")
+
+
+def _draw_budget(ax, depot) -> None:
+    for arm in SCALING_ARMS:
+        subset = depot.loc[depot.configuration == arm]
+        ax.plot(subset.fleet_size, subset.workflow_wall_seconds_mean,
+                marker="o", linewidth=2, label=SCALING_LABELS[arm],
+                color=COL_AGENT if arm == "full_agentic" else COL_RULE)
+    ax.axhline(DECISION_INTERVAL_S, linestyle="--", linewidth=1.3, color="#B2182B")
+    ax.text(8, DECISION_INTERVAL_S * 1.12, "30-min decision interval",
+            fontsize=8, color="#B2182B", va="bottom")
+
+    _, _, _, total = _scaling_terms(depot, "full_agentic", SCALING_SIZES)
+    share = 100 * total[-1] / DECISION_INTERVAL_S
+    ax.annotate(f"{total[-1]:.0f} s = {share:.1f}% of the interval",
+                xy=(32, total[-1]), xytext=(15.5, total[-1] * 2.9), fontsize=8,
+                color="#333333",
+                arrowprops=dict(arrowstyle="-", linewidth=0.8, color="#999999"))
+
+    ax.set_yscale("log")
+    ax.set_ylim(4, 6000)
+    ax.set_ylabel("Mean episode wall time (s), log scale")
+    ax.set_xlabel("Fleet size (buses), Depot A")
+    ax.set_xticks(SCALING_SIZES)
+    ax.legend(frameon=False, fontsize=8, loc="lower right", ncol=1)
+
+
+def _style(ax) -> None:
+    ax.grid(color="#E6E6E6", linewidth=0.7)
+    ax.set_axisbelow(True)
+    ax.spines[["top", "right"]].set_visible(False)
+
+
 def make_scaling_figure(frame: pd.DataFrame) -> list[Path]:
     depot = frame.loc[frame.depot == "depot_a"].sort_values("fleet_size")
-    labels = {"full_agentic": "Full agentic", "rule_text_event_trigger": "Text-rule baseline"}
-    colors = {"full_agentic": "#2166AC", "rule_text_event_trigger": "#BDBDBD"}
-    fig, axes = plt.subplots(1, 2, figsize=(10.5, 4.2))
-    for configuration in ["full_agentic", "rule_text_event_trigger"]:
-        subset = depot.loc[depot.configuration == configuration]
-        axes[0].plot(subset.fleet_size, subset.solver_wall_seconds_mean, marker="o", linewidth=2, label=labels[configuration], color=colors[configuration])
-        axes[1].plot(subset.fleet_size, subset.workflow_wall_seconds_mean, marker="o", linewidth=2, label=labels[configuration], color=colors[configuration])
-    axes[0].set_title("Optimizer time")
-    axes[0].set_ylabel("Mean solver wall time (s)")
-    axes[1].set_title("End-to-end workflow time")
-    axes[1].set_ylabel("Mean episode wall time (s)")
-    for ax in axes:
-        ax.set_xlabel("Fleet size (buses), Depot A")
-        ax.set_xticks([8, 16, 32])
-        ax.grid(color="#E6E6E6", linewidth=0.7)
-        ax.spines[["top", "right"]].set_visible(False)
-    axes[1].legend(frameon=False)
+    paths: list[Path] = []
+
+    for stem, draw in (("scalability_decomposition", _draw_decomposition),
+                       ("scalability_growth", _draw_growth),
+                       ("scalability_budget", _draw_budget)):
+        fig, ax = plt.subplots(figsize=(5.4, 4.3))
+        draw(ax, depot)
+        _style(ax)
+        fig.tight_layout()
+        for suffix in (".pdf", ".png"):
+            path = FIGURES / f"{stem}{suffix}"
+            fig.savefig(path, dpi=220 if suffix == ".png" else None,
+                        bbox_inches="tight")
+            paths.append(path)
+        plt.close(fig)
+
+    # Combined raster: the response letter embeds one image per figure.
+    fig, axes = plt.subplots(1, 3, figsize=(15.0, 4.3))
+    _draw_decomposition(axes[0], depot)
+    _draw_growth(axes[1], depot)
+    _draw_budget(axes[2], depot)
+    for ax, tag in zip(axes, ("(a)", "(b)", "(c)")):
+        _style(ax)
+        ax.set_title(tag, loc="left", fontsize=10, fontweight="bold")
     fig.tight_layout()
-    paths = [FIGURES / "scalability_latency.png", FIGURES / "scalability_latency.pdf"]
-    fig.savefig(paths[0], dpi=220, bbox_inches="tight")
-    fig.savefig(paths[1], bbox_inches="tight")
+    combined = FIGURES / "scalability_latency.png"
+    fig.savefig(combined, dpi=220, bbox_inches="tight")
     plt.close(fig)
+    paths.append(combined)
     return paths
 
 
